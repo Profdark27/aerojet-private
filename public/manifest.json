@@ -1,0 +1,21 @@
+{
+  "name": "Aerojet Private",
+  "short_name": "Aerojet",
+  "description": "Prenota voli privati con i migliori operatori mondiali",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0C14",
+  "theme_color": "#0A0C14",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "/screenshot-wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide" }
+  ],
+  "categories": ["travel", "lifestyle", "business"],
+  "lang": "it",
+  "dir": "ltr"
+}
