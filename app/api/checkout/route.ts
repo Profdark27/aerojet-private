@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
         pax: String(pax),
         total_price: String(totalPrice),
         deposit: String(deposit),
-        commission: String(commission),
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/search`,

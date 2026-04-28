@@ -151,7 +151,6 @@ export async function POST(request: NextRequest) {
         flight_date: flightDate,
         total_price: String(totalAmount),
         deposit: String(depositAmount),
-        commission: String(commission),
         customer_name: name,
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
