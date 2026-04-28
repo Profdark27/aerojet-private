@@ -210,8 +210,39 @@ export async function POST(req: Request) {
       } catch (err) {
         console.error('[CHAT API ERROR]:', err)
         // Fallback silenzioso se Anthropic va in timeout o ha credito insufficiente
-        const fallbackText = "La ringrazio. Per offrirle un servizio d'eccellenza immediato, la invito a lasciarmi la rotta desiderata, la data e la sua email. Il mio team operativo le invierà la quotazione esatta nel minor tempo possibile."
+        const fallbackText = "La ringrazio per la sua richiesta. In questo momento sto registrando i suoi dati; il team operativo le invierà la quotazione esatta nel minor tempo possibile."
         send(controller, { delta: { text: fallbackText } })
+        
+        // Auto-create inquiry from context so the lead is never lost
+        const lastMessage = body.messages[body.messages.length - 1]?.content || 'Richiesta generica'
+        try {
+          const result = await persistInquiry({
+            from: context.from || 'N/D',
+            to: context.to || 'N/D',
+            date: 'N/D',
+            pax: '2',
+            budget: context.budget || 'N/D',
+            name: context.userName || 'Lead da Fallback AI',
+            email: context.userEmail || 'chat@aerojet.private',
+            phone: context.userPhone || 'N/D',
+            msg: lastMessage,
+          })
+          send(controller, {
+            inquiryCreated: {
+              id: result.id,
+              leadScore: result.leadScore,
+              leadTier: result.leadTier,
+              estimatedQuote: result.estimatedQuote,
+              depositEstimate: result.depositEstimate,
+              from: context.from || 'N/D',
+              to: context.to || 'N/D',
+              date: 'N/D',
+            },
+          })
+        } catch (inqErr) {
+          console.error('Failed to persist fallback inquiry:', inqErr)
+        }
+
         send(controller, { done: true })
         controller.close()
       }
