@@ -106,8 +106,8 @@ export default function NotificationBell() {
                   <span style={{ color: cfg.color, fontSize: 18, flexShrink: 0, width: 24, textAlign: 'center' }}>{cfg.icon}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', color: '#F0EDE6', marginBottom: 4 }}>{cfg.label}</div>
-                    {n.data.clientName && <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>Cliente: {String(n.data.clientName)}</div>}
-                    {n.data.route && <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>{String(n.data.route)}</div>}
+                    {n.data.clientName != null && <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>Cliente: {String(n.data.clientName)}</div>}
+                    {n.data.route != null && <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>{String(n.data.route)}</div>}
                     <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.2)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 4 }}>
                       {ago === 0 ? 'Ora' : `${ago}m fa`}
                     </div>

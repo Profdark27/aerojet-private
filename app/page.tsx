@@ -9,6 +9,7 @@ import MembershipSection from '@/components/luxury/MembershipSection'
 import ContactSection from '@/components/luxury/ContactSection'
 import Footer from '@/components/luxury/Footer'
 import ConciergeChat from '@/components/luxury/ConciergeChat'
+import WhatsAppButton from '@/components/luxury/WhatsAppButton'
 import MobileBottomNav from '@/components/luxury/MobileBottomNav'
 import CookieBanner from '@/components/CookieBanner'
 
@@ -28,6 +29,7 @@ export default function HomePage() {
       </main>
       <Footer />
       <ConciergeChat />
+      <WhatsAppButton />
       <MobileBottomNav />
       <CookieBanner />
     </>

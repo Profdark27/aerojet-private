@@ -1,3 +1,4 @@
+// TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 /**
  * Email transazionali Aerojet Private — Resend
  * Docs: https://resend.com/docs
@@ -71,10 +72,10 @@ function row(label: string, value: string) {
 
 // ─── 1. Conferma Prenotazione ──────────────────────────────
 export async function sendBookingConfirmation({
-  to, name, aircraft, from, to: dest, date, pax, deposit, total, confirmCode,
+  to, name, aircraft, from, dest, date, pax, deposit, total, confirmCode,
 }: {
   to: string; name: string; aircraft: string
-  from: string; to: string; date: string; pax: number
+  from: string; dest: string; date: string; pax: number
   deposit: number; total: number; confirmCode: string
 }) {
   const html = base(`
@@ -105,10 +106,10 @@ export async function sendBookingConfirmation({
 
 // ─── 2. Preventivo Inviato (al cliente) ───────────────────
 export async function sendQuoteToClient({
-  to, name, aircraft, from, to: dest, date, pax, price, validUntil, brokerName,
+  to, name, aircraft, from, dest, date, pax, price, validUntil, brokerName,
 }: {
   to: string; name: string; aircraft: string
-  from: string; to: string; date: string; pax: number
+  from: string; dest: string; date: string; pax: number
   price: number; validUntil: string; brokerName: string
 }) {
   const html = base(`
@@ -166,9 +167,9 @@ export async function notifyBrokerNewRequest({
 
 // ─── 4. Conferma Ricezione Richiesta (al cliente) ─────────
 export async function sendRequestReceived({
-  to, name, from, to: dest, date, requestId,
+  to, name, from, dest, date, requestId,
 }: {
-  to: string; name: string; from: string; to: string; date: string; requestId: string
+  to: string; name: string; from: string; dest: string; date: string; requestId: string
 }) {
   const html = base(`
     <h2 style="color:#F0EDE6;font-size:30px;font-weight:300;margin:0 0 32px;">Richiesta Ricevuta</h2>
@@ -192,11 +193,133 @@ export async function sendRequestReceived({
   return send(to, `Richiesta ${requestId} ricevuta — Aerojet Private`, html)
 }
 
+// ─── 5b. Notifica Broker — Lead VIP/Scoring ────────────────
+export async function notifyBrokerScoredLead({
+  brokerEmail, clientName, clientEmail, phone, from, to, date, pax, budget,
+  message, requestId, leadTier, leadScore, suggestedAction, marginEstimate, suggestedQuote,
+}: {
+  brokerEmail: string; clientName: string; clientEmail: string; phone?: string
+  from: string; to: string; date: string; pax: number
+  budget: string; message: string; requestId: string
+  leadTier: string; leadScore: number; suggestedAction: string
+  marginEstimate: number; suggestedQuote: number
+}) {
+  const tierColors: Record<string, string> = {
+    VIP: '#C9A84C', HIGH: '#60a5fa', MEDIUM: '#c084fc', LOW: 'rgba(240,237,230,0.4)', UNQUALIFIED: '#6b7280',
+  }
+  const tierColor = tierColors[leadTier] || '#C9A84C'
+  const isHot = leadTier === 'VIP' || leadTier === 'HIGH'
+
+  const html = base(`
+    ${isHot ? `<div style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);padding:12px 20px;margin-bottom:28px;display:inline-block;">
+      <span style="color:#C9A84C;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">${leadTier === 'VIP' ? '🔥 LEAD VIP — CONTATTA ORA' : '💰 LEAD HIGH VALUE'}</span>
+    </div>` : ''}
+    <h2 style="color:#F0EDE6;font-size:28px;font-weight:300;margin:0 0 8px;">Nuova Richiesta</h2>
+    <p style="color:#C9A84C;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;margin:0 0 28px;">${requestId}</p>
+
+    <div style="background:#0F1220;border:1px solid rgba(201,168,76,0.15);padding:28px;margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:2px;color:rgba(240,237,230,0.4);font-family:Helvetica Neue,sans-serif;margin-bottom:16px;">CLIENTE</div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Nome', clientName)}
+        ${row('Email', clientEmail)}
+        ${phone ? row('Telefono', `<strong style="color:#C9A84C;">${phone}</strong>`) : ''}
+        ${row('Rotta', `${from} → ${to}`)}
+        ${row('Data', date || 'Da definire')}
+        ${row('Passeggeri', `${pax}`)}
+        ${row('Budget dichiarato', budget)}
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:#0A0C14;border:1px solid rgba(201,168,76,0.1);padding:16px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:2px;color:rgba(240,237,230,0.4);font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">TIER</div>
+        <div style="font-size:20px;font-weight:600;color:${tierColor};">${leadTier}</div>
+      </div>
+      <div style="background:#0A0C14;border:1px solid rgba(201,168,76,0.1);padding:16px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:2px;color:rgba(240,237,230,0.4);font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">SCORE</div>
+        <div style="font-size:20px;font-weight:600;color:#C9A84C;">${leadScore}/100</div>
+      </div>
+      <div style="background:#0A0C14;border:1px solid rgba(201,168,76,0.1);padding:16px;text-align:center;">
+        <div style="font-size:10px;letter-spacing:2px;color:rgba(240,237,230,0.4);font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">MARGINE EST.</div>
+        <div style="font-size:20px;font-weight:600;color:#4ade80;">€${marginEstimate.toLocaleString('it-IT')}</div>
+      </div>
+    </div>
+
+    ${suggestedQuote > 0 ? `<div style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.15);padding:16px 20px;margin-bottom:20px;">
+      <div style="font-size:10px;letter-spacing:2px;color:#4ade80;font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">QUOTAZIONE SUGGERITA</div>
+      <div style="font-size:24px;color:#4ade80;font-weight:300;">€${suggestedQuote.toLocaleString('it-IT')}</div>
+    </div>` : ''}
+
+    <div style="background:rgba(201,168,76,0.05);border-left:3px solid #C9A84C;padding:16px 20px;margin-bottom:28px;">
+      <div style="font-size:10px;letter-spacing:2px;color:#C9A84C;font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">AZIONE SUGGERITA</div>
+      <div style="font-size:14px;color:#F0EDE6;font-family:Helvetica Neue,sans-serif;">${suggestedAction}</div>
+    </div>
+
+    <div style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.08);padding:16px 20px;margin-bottom:32px;">
+      <div style="font-size:10px;letter-spacing:2px;color:rgba(240,237,230,0.4);font-family:Helvetica Neue,sans-serif;margin-bottom:8px;">MESSAGGIO</div>
+      <p style="color:rgba(240,237,230,0.65);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">${message}</p>
+    </div>
+
+    ${goldBtn('https://aerojet.private/dashboard/requests', 'APRI DASHBOARD →')}
+  `)
+
+  const prefix = leadTier === 'VIP' ? '🔥 VIP' : leadTier === 'HIGH' ? '💰 HIGH' : '🔔'
+  return send(brokerEmail, `${prefix} Richiesta ${requestId} — ${from} → ${to} — Score ${leadScore}/100`, html)
+}
+
+// ─── 6. Follow-up cliente non contattato ──────────────────
+export async function sendFollowUpNotContacted({
+  to, name, from, dest, requestId,
+}: {
+  to: string; name: string; from: string; dest: string; requestId: string
+}) {
+  const html = base(`
+    <h2 style="color:#F0EDE6;font-size:28px;font-weight:300;margin:0 0 28px;">Disponibilità ancora aperta</h2>
+    <p style="color:rgba(240,237,230,0.65);font-size:15px;font-family:Helvetica Neue,sans-serif;line-height:1.85;margin:0 0 28px;">
+      Gentile ${name}, il nostro team sta ancora verificando le disponibilità operative per il suo volo <strong style="color:#F0EDE6;">${from} → ${dest}</strong>.
+    </p>
+    <p style="color:rgba(240,237,230,0.55);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.85;margin:0 0 32px;">
+      La contatteremo a breve con opzioni personalizzate. Nel frattempo, il nostro concierge è disponibile per qualsiasi esigenza.
+    </p>
+    <div style="background:#0F1220;border:1px solid rgba(201,168,76,0.12);padding:20px 28px;margin-bottom:32px;text-align:center;">
+      <div style="font-size:10px;letter-spacing:3px;color:rgba(240,237,230,0.3);font-family:Helvetica Neue,sans-serif;margin-bottom:6px;">PRATICA</div>
+      <div style="font-size:20px;letter-spacing:4px;color:#C9A84C;">${requestId}</div>
+    </div>
+    <p style="color:rgba(240,237,230,0.35);font-size:13px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 28px;">
+      Se ha già trovato alternative o desidera aggiornare la richiesta, può rispondere direttamente a questa email o contattarci.
+    </p>
+    ${goldBtn('mailto:concierge@aerojet.private?subject=Richiesta%20' + requestId, 'RISPONDI AL CONCIERGE')}
+  `)
+  return send(to, `Pratica ${requestId} — Disponibilità ancora in verifica`, html)
+}
+
+// ─── 7. Follow-up VIP ──────────────────────────────────────
+export async function sendFollowUpVIP({
+  to, name, from, dest, requestId,
+}: {
+  to: string; name: string; from: string; dest: string; requestId: string
+}) {
+  const html = base(`
+    <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);padding:12px 20px;margin-bottom:28px;display:inline-block;">
+      <span style="color:#C9A84C;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">✦ SERVIZIO PRIORITARIO</span>
+    </div>
+    <h2 style="color:#F0EDE6;font-size:28px;font-weight:300;margin:0 0 28px;">Verifica operatore in corso</h2>
+    <p style="color:rgba(240,237,230,0.65);font-size:15px;font-family:Helvetica Neue,sans-serif;line-height:1.85;margin:0 0 28px;">
+      Gentile ${name}, la sua richiesta per il volo <strong style="color:#F0EDE6;">${from} → ${dest}</strong> è stata elevata a <span style="color:#C9A84C;">priorità servizio dedicato</span>.
+    </p>
+    <p style="color:rgba(240,237,230,0.55);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.85;margin:0 0 32px;">
+      Il concierge assegnato sta contattando direttamente gli operatori per verificare disponibilità e configurazioni aeromobile in linea con le sue aspettative. La aggiorneremo con una proposta personalizzata.
+    </p>
+    ${goldBtn('mailto:concierge@aerojet.private?subject=Richiesta%20prioritaria%20' + requestId, 'CONTATTA CONCIERGE DEDICATO')}
+  `)
+  return send(to, `Il suo concierge sta verificando disponibilità dedicate — ${requestId}`, html)
+}
+
 // ─── 5. Empty Leg Alert ────────────────────────────────────
 export async function sendEmptyLegAlert({
-  to, name, from, to: dest, date, time, aircraft, originalPrice, discountedPrice, discount,
+  to, name, from, dest, date, time, aircraft, originalPrice, discountedPrice, discount,
 }: {
-  to: string; name: string; from: string; to: string
+  to: string; name: string; from: string; dest: string
   date: string; time: string; aircraft: string
   originalPrice: number; discountedPrice: number; discount: number
 }) {

@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { FLEET_CATEGORIES } from '@/lib/utils'
+import ImageWithFallback from '@/components/ImageWithFallback'
+import { FLEET_IMAGES, FLEET_ALT } from '@/lib/imageAssets'
 
 export default function FleetSection() {
   const [selected, setSelected] = useState<number | null>(null)
@@ -48,6 +50,33 @@ export default function FleetSection() {
 
               {selected === i && (
                 <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+
+                  {/* Jet image — 180px panel, falls back to icon + gradient */}
+                  <div style={{ position: 'relative', height: 180, overflow: 'hidden', marginBottom: 16 }}>
+                    <ImageWithFallback
+                      src={FLEET_IMAGES[cat.value]}
+                      alt={FLEET_ALT[cat.value] ?? `${cat.label} in volo`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 400px"
+                      objectFit="cover"
+                      fallback={
+                        <div style={{
+                          width: '100%', height: '100%',
+                          background: 'linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.03) 100%)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexDirection: 'column', gap: 8,
+                        }}>
+                          <span style={{ fontSize: 48, color: 'rgba(201,168,76,0.35)' }}>{cat.icon}</span>
+                          <span style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(201,168,76,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>
+                            {cat.label.toUpperCase()}
+                          </span>
+                        </div>
+                      }
+                    />
+                    {/* Gradient overlay to blend into card background */}
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: 'linear-gradient(to bottom, transparent, #0F1220)', pointerEvents: 'none' }} />
+                  </div>
+
                   <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.65)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.7, marginBottom: 16 }}>
                     {cat.value === 'turboprop' && 'Ideale per tratte brevi, isole e aeroporti minori. Eccellente comfort per trasferimenti regionali.'}
                     {cat.value === 'light' && 'La scelta perfetta per viaggi business in Europa. Cabina moderna, velocità e puntualità.'}

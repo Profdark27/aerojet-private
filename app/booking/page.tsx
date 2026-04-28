@@ -1,3 +1,4 @@
+// TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
 import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'

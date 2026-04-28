@@ -24,8 +24,5 @@
   ],
   "rewrites": [
     { "source": "/health", "destination": "/api/health" }
-  ],
-  "env": {
-    "NEXTAUTH_URL": "https://your-domain.vercel.app"
-  }
+  ]
 }

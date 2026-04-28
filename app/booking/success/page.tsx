@@ -3,19 +3,47 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 
+interface BookingDetails {
+  confirmationCode: string
+  fromCity?: string
+  toCity?: string
+  depositAmount?: number
+  totalPrice?: number
+  status?: string
+}
+
 function SuccessContent() {
   const params = useSearchParams()
-  const mock = params.get('mock')
-  const aircraft = params.get('aircraft') || 'Il suo jet'
-  const from = params.get('from') || ''
-  const to = params.get('to') || ''
-  const deposit = params.get('deposit')
+  const isMock = params.get('mock') === 'true'
   const sessionId = params.get('session_id')
+  const fromParam = params.get('from') || ''
+  const toParam = params.get('to') || ''
+  const depositParam = params.get('deposit')
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  const [details, setDetails] = useState<BookingDetails | null>(null)
+  const [loading, setLoading] = useState(!!sessionId)
 
-  const confCode = `AJ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+  useEffect(() => {
+    if (!sessionId) return
+    // Fetch booking details by stripeSessionId to get the persistent confirmationCode
+    fetch(`/api/booking/by-session?sessionId=${encodeURIComponent(sessionId)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setDetails(data) })
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [sessionId])
+
+  const confirmationCode = details?.confirmationCode ?? (
+    isMock
+      ? `AJ-DEV${Math.random().toString(36).substring(2, 5).toUpperCase()}`
+      : sessionId
+        ? `AJ-${sessionId.slice(-6).toUpperCase()}`
+        : 'AJ-XXXXXX'
+  )
+
+  const fromCity = details?.fromCity || fromParam || ''
+  const toCity = details?.toCity || toParam || ''
+  const depositAmount = details?.depositAmount ?? (depositParam ? parseInt(depositParam) : 0)
 
   return (
     <div style={{ minHeight: '100vh', background: '#0A0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, position: 'relative', overflow: 'hidden' }}>
@@ -25,14 +53,12 @@ function SuccessContent() {
 
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 560 }}>
 
-        {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', justifyContent: 'center', marginBottom: 56 }}>
           <span style={{ color: '#C9A84C', fontSize: 20 }}>✦</span>
           <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: 6, color: '#F0EDE6', fontFamily: 'Cormorant Garamond, serif' }}>AEROJET</span>
           <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', alignSelf: 'flex-end' }}>PRIVATE</span>
         </Link>
 
-        {/* Success icon */}
         <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', fontSize: 36 }}>
           ✦
         </div>
@@ -42,23 +68,27 @@ function SuccessContent() {
         </h1>
 
         <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.55)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.8, marginBottom: 40 }}>
-          Il suo volo privato {from && to ? <><strong style={{ color: '#F0EDE6' }}>{from} → {to}</strong></> : ''} è stato prenotato con successo.
+          Il suo volo privato {fromCity && toCity
+            ? <><strong style={{ color: '#F0EDE6' }}>{fromCity} → {toCity}</strong></>
+            : 'è stato prenotato con successo.'
+          }
         </p>
 
-        {/* Booking card */}
         <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.2)', padding: '36px', marginBottom: 40, textAlign: 'left' }}>
 
           {/* Confirmation code */}
           <div style={{ textAlign: 'center', marginBottom: 32, paddingBottom: 32, borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
             <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>CODICE PRENOTAZIONE</div>
-            <div style={{ fontSize: 32, letterSpacing: 6, color: '#C9A84C', fontWeight: 300 }}>{confCode}</div>
+            {loading ? (
+              <div style={{ height: 40, background: 'rgba(201,168,76,0.06)', margin: '0 auto', width: 180 }} />
+            ) : (
+              <div style={{ fontSize: 32, letterSpacing: 6, color: '#C9A84C', fontWeight: 300 }}>{confirmationCode}</div>
+            )}
           </div>
 
-          {/* Details */}
           {[
-            ['Velivolo', aircraft],
-            ['Rotta', from && to ? `${from} → ${to}` : 'Confermata'],
-            ['Deposito pagato', deposit ? `€${parseInt(deposit).toLocaleString('it-IT')}` : 'Confermato'],
+            ['Rotta', fromCity && toCity ? `${fromCity} → ${toCity}` : 'Confermata'],
+            ['Deposito pagato', depositAmount > 0 ? `€${depositAmount.toLocaleString('it-IT')}` : 'Confermato'],
             ['Status', 'Confermato ✓'],
             ['Prossimo step', 'Il concierge La contatterà entro 2 ore'],
           ].map(([label, value]) => (
@@ -69,17 +99,17 @@ function SuccessContent() {
           ))}
         </div>
 
-        {mock && (
+        {isMock && (
           <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)', padding: '12px 20px', marginBottom: 32, fontSize: 12, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center' }}>
             Modalità development — nessun pagamento reale effettuato
           </div>
         )}
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/" className="btn-outline-gold" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block' }}>
+          <Link href="/" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>
             TORNA AL SITO
           </Link>
-          <Link href="/dashboard" className="btn-gold" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block' }}>
+          <Link href="/profile" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', background: '#C9A84C', color: '#0A0C14', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500 }}>
             AREA PERSONALE
           </Link>
         </div>

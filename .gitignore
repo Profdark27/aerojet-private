@@ -36,6 +36,13 @@ yarn-error.log*
 # vercel
 .vercel
 
-# typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Custom exclusions
+_cleanup_archive_windows/
+*.zip
+skills/
+obsidian-aerojet/
+prisma/dev.db
+!.env.example

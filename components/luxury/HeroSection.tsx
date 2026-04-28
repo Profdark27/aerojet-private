@@ -2,6 +2,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import CityAutocomplete from './CityAutocomplete'
+import ImageWithFallback from '@/components/ImageWithFallback'
+import { HERO_BG } from '@/lib/imageAssets'
 
 export default function HeroSection() {
   const router = useRouter()
@@ -31,6 +33,20 @@ export default function HeroSection() {
 
   return (
     <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '120px 24px 80px' }}>
+
+      {/* Hero background image — LCP candidate, falls back to dark base */}
+      <ImageWithFallback
+        src={HERO_BG}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        objectFit="cover"
+        style={{ zIndex: 0 }}
+        fallback={<div style={{ position: 'absolute', inset: 0, background: '#050810' }} />}
+      />
+      {/* Dark overlay to ensure text contrast even with photo */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(5,8,16,0.72)', zIndex: 0, pointerEvents: 'none' }} />
 
       {/* Stars */}
       {mounted && stars.map((s, i) => (

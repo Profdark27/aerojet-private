@@ -2,6 +2,8 @@
 import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { POPULAR_ROUTES } from '@/lib/utils'
+import ImageWithFallback from '@/components/ImageWithFallback'
+import { ROUTE_IMAGES } from '@/lib/imageAssets'
 
 export default function RoutesSection() {
   const ref = useRef<HTMLDivElement>(null)
@@ -26,10 +28,35 @@ export default function RoutesSection() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
           {POPULAR_ROUTES.map((route, i) => (
-            <div key={i} style={{ background: '#0A0C14', padding: '28px 32px', transition: 'background 0.2s', cursor: 'pointer' }}
+            <div key={i} style={{ background: '#0A0C14', transition: 'background 0.2s', cursor: 'pointer', overflow: 'hidden' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#0F1220')}
               onMouseLeave={e => (e.currentTarget.style.background = '#0A0C14')}>
 
+              {/* Destination image strip — 96px, falls back to gradient label */}
+              <div style={{ position: 'relative', height: 96, overflow: 'hidden' }}>
+                <ImageWithFallback
+                  src={ROUTE_IMAGES[route.from] ?? ROUTE_IMAGES[route.to]}
+                  alt={`Vista aerea di ${route.from}`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  objectFit="cover"
+                  fallback={
+                    <div style={{
+                      width: '100%', height: '100%',
+                      background: 'linear-gradient(160deg, rgba(201,168,76,0.07) 0%, rgba(5,8,16,0.95) 100%)',
+                      display: 'flex', alignItems: 'flex-end', padding: '10px 16px',
+                    }}>
+                      <span style={{ fontSize: 10, letterSpacing: 4, color: 'rgba(201,168,76,0.35)', fontFamily: 'Helvetica Neue, sans-serif' }}>
+                        {route.from.toUpperCase()}
+                      </span>
+                    </div>
+                  }
+                />
+                {/* Gradient blend into card */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, transparent, #0A0C14)', pointerEvents: 'none' }} />
+              </div>
+
+              <div style={{ padding: '20px 32px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                 <div>
                   <div style={{ fontSize: 22, fontWeight: 500, marginBottom: 4 }}>{route.from}</div>
@@ -48,6 +75,7 @@ export default function RoutesSection() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)'; e.currentTarget.style.color = 'rgba(240,237,230,0.6)' }}>
                   Prenota
                 </Link>
+              </div>
               </div>
             </div>
           ))}

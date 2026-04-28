@@ -39,7 +39,34 @@ La responsabilità dell'operatore aereo verso il passeggero è regolata dalla no
     body: `Il trattamento dei dati personali è regolato dalla nostra Privacy Policy, conforme al GDPR (Regolamento UE 2016/679). I dati raccolti vengono utilizzati esclusivamente per l'erogazione del servizio e non vengono ceduti a terzi, salvo agli operatori aerei per la realizzazione del volo prenotato.`,
   },
   {
-    title: '6. Legge Applicabile',
+    title: '6. Broker Disclaimer',
+    body: `Aerojet Private opera come intermediario/broker indipendente per richieste di voli privati e charter. Aerojet Private non è una compagnia aerea, non opera direttamente aeromobili e non emette autonomamente titoli di trasporto aereo. Le operazioni di volo sono eseguite esclusivamente da operatori aerei autorizzati e certificati secondo la normativa applicabile (inclusi Regolamento (UE) n. 965/2012 e relativi atti di esecuzione EASA).
+
+Ogni disponibilità, quotazione e conferma di volo è soggetta a verifica operativa, documentale, meteorologica, aeroportuale, slot, equipaggio e approvazione dell'operatore certificato. Nessuna richiesta inoltrata tramite la Piattaforma costituisce prenotazione confermata fino alla ricezione di conferma scritta da parte dell'operatore aereo e al perfezionamento del contratto di trasporto.`,
+  },
+  {
+    title: '7. Tariffe e Disclaimer Prezzi',
+    body: `Le tariffe indicate sulla Piattaforma, ove presenti, sono stime indicative e non vincolanti. Il prezzo finale del servizio di charter dipende da: disponibilità dell'aeromobile, tratta e aeroporti selezionati, ore di volo effettive, riposizionamento (ferry flight), tasse aeroportuali e di handling, permessi di sorvolo, catering e servizi accessori, ore di duty time dell'equipaggio, operazioni di de-icing, slot availability e condizioni operative al momento della conferma.
+
+Il Cliente riceverà una quotazione scritta personalizzata prima di qualsiasi impegno economico. Nessun addebito verrà effettuato senza previo accordo scritto.`,
+  },
+  {
+    title: '8. Verifica Operatori',
+    body: `Aerojet Private seleziona e propone operatori sulla base delle informazioni disponibili relative ad autorizzazioni, certificazioni (EASA Part-OPS, FAA, AOC), assicurazioni e idoneità operativa dichiarata. La Piattaforma effettua una verifica preliminare, ma non garantisce la completezza o l'aggiornamento continuo delle certificazioni degli operatori in ogni giurisdizione.
+
+La responsabilità dell'operazione di volo e del trasporto aereo resta interamente in capo al vettore operativo certificato. Il contratto di trasporto viene stipulato direttamente tra il Cliente e l'operatore aereo.`,
+  },
+  {
+    title: '9. Diritti del Passeggero',
+    id: 'passenger-rights',
+    body: `In caso di cancellazione del volo, ritardo prolungato o negato imbarco, i diritti del passeggero dipendono dal tipo di volo (charter vs. linea), dall'aeroporto di partenza e arrivo, dal vettore operativo e dalla normativa applicabile.
+
+Il Regolamento (CE) n. 261/2004 (diritti passeggeri) può applicarsi in determinati casi ai voli charter operati in partenza da aeroporti dell'Unione Europea. L'ente nazionale di controllo designato in Italia è ENAC (Ente Nazionale per l'Aviazione Civile). Per informazioni: enac.gov.it.
+
+Aerojet Private, in qualità di broker, supporta il Cliente nelle comunicazioni con l'operatore, ma la gestione delle compensazioni e degli obblighi verso il passeggero compete al vettore operativo.`,
+  },
+  {
+    title: '10. Legge Applicabile e Foro Competente',
     body: `I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia derivante dall'utilizzo della Piattaforma, il foro competente è quello di Milano, salvo diversa prescrizione inderogabile di legge applicabile al consumatore.`,
   },
 ]
@@ -58,10 +85,10 @@ export default function TermsPage() {
           <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.9, marginBottom: 56 }}>
             Utilizzando la piattaforma Aerojet Private, l&apos;utente accetta i presenti Termini di Servizio nella loro interezza. Si prega di leggerli attentamente prima di procedere con qualsiasi prenotazione.
           </p>
-          {sections.map(({ title, body }) => (
-            <div key={title} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
-              <h2 style={{ fontSize: 22, fontWeight: 400, marginBottom: 20, color: '#F0EDE6' }}>{title}</h2>
-              {body.split('\n\n').map((para, i) => (
+          {sections.map((section) => (
+            <div key={section.title} id={'id' in section ? (section as { id?: string }).id : undefined} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
+              <h2 style={{ fontSize: 22, fontWeight: 400, marginBottom: 20, color: '#F0EDE6' }}>{section.title}</h2>
+              {section.body.split('\n\n').map((para, i) => (
                 <p key={i} style={{ fontSize: 15, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.85, marginBottom: 16 }}>{para}</p>
               ))}
             </div>

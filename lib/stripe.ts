@@ -5,7 +5,7 @@ let _stripe: Stripe | null = null
 export function getStripe(): Stripe {
   if (!_stripe) {
     const key = process.env.STRIPE_SECRET_KEY || 'sk_test_00000000000000000000000000000000'
-    _stripe = new Stripe(key, { apiVersion: '2024-12-18.acacia' })
+    _stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' })
   }
   return _stripe
 }

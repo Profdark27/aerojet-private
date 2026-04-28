@@ -37,27 +37,38 @@ model Operator {
 
 model Booking {
   id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
   operatorId    String?
   operator      Operator? @relation(fields: [operatorId], references: [id])
-  fromICAO      String
-  toICAO        String
+  fromICAO      String?
+  toICAO        String?
   fromCity      String
   toCity        String
   departureDate DateTime
   returnDate    DateTime?
-  pax           Int
-  jetCategory   String
+  pax           Int      @default(1)
+  jetCategory   String?
   status        String   @default("PENDING")
   totalPrice    Float?
   commission    Float?
   currency      String   @default("EUR")
   avionodeId    String?
   notes         String?
+
+  // Stripe deposit
+  stripeSessionId   String?  @unique
+  depositAmount     Float    @default(0)
+  depositPaid       Boolean  @default(false)
+  depositPaidAt     DateTime?
+  confirmationCode  String?  @unique
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   quotes        Quote[]
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Quote {
@@ -90,9 +101,54 @@ model Inquiry {
   budget      String?
   message     String
   flightType  String   @default("oneway")
-  status      String   @default("NEW")
+
+  // Pipeline
+  status          String  @default("NEW")
+  pipelineStatus  String  @default("NEW") // NEW | CONTACTED | QUOTING | QUOTED | WON | LOST
+
+  // Lead scoring
+  leadScore         Int     @default(0)
+  leadTier          String  @default("UNQUALIFIED") // VIP | HIGH | MEDIUM | LOW | UNQUALIFIED
+  budgetNumeric     Float   @default(0)
+  urgency           Boolean @default(false)
+  sameDay           Boolean @default(false)
+  membershipInterest Boolean @default(false)
+  suggestedAction   String  @default("")
+
+  // Auto-decision engine
+  nextAction    String  @default("") // CALL_NOW | WHATSAPP_NOW | EMAIL_ONLY | LOW_PRIORITY
+  urgencyFlag   Boolean @default(false) // sameDay OR date < 48h
+
+  // Broker economics
+  operatorCostEstimate Float @default(0)
+  clientQuoteEstimate  Float @default(0)
+  suggestedQuote       Float @default(0)  // min(budget, operatorCost × 1.25)
+  optimizedQuote       Float @default(0)  // tier-based: VIP × 1.35, HIGH × 1.25, MEDIUM × 1.15
+  optimizedMargin      Float @default(0)  // optimizedQuote - operatorCostEstimate
+  marginEstimate       Float @default(0)
+  marginPercent        Float @default(0)
+  revenuePotential     Float @default(0)  // = budgetNumeric
+  marginRealized       Float @default(0)  // popolato su WON
+
+  // Broker internal
+  internalNotes   String?
+  nextFollowUpAt  DateTime?   // +30 min
+  followUp2hAt    DateTime?   // +2 ore
+  followUp24hAt   DateTime?   // +24 ore
+
+  // Stripe deposit
+  stripeSessionId  String?  @unique
+  depositAmount    Float    @default(0)
+  depositPaid      Boolean  @default(false)
+  depositPaidAt    DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([leadScore])
+  @@index([pipelineStatus])
+  @@index([createdAt])
+  @@index([leadTier])
 }
 
 model ChatSession {

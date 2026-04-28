@@ -1,5 +1,7 @@
 'use client'
 import { useRef, useEffect, useState } from 'react'
+import ImageWithFallback from '@/components/ImageWithFallback'
+import { OPERATOR_IMAGES } from '@/lib/imageAssets'
 
 const operators = [
   { name: 'VistaJet', logo: 'VJ', website: 'https://www.vistajet.com', fleet: '120+ aircraft', routes: 'Global', rating: 4.9, color: '#C41E3A', specialty: 'Ultra-long range & heavy jets', cert: 'EASA / FAA / CAAC' },
@@ -52,8 +54,19 @@ export default function OperatorsSection() {
               onMouseEnter={e => (e.currentTarget.style.background = '#0A0C14')}
               onMouseLeave={e => (e.currentTarget.style.background = '#050810')}>
 
-              <div style={{ width: 56, height: 56, borderRadius: 4, background: op.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: '#fff', flexShrink: 0, letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif' }}>
-                {op.logo}
+              <div style={{ position: 'relative', width: 56, height: 56, borderRadius: 4, flexShrink: 0, overflow: 'hidden' }}>
+                <ImageWithFallback
+                  src={OPERATOR_IMAGES[op.name]}
+                  alt={`${op.name} logo`}
+                  fill
+                  sizes="56px"
+                  objectFit="contain"
+                  fallback={
+                    <div style={{ width: '100%', height: '100%', background: op.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif' }}>
+                      {op.logo}
+                    </div>
+                  }
+                />
               </div>
 
               <div style={{ flex: 1, minWidth: 180 }}>
