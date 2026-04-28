@@ -28,24 +28,21 @@ function buildSystemPrompt(context: ChatContext): string {
     ? `\n[CONTESTO SESSIONE — usa queste info ma non citarle esplicitamente]\n${ctxLines.join('\n')}\n`
     : ''
 
-  return `Sei Marco, il concierge virtuale d'élite di Aerojet Private.
+  return `Sei Marco, Senior Aviation Concierge di Aerojet Private.
 ${ctxBlock}
-IDENTITÀ: Formale ed elegante. Usi "Lei". Italiano (inglese se il cliente scrive in inglese). Max 3-4 frasi per risposta. Non inventare mai prezzi precisi — indica sempre fasce. Aerojet è broker, non operatore diretto.
+IDENTITÀ: Tono luxury, autorevole e diretto. Usa il "Lei". Massimo 2-3 frasi brevi per risposta. Sii orientato alla chiusura e all'azione. Non usare elenchi prolissi.
 
-FLOTTA (fasce indicative):
-- Turboprop (PC-12, King Air 350): <1.500km · 6-9 pax · €2.500-4.000/h
-- Light Jet (Phenom 300, CJ4): <3.000km · 4-8 pax · €3.800-5.500/h
-- Midsize (Challenger 350, Citation XLS): <5.500km · 7-9 pax · €5.500-8.000/h
-- Super Midsize (Citation Latitude, Falcon 2000): <7.000km · 8-10 pax · €7.000-10.000/h
-- Heavy (Falcon 7X, Global 6000): <10.000km · 10-16 pax · €9.500-14.000/h
-- Ultra-Long Range (Global 7500, G700): 13.000+km · 12-19 pax · €14.000+/h
+FLOTTA E STIME ORARIE (Non inventare, usa queste fasce):
+- Light Jet (es. Phenom 300): <3.000km · 4-8 pax · €3.800-5.500/h
+- Midsize / Super Midsize: <7.000km · 7-10 pax · €5.500-10.000/h
+- Heavy / Ultra-Long Range: >7.000km · 10-16 pax · €10.000-14.000+/h
 
-PROTOCOLLO RACCOLTA DATI:
-1. Raccogli: partenza, destinazione, data, pax, budget (facoltativo)
-2. Proponi 2-3 categorie jet con fascia oraria e stima totale
-3. Chiedi: "Desidera che proceda con la richiesta formale?"
-4. Prima di emettere il blocco dati, assicurati di avere nome e email del cliente. Se mancano, chiedili con eleganza.
-5. Sul deposito: se chiesto, informare che si richiede il 30% per confermare la prenotazione.
+PROTOCOLLO DI VENDITA:
+1. Individua rotta e data.
+2. Suggerisci la categoria più adatta e una stima rapida.
+3. CHIUDI SEMPRE con una Call to Action chiara: "Desidera che proceda subito con la richiesta formale per bloccare l'aeromobile?"
+4. Se il cliente conferma, assicurati di avere Nome ed Email. Se mancano, chiedili per finalizzare.
+5. Deposito richiesto per blocco: 30%.
 
 QUANDO IL CLIENTE CONFERMA E HAI NOME + EMAIL — emetti OBBLIGATORIAMENTE:
 ---INQUIRY_DATA---
@@ -138,9 +135,9 @@ export async function POST(req: Request) {
 
   // Dev mode: no API key
   if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'placeholder') {
-    const mockText = 'Mi scuso, il servizio di intelligenza artificiale non è ancora configurato in questo ambiente di sviluppo. La funzionalità sarà disponibile con la chiave API configurata.'
+    const fallbackText = "Benvenuto in Aerojet Private. Per garantirle la priorità assoluta, mi indichi la sua destinazione, la data di partenza e un suo recapito (email o telefono). Il nostro team Flight Ops la contatterà entro pochi minuti con una quotazione su misura."
     return new Response(
-      `data: ${JSON.stringify({ delta: { text: mockText } })}\n\ndata: ${JSON.stringify({ done: true })}\n\n`,
+      `data: ${JSON.stringify({ delta: { text: fallbackText } })}\n\ndata: ${JSON.stringify({ done: true })}\n\n`,
       { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } }
     )
   }
@@ -212,8 +209,10 @@ export async function POST(req: Request) {
         controller.close()
       } catch (err) {
         console.error('[CHAT API ERROR]:', err)
-        const message = err instanceof Error ? err.message : 'Errore sconosciuto'
-        send(controller, { error: message })
+        // Fallback silenzioso se Anthropic va in timeout o ha credito insufficiente
+        const fallbackText = "La ringrazio. Per offrirle un servizio d'eccellenza immediato, la invito a lasciarmi la rotta desiderata, la data e la sua email. Il mio team operativo le invierà la quotazione esatta nel minor tempo possibile."
+        send(controller, { delta: { text: fallbackText } })
+        send(controller, { done: true })
         controller.close()
       }
     },
