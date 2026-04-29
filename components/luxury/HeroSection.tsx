@@ -116,7 +116,7 @@ export default function HeroSection() {
               </select>
             </div>
 
-            <button onClick={handleSearch} className="btn-gold" style={{ padding: '16px 32px', whiteSpace: 'nowrap', marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8, transition: 'box-shadow 0.2s', boxShadow: '0 0 0 rgba(201,168,76,0)' }} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(201,168,76,0.4)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 rgba(201,168,76,0)'}>
+            <button onClick={handleSearch} className="btn-gold" style={{ padding: '16px 32px', whiteSpace: 'nowrap', marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8, transition: 'box-shadow 0.2s', background: '#C9A84C', color: '#0A0C14', boxShadow: '0 0 0 rgba(201,168,76,0)' }} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(201,168,76,0.4)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 rgba(201,168,76,0)'}>
               VERIFICA DISPONIBILITÀ E PREZZI ✦
             </button>
           </div>

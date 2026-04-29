@@ -217,10 +217,54 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
         {/* CTA */}
         {!alreadyPaid && !isExpired && (
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            <PayButton quoteId={quote.id} depositAmount={depositAmount} />
-            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 20, letterSpacing: 0.5, marginBottom: 0, lineHeight: 1.6, maxWidth: 440, margin: '20px auto 0' }}>
-              Il deposito blocca la priorità sul velivolo ed è <strong style={{ color: '#F0EDE6', fontWeight: 500 }}>totalmente rimborsabile</strong> in caso di mancata conferma operativa. Il concierge la contatterà entro 2 ore con i dettagli finali.
+            {/* What you’re buying */}
+            <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', padding: '14px 20px', marginBottom: 12, borderRadius: 0 }}>
+              <p style={{ color: '#C9A84C', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
+                Questo preventivo include:<br/>
+                • Velivolo privato dedicato (non condiviso)<br/>
+                • Partenza da terminal privato (zero code)<br/>
+                • Orario flessibile su richiesta<br/>
+                • Assistenza concierge completa
+              </p>
+            </div>
+            {/* Implicit comparison */}
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', margin: '8px 0' }}>
+              Equivalente a:<br/>
+              • 4–6 ore risparmiate<br/>
+              • zero attese aeroportuali<br/>
+              • totale privacy e comfort
             </p>
+            {/* Key phrase */}
+            <p style={{ fontSize: 12, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', margin: '8px 0' }}>
+              Scegliendo questo volo, sta acquistando tempo e controllo, non solo un trasporto.
+            </p>
+            {/* Trust & reassurance block */}
+            <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', padding: '14px 20px', marginBottom: 12, borderRadius: 0 }}>
+              <p style={{ color: '#C9A84C', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
+                Il deposito blocca la disponibilità del velivolo.<br/>Se l’operatività non viene confermata, l’importo è completamente rimborsato.<br/>Un Aviation Advisor la contatterà entro 2 ore.
+              </p>
+            </div>
+            {/* Single primary CTA */}
+            <button onClick={() => { const btn = document.querySelector('#pay-button') as HTMLElement | null; if (btn) btn.click(); }}
+              style={{ padding: '16px 32px', background: '#C9A84C', color: '#0A0C14', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 8, borderRadius: 4, fontFamily: 'Helvetica Neue, sans-serif' }}>
+              CONFERMA E BLOCCA IL JET — €{depositAmount.toLocaleString('it-IT')}
+            </button>
+            {/* Social proof */}
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', margin: '8px 0' }}>
+              Oltre 200 voli gestiti · Operatori certificati EASA/FAA · Pagamento sicuro Stripe
+            </p>
+            {/* Anxiety reduction */}
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', margin: '4px 0' }}>
+              Nessun addebito finale senza conferma operativa completa
+            </p>
+            {/* Micro‑urgency */}
+            {new Date(quote.validUntil).getTime() - Date.now() < 48 * 60 * 60 * 1000 && (
+              <p style={{ fontSize: 12, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', margin: '4px 0' }}>
+                Disponibilità limitata per queste date
+              </p>
+            )}
+            {/* Hidden original PayButton for functionality */}
+            <div style={{ display: 'none' }}><PayButton quoteId={quote.id} depositAmount={depositAmount} /></div>
           </div>
         )}
 

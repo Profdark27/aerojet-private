@@ -287,7 +287,7 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
           if (newOpen) trackEvent('chat_opened');
         }}
         title="Parla con Marco"
-        style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 200, width: 60, height: 60, borderRadius: '50%', background: '#C9A84C', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(201,168,76,0.35)', transition: 'transform 0.2s' }}
+        style={{ position: 'fixed', bottom: 58, right: 28, zIndex: 200, width: 60, height: 60, borderRadius: '50%', background: '#C9A84C', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(201,168,76,0.35)', transition: 'transform 0.2s' }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)' }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}>
         {open ? '✕' : '✦'}

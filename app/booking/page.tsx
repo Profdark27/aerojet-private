@@ -322,11 +322,6 @@ function BookingWizard() {
                 <span style={{ color: '#C9A84C' }}>{formatCurrency(total)}</span>
               </div>
             </div>
-
-            <div style={{ marginTop: 20, padding: '12px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.15)', fontSize: 12, color: 'rgba(34,197,94,0.8)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center', lineHeight: 1.6 }}>
-              ✓ Commissione broker<br />
-              <strong style={{ color: '#4ade80' }}>{formatCurrency(commission)}</strong>
-            </div>
           </div>
         </div>
       </div>

@@ -138,8 +138,7 @@ function SearchResults() {
                         <div style={{ fontSize: 16 }}>{ac.speed} km/h</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>COMMISSIONE BROKER</div>
-                        <div style={{ fontSize: 16, color: '#22c55e' }}>{formatCurrency(calcCommission(ac.price))}</div>
+            {/* Commissione broker hidden */}
                       </div>
                       <div>
                         <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>DOTAZIONI</div>
