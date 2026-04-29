@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/luxury/Navbar'
 import { formatCurrency } from '@/lib/utils'
 import { signOut } from 'next-auth/react'
-import { ROUTE_IMAGES, FLEET_IMAGES } from '@/lib/imageAssets'
+import { ROUTE_IMAGES, FLEET_IMAGES, getSpecificJetImage } from '@/lib/imageAssets'
 import ImageWithFallback from '@/components/ImageWithFallback'
 
 function routeImg(city: string | null): string | undefined {
@@ -172,7 +172,23 @@ export default function ProfileClient({
                               onMouseLeave={e => (e.currentTarget.style.background = '#0A0C14')}>
 
                               {thumb && (
-                                <div style={{ position: 'relative', width: 72, height: 44, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(201,168,76,0.1)' }}>
+                                <div 
+                                  style={{ position: 'relative', width: 72, height: 44, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(201,168,76,0.1)', borderRadius: 2 }}
+                                  onMouseEnter={e => { 
+                                    const image = e.currentTarget.querySelector('img');
+                                    if (image) {
+                                      image.style.transform = 'scale(1.05)'; 
+                                      image.style.filter = 'brightness(1.1)'; 
+                                    }
+                                  }}
+                                  onMouseLeave={e => { 
+                                    const image = e.currentTarget.querySelector('img');
+                                    if (image) {
+                                      image.style.transform = 'scale(1)'; 
+                                      image.style.filter = 'brightness(1)'; 
+                                    }
+                                  }}
+                                >
                                   <ImageWithFallback src={thumb} alt={bk.toCity} fill sizes="72px" objectFit="cover" fallback={<></>} />
                                 </div>
                               )}

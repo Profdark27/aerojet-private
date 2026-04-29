@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { DEPOSIT_RATE } from '@/lib/stripe'
-import { ROUTE_IMAGES, FLEET_IMAGES } from '@/lib/imageAssets'
+import { ROUTE_IMAGES, FLEET_IMAGES, getSpecificJetImage } from '@/lib/imageAssets'
 import ImageWithFallback from '@/components/ImageWithFallback'
 import PayButton from './PayButton'
 
@@ -69,7 +69,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
   const pax = inquiry.pax || 1
 
   const destImage = findRouteImage(toCity) ?? findRouteImage(fromCity) ?? null
-  const fleetImage = getFleetImage(quote.aircraftModel)
+  const fleetImage = getSpecificJetImage(quote.aircraftModel) ?? getFleetImage(quote.aircraftModel)
 
   return (
     <div style={{ minHeight: '100vh', background: '#0A0C14', color: '#F0EDE6', fontFamily: 'Georgia, serif', position: 'relative', overflow: 'hidden' }}>
@@ -142,12 +142,12 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>DETTAGLI VOLO</div>
             {fleetImage && (
-              <div style={{ position: 'relative', width: 80, height: 50, overflow: 'hidden', flexShrink: 0 }}>
+              <div style={{ position: 'relative', width: 100, height: 60, overflow: 'hidden', flexShrink: 0, borderRadius: 4 }}>
                 <ImageWithFallback
                   src={fleetImage}
                   alt={quote.aircraftModel}
                   fill
-                  sizes="80px"
+                  sizes="100px"
                   objectFit="cover"
                   fallback={<></>}
                 />
@@ -208,7 +208,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
 
         {/* CTA */}
         {!alreadyPaid && !isExpired && (
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <PayButton quoteId={quote.id} depositAmount={depositAmount} />
             <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, letterSpacing: 0.5, marginBottom: 0 }}>
               Aeromobile riservato temporaneamente · Pagamento sicuro Stripe
@@ -232,6 +232,48 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
             ))}
           </div>
         )}
+
+        {/* Nuova Sezione: ESPERIENZA A BORDO */}
+        <div style={{ marginTop: 56 }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20, textAlign: 'center' }}>
+            ESPERIENZA A BORDO
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            {[
+              { src: '/images/cabin-lounge.webp', alt: 'Interni Cabina', label: 'COMFORT ASSOLUTO' },
+              { src: '/images/service-catering.webp', alt: 'Catering Premium', label: 'CATERING STELLATO' },
+              { src: '/images/service-champagne.webp', alt: 'Champagne', label: 'WINE & CHAMPAGNE' },
+              { src: '/images/boarding-luxury.webp', alt: 'Imbarco Veloce', label: 'VIP BOARDING' }
+            ].map((img, i) => (
+              <div 
+                key={i} 
+                className="group" 
+                style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: '#0A0C14' }}
+                onMouseEnter={e => {
+                  const image = e.currentTarget.querySelector('img');
+                  if (image) image.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={e => {
+                  const image = e.currentTarget.querySelector('img');
+                  if (image) image.style.transform = 'scale(1)';
+                }}
+              >
+                <ImageWithFallback
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 320px"
+                  objectFit="cover"
+                  fallback={<div style={{ width: '100%', height: '100%', background: 'rgba(201,168,76,0.04)' }} />}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(10,12,20,0.9) 100%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: 12, left: 16, fontSize: 9, letterSpacing: 2, color: '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif', pointerEvents: 'none' }}>
+                  {img.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {alreadyPaid && (
           <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.15)' }}>

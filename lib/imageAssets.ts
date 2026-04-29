@@ -85,3 +85,44 @@ export const OPERATOR_IMAGES: Record<string, string> = {
 
 export const HERO_BG      = '/images/hero-bg.jpg'
 export const HERO_INTERIOR = '/images/hero-interior.jpg'
+
+export const JET_IMAGES: Record<string, string> = {
+  'phenom 300': '/images/jet-phenom-300.webp',
+  'citation xls': '/images/jet-citation-xls.webp',
+  'challenger 350': '/images/jet-challenger-350.webp',
+  'falcon 2000': '/images/jet-falcon-2000.webp',
+  'falcon 7x': '/images/jet-falcon-7x.webp',
+  'global 6000': '/images/jet-global-6000.webp',
+  'g650': '/images/jet-gulfstream-g650.webp',
+  'g700': '/images/jet-gulfstream-g700.webp',
+}
+
+export const CABIN_IMAGES = {
+  wide: '/images/cabin-wide.webp',
+  night: '/images/cabin-night.webp',
+  dining: '/images/cabin-dining.webp',
+  lounge: '/images/cabin-lounge.webp',
+}
+
+export const SERVICE_IMAGES = {
+  catering: '/images/service-catering.webp',
+  champagne: '/images/service-champagne.webp',
+  meal: '/images/service-meal.webp',
+  attendant: '/images/service-flight-attendant.webp',
+}
+
+export const TRANSFER_IMAGES = {
+  blackCar: '/images/transfer-black-car.webp',
+  driver: '/images/transfer-driver.webp',
+  terminal: '/images/terminal-private.webp',
+  boarding: '/images/boarding-luxury.webp',
+}
+
+export function getSpecificJetImage(model: string): string | null {
+  if (!model) return null;
+  const m = model.toLowerCase();
+  for (const [key, path] of Object.entries(JET_IMAGES)) {
+    if (m.includes(key)) return path;
+  }
+  return null;
+}
