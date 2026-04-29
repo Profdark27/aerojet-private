@@ -10,6 +10,8 @@ interface QuoteBuilderProps {
     toCity?: string
     budget?: string
     depositPaid?: boolean
+    leadTier?: string
+    leadScore?: number
   }
   onClose: () => void
   onSave: (quoteData: any) => void
@@ -30,12 +32,43 @@ export default function QuoteBuilder({ inquiry, onClose, onSave }: QuoteBuilderP
   const [client, setClient] = useState(inquiry.name)
   const [jet, setJet] = useState(jets[1]) // Default to Light Jet
   const [hours, setHours] = useState(2)
-  const [commRate, setCommRate] = useState(12)
   const [isSaving, setIsSaving] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const totalPrice = Math.round(jet.basePrice * hours)
-  const commission = calcCommission(totalPrice, commRate / 100)
+  const [suggestedPrice, setSuggestedPrice] = useState(0)
+  const [margin, setMargin] = useState(0)
+  const [confidence, setConfidence] = useState(0)
+  const [isCalculating, setIsCalculating] = useState(false)
+
+  // Fetch dynamic price from server-side pricing engine
+  useEffect(() => {
+    async function fetchPrice() {
+      setIsCalculating(true)
+      try {
+        const res = await fetch('/api/quotes/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            baseCostPerHour: jet.basePrice,
+            flightHours: hours,
+            leadTier: inquiry.leadTier,
+            leadScore: inquiry.leadScore
+          })
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setSuggestedPrice(data.suggestedPrice)
+          setMargin(data.margin)
+          setConfidence(data.confidence)
+        }
+      } catch (err) {
+        console.error('Failed to calculate price', err)
+      } finally {
+        setIsCalculating(false)
+      }
+    }
+    fetchPrice()
+  }, [jet.basePrice, hours, inquiry.leadTier, inquiry.leadScore])
 
   const handleSave = async () => {
     if (!client || !from || !to) {
@@ -54,9 +87,8 @@ export default function QuoteBuilder({ inquiry, onClose, onSave }: QuoteBuilderP
         to,
         jet,
         hours,
-        commRate,
-        totalPrice,
-        commission
+        totalPrice: suggestedPrice,
+        commission: margin
       }
 
       const res = await fetch('/api/quotes', {
@@ -135,9 +167,17 @@ export default function QuoteBuilder({ inquiry, onClose, onSave }: QuoteBuilderP
           </div>
 
           <div>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 10 }}>COMMISSIONE: {commRate}%</div>
-            <input type="range" min={8} max={18} step={1} value={commRate} onChange={e => setCommRate(parseInt(e.target.value))}
-              style={{ width: '100%', accentColor: '#C9A84C', marginTop: 8 }} />
+            <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 10 }}>INTELLIGENZA PRICING</div>
+            <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)', padding: '12px 16px', fontSize: 12, fontFamily: 'Helvetica Neue, sans-serif' }}>
+              {isCalculating ? (
+                <span style={{ color: 'rgba(240,237,230,0.4)' }}>Calcolo AI in corso...</span>
+              ) : (
+                <>
+                  <div style={{ color: '#F0EDE6', marginBottom: 4 }}>Tier: {inquiry.leadTier || 'LOW'} · Confidence: {confidence}%</div>
+                  <div style={{ color: 'rgba(240,237,230,0.5)', lineHeight: 1.4 }}>Markup e buffer applicati dinamicamente.</div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -147,8 +187,8 @@ export default function QuoteBuilder({ inquiry, onClose, onSave }: QuoteBuilderP
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 20 }}>
             <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>ROTTA</div><div style={{ fontSize: 16 }}>{from || '—'} → {to || '—'}</div></div>
             <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>VELIVOLO</div><div style={{ fontSize: 16 }}>{jet.model}</div></div>
-            <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>PREZZO CHARTER</div><div style={{ fontSize: 20, color: '#C9A84C' }}>{formatCurrency(totalPrice)}</div></div>
-            <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>TUA COMMISSIONE</div><div style={{ fontSize: 20, color: '#4ade80' }}>{formatCurrency(commission)}</div></div>
+            <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>PREZZO CHARTER</div><div style={{ fontSize: 20, color: '#C9A84C' }}>{isCalculating ? '...' : formatCurrency(suggestedPrice)}</div></div>
+            <div><div style={{ fontSize: 10, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, marginBottom: 6 }}>TUA COMMISSIONE</div><div style={{ fontSize: 20, color: '#4ade80' }}>{isCalculating ? '...' : formatCurrency(margin)}</div></div>
           </div>
         </div>
 
