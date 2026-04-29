@@ -382,6 +382,34 @@ export default function RequestsPage() {
               )}
             </div>
 
+            {/* Checklist Operativa */}
+            {selectedReq.depositPaid && (
+              <div style={{ marginTop: 20, padding: '20px', background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>CHECKLIST OPERATIVA</div>
+                  <div style={{ fontSize: 10, padding: '2px 6px', background: '#C9A84C', color: '#0A0C14', fontWeight: 600, letterSpacing: 1 }}>IN CORSO</div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    'Cliente contattato entro 2h',
+                    'Operatore e Jet confermati',
+                    'Slot / FBO confermati',
+                    'Catering definito',
+                    'Transfer organizzato (se rich.)',
+                    'Briefing finale inviato',
+                  ].map(step => (
+                    <label key={step} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                      <input type="checkbox" style={{ accentColor: '#C9A84C', width: 14, height: 14 }} />
+                      <span style={{ fontSize: 13, color: 'rgba(240,237,230,0.7)', fontFamily: 'Helvetica Neue, sans-serif' }}>{step}</span>
+                    </label>
+                  ))}
+                </div>
+                <div style={{ marginTop: 12, fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', fontStyle: 'italic' }}>
+                  Nota: questa è una checklist visuale. Usa lo status della pipeline per marcare come "Vinta".
+                </div>
+              </div>
+            )}
+
             {/* CTA */}
             <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
               <button

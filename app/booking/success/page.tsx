@@ -92,7 +92,7 @@ function SuccessContent() {
           {[
             ['Rotta', fromCity && toCity ? `${fromCity} → ${toCity}` : 'Confermata'],
             ['Deposito pagato', depositAmount > 0 ? `€${depositAmount.toLocaleString('it-IT')}` : 'Confermato'],
-            ['Status', 'Confermato ✓'],
+            ['Status', 'Operativo in corso'],
             ['Prossimo step', 'Il concierge La contatterà entro 2 ore'],
           ].map(([label, value]) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(201,168,76,0.06)' }}>
@@ -100,6 +100,12 @@ function SuccessContent() {
               <span style={{ fontSize: 14, color: label === 'Status' ? '#4ade80' : '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif' }}>{value}</span>
             </div>
           ))}
+
+          <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(201,168,76,0.1)' }}>
+            <p style={{ color: 'rgba(240,237,230,0.5)', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.6, margin: 0 }}>
+              Il team Aerojet sta finalizzando i dettagli operativi con l'operatore, FBO e servizi a bordo. Riceverà un aggiornamento completo e il contratto finale non appena la verifica sarà conclusa.
+            </p>
+          </div>
         </div>
 
         {isMock && (

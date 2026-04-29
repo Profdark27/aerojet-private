@@ -218,8 +218,8 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
         {!alreadyPaid && !isExpired && (
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <PayButton quoteId={quote.id} depositAmount={depositAmount} />
-            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, letterSpacing: 0.5, marginBottom: 0 }}>
-              Aeromobile riservato temporaneamente · Pagamento sicuro Stripe
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, letterSpacing: 0.5, marginBottom: 0, lineHeight: 1.6, maxWidth: 400, margin: '16px auto 0' }}>
+              Il deposito conferma la priorità sulla disponibilità proposta. Il nostro concierge completerà la verifica operativa con l'operatore e la contatterà entro 2 ore.
             </p>
           </div>
         )}
