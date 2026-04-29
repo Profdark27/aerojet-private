@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import CityAutocomplete from './CityAutocomplete'
 import ImageWithFallback from '@/components/ImageWithFallback'
 import { HERO_BG } from '@/lib/imageAssets'
+import { trackEvent } from '@/lib/tracking'
 
 export default function HeroSection() {
   const router = useRouter()
@@ -27,6 +28,7 @@ export default function HeroSection() {
   })), [])
 
   const handleSearch = () => {
+    trackEvent('hero_search_click', { from, to, pax, date })
     const params = new URLSearchParams({ from, to, date, pax, fromICAO, toICAO })
     router.push(`/search?${params.toString()}`)
   }

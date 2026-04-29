@@ -201,9 +201,17 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
 
         {/* Social proof */}
         {!alreadyPaid && !isExpired && (
-          <p style={{ fontSize: 11, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center', letterSpacing: 2, marginBottom: 16, margin: '0 0 16px' }}>
-            PAGAMENTO SICURO · RISPOSTA GARANTITA ENTRO 2H · OLTRE 200 VOLI GESTITI
-          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px 24px', marginBottom: 28 }}>
+            {[
+              '✓ Pagamento Protetto Stripe',
+              '✓ Operatori EASA / FAA',
+              '✓ Concierge 24/7'
+            ].map(trust => (
+              <div key={trust} style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
+                {trust}
+              </div>
+            ))}
+          </div>
         )}
 
         {/* CTA */}

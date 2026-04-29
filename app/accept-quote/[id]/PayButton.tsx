@@ -1,11 +1,17 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { trackEvent } from '@/lib/tracking'
 
 export default function PayButton({ quoteId, depositAmount }: { quoteId: string; depositAmount: number }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    trackEvent('quote_viewed', { quoteId })
+  }, [quoteId])
+
   async function handlePay() {
+    trackEvent('quote_payment_clicked', { quoteId, depositAmount })
     setLoading(true)
     setError(null)
     try {

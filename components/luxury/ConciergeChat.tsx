@@ -1,6 +1,7 @@
 // TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { trackEvent } from '@/lib/tracking'
 
 interface ChatContext {
   from?: string
@@ -220,6 +221,7 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
             if (parsed.inquiryCreated) {
               const card: InquiryCard = parsed.inquiryCreated
               setMessages(prev => [...prev, { role: 'card', content: '', card }])
+              trackEvent('inquiry_sent', { id: card.id, from: card.from, to: card.to })
             }
 
             if (parsed.error) {
@@ -279,7 +281,11 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
     <>
       {/* Floating Button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          const newOpen = !open;
+          setOpen(newOpen);
+          if (newOpen) trackEvent('chat_opened');
+        }}
         title="Parla con Marco"
         style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 200, width: 60, height: 60, borderRadius: '50%', background: '#C9A84C', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(201,168,76,0.35)', transition: 'transform 0.2s' }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)' }}
