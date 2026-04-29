@@ -73,6 +73,44 @@ function CopyLinkButton({ quoteId }: { quoteId: string }) {
   )
 }
 
+// ── Reminder Actions Component ──────────────────────────────
+function ReminderActions({ q }: { q: QuoteRow }) {
+  const [variant, setVariant] = useState<'soft' | 'urgent' | 'vip'>('soft')
+
+  const url = `${window.location.origin}/accept-quote/${q.id}`
+  const subject = `Aggiornamento Preventivo — ${q.fromCity} → ${q.toCity}`
+
+  let body = ''
+  if (variant === 'soft') {
+    body = `Gentile ${q.client},\n\nLe scrivo per confermarle che il velivolo per la tratta ${q.fromCity} → ${q.toCity} è attualmente ancora disponibile.\n\nIl deposito resta totalmente rimborsabile qualora l'operatività finale non venisse confermata. Può procedere a bloccare il jet in modo sicuro direttamente da questo link:\n${url}\n\nResto a sua disposizione per qualsiasi necessità.`
+  } else if (variant === 'urgent') {
+    body = `Gentile ${q.client},\n\nLe comunico che stiamo ricevendo altre richieste per le stesse date sulla tratta ${q.fromCity} → ${q.toCity}. La disponibilità del velivolo è attualmente in verifica prioritaria.\n\nPer assicurarsi questo jet, la invito a confermare il deposito (100% rimborsabile in caso di mancata conferma operativa) tramite il seguente link:\n${url}\n\nCordiali saluti.`
+  } else if (variant === 'vip') {
+    body = `Gentile ${q.client},\n\nIl suo Aviation Advisor dedicato la contatta in merito al volo ${q.fromCity} → ${q.toCity}.\nAbbiamo opzionato il velivolo con l'operatore e stiamo attendendo la sua conferma. Come sempre, il deposito è interamente protetto e rimborsabile in caso di variazioni operative.\n\nLa invito a confermare l'itinerario a questo link riservato:\n${url}\n\nA presto.`
+  }
+
+  return (
+    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }} onClick={e => e.stopPropagation()}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button onClick={() => setVariant('soft')} style={{ background: variant === 'soft' ? 'rgba(201,168,76,0.15)' : 'transparent', border: '1px solid rgba(201,168,76,0.3)', color: variant === 'soft' ? '#C9A84C' : 'rgba(240,237,230,0.4)', fontSize: 9, padding: '3px 8px', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>SOFT</button>
+        <button onClick={() => setVariant('urgent')} style={{ background: variant === 'urgent' ? 'rgba(248,113,113,0.15)' : 'transparent', border: '1px solid rgba(248,113,113,0.3)', color: variant === 'urgent' ? '#f87171' : 'rgba(240,237,230,0.4)', fontSize: 9, padding: '3px 8px', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>URGENT</button>
+        <button onClick={() => setVariant('vip')} style={{ background: variant === 'vip' ? 'rgba(192,132,252,0.15)' : 'transparent', border: '1px solid rgba(192,132,252,0.3)', color: variant === 'vip' ? '#c084fc' : 'rgba(240,237,230,0.4)', fontSize: 9, padding: '3px 8px', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>VIP</button>
+      </div>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <a href={`mailto:${q.clientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}
+          style={{ fontSize: 10, letterSpacing: 1, color: '#60a5fa', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
+          ✉ EMAIL
+        </a>
+        <a href={`https://wa.me/?text=${encodeURIComponent(body)}`}
+          target="_blank" rel="noopener noreferrer"
+          style={{ fontSize: 10, letterSpacing: 1, color: '#4ade80', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
+          💬 WHATSAPP
+        </a>
+      </div>
+    </div>
+  )
+}
+
 // ── Modal per scegliere una Inquiry ─────────────────────────
 function InquiryPicker({
   onSelect,
@@ -340,21 +378,7 @@ export default function QuotesPage() {
                             APRI ↗
                           </a>
                         </div>
-                        {q.status === 'PENDING' && (
-                          <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
-                            <a href={`mailto:${q.clientEmail}?subject=${encodeURIComponent(`Promemoria Preventivo — ${q.fromCity} → ${q.toCity}`)}&body=${encodeURIComponent(`Buongiorno, il preventivo per ${q.fromCity} → ${q.toCity} è ancora disponibile. Può confermare la priorità sul velivolo da qui:\n${window.location.origin}/accept-quote/${q.id}`)}`}
-                              onClick={e => e.stopPropagation()}
-                              style={{ fontSize: 10, letterSpacing: 1, color: '#60a5fa', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                              ✉ REMINDER
-                            </a>
-                            <a href={`https://wa.me/?text=${encodeURIComponent(`Buongiorno, il preventivo per ${q.fromCity} → ${q.toCity} è ancora disponibile. Può confermare la priorità sul velivolo da qui:\n${window.location.origin}/accept-quote/${q.id}`)}`}
-                              target="_blank" rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              style={{ fontSize: 10, letterSpacing: 1, color: '#4ade80', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                              💬 WA REMINDER
-                            </a>
-                          </div>
-                        )}
+                        {q.status === 'PENDING' && <ReminderActions q={q} />}
                       </td>
                     </tr>
                   )
