@@ -229,7 +229,7 @@ async function run() {
   })
 
   await test('sendQuoteToClient: genera senza errori', async () => {
-    const r = await sendQuoteToClient({ to:'x@x.it', name:'Sofia', aircraft:'Falcon 7X', from:'Roma', dest:'Dubai', date:'28 Apr', pax:6, price:48500, validUntil:'25 Apr', brokerName:'Corrado' })
+    const r = await sendQuoteToClient({ to:'x@x.it', name:'Sofia', aircraft:'Falcon 7X', from:'Roma', dest:'Dubai', date:'28 Apr', pax:6, price:48500, validUntil:'25 Apr', brokerName:'Corrado', quoteId:'QT-TEST-001' })
     return (r as any).success === true
   })
 

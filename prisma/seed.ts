@@ -23,6 +23,11 @@ const fromNow = (days: number) => {
   return d
 }
 
+// ── Users ───────────────────────────────────────────────────────────────────
+const USERS = [
+  { name: 'Admin Broker', email: 'admin@aerojet.private', role: 'BROKER' }
+]
+
 // ── Operators ─────────────────────────────────────────────────────────────────
 const OPERATORS = [
   { name: 'VistaJet',           logo: 'VJ', website: 'https://www.vistajet.com',           fleet: '120+ aircraft',       routes: 'Global',          rating: 4.9, color: '#C41E3A', certifications: 'EASA,FAA,CAAC',    specialty: 'Ultra-long range & heavy jets',   active: true },
@@ -193,8 +198,13 @@ async function seed() {
   await prisma.booking.deleteMany()
   await prisma.inquiry.deleteMany()
   await prisma.operator.deleteMany()
+  await prisma.user.deleteMany()
 
   console.log('  ✓ Tabelle svuotate')
+
+  // Users
+  await prisma.user.createMany({ data: USERS })
+  console.log(`  ✓ ${USERS.length} utenti creati`)
 
   // Operatori
   await prisma.operator.createMany({ data: OPERATORS })
@@ -202,9 +212,24 @@ async function seed() {
 
   // Inquiry
   for (const inq of INQUIRIES) {
-    await prisma.inquiry.create({ data: inq as Parameters<typeof prisma.inquiry.create>[0]['data'] })
+    const createdInq = await prisma.inquiry.create({ data: inq as Parameters<typeof prisma.inquiry.create>[0]['data'] })
+    
+    // Add a pending quote for the VIP inquiry to show in demo
+    if (inq.leadTier === 'VIP') {
+      await prisma.quote.create({
+        data: {
+          inquiryId: createdInq.id,
+          operatorName: 'VistaJet',
+          aircraftModel: 'Global 7500',
+          price: 155000,
+          validUntil: fromNow(2),
+          status: 'PENDING',
+          sentAt: ago(0)
+        }
+      })
+    }
   }
-  console.log(`  ✓ ${INQUIRIES.length} inquiry (VIP / HIGH×2 / MEDIUM / LOW / UNQUALIFIED)`)
+  console.log(`  ✓ ${INQUIRIES.length} inquiry (VIP / HIGH×2 / MEDIUM / LOW / UNQUALIFIED) e 1 preventivo PENDING`)
 
   // Booking
   for (const bk of BOOKINGS) {

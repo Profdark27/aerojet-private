@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { calculateLeadScore } from '@/lib/leadScoring'
+import { calculateLeadScore } from '@/lib/services/lead-scoring'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'placeholder' })
 

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { InquirySchema, rateLimit, getClientIP } from '@/lib/validation'
-import { calculateLeadScore } from '@/lib/leadScoring'
+import { calculateLeadScore } from '@/lib/services/lead-scoring'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
@@ -186,6 +186,12 @@ export async function GET(request: NextRequest) {
       depositAmount: true,
       stripeSessionId: true,
       createdAt: true,
+      _count: { select: { quotes: true } },
+      quotes: {
+        select: { status: true, validUntil: true },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
     },
   })
 

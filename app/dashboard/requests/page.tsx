@@ -1,8 +1,10 @@
 // TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track } from '@/lib/tracking'
+import QuoteBuilder from '@/components/dashboard/QuoteBuilder'
 
 interface Inquiry {
   id: string
@@ -60,15 +62,17 @@ const nextActionConfig: Record<string, { label: string; color: string }> = {
 }
 
 export default function RequestsPage() {
+  const searchParams = useSearchParams()
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('ALL')
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(() => searchParams.get('inquiryId'))
   const [patchingStatus, setPatchingStatus] = useState(false)
   const [notes, setNotes] = useState('')
   const [notesSaving, setNotesSaving] = useState(false)
   const [generatingLink, setGeneratingLink] = useState(false)
   const [depositLink, setDepositLink] = useState<string | null>(null)
+  const [showBuilder, setShowBuilder] = useState(false)
 
   const fetchInquiries = useCallback(() => {
     setLoading(true)
@@ -380,6 +384,13 @@ export default function RequestsPage() {
 
             {/* CTA */}
             <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+              <button
+                onClick={() => setShowBuilder(true)}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#C9A84C', color: '#0A0C14', textDecoration: 'none', padding: '11px', fontSize: 11, letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif', border: '1px solid #C9A84C', cursor: 'pointer', fontWeight: 600 }}>
+                + CREA PREVENTIVO
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <a
                 href={buildWhatsAppUrl(selectedReq.leadTier === 'VIP' ? 'vip' : 'volo', { from: selectedReq.fromCity, to: selectedReq.toCity, budget: selectedReq.budget, pax: selectedReq.pax })}
                 target="_blank" rel="noopener noreferrer"
@@ -395,6 +406,17 @@ export default function RequestsPage() {
           </div>
         )}
       </div>
+
+      {showBuilder && selectedReq && (
+        <QuoteBuilder
+          inquiry={selectedReq}
+          onClose={() => setShowBuilder(false)}
+          onSave={async (quote) => {
+            setShowBuilder(false)
+            fetchInquiries() // Ricarica la lista per mostrare lo status QUOTED
+          }}
+        />
+      )}
     </div>
   )
 }

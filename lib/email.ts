@@ -106,12 +106,13 @@ export async function sendBookingConfirmation({
 
 // ─── 2. Preventivo Inviato (al cliente) ───────────────────
 export async function sendQuoteToClient({
-  to, name, aircraft, from, dest, date, pax, price, validUntil, brokerName,
+  to, name, aircraft, from, dest, date, pax, price, validUntil, brokerName, quoteId,
 }: {
   to: string; name: string; aircraft: string
   from: string; dest: string; date: string; pax: number
-  price: number; validUntil: string; brokerName: string
+  price: number; validUntil: string; brokerName: string; quoteId: string
 }) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const html = base(`
     <h2 style="color:#F0EDE6;font-size:30px;font-weight:300;margin:0 0 32px;">Il suo Preventivo</h2>
     <p style="color:rgba(240,237,230,0.65);font-size:15px;font-family:Helvetica Neue,sans-serif;line-height:1.8;margin:0 0 32px;">
@@ -131,7 +132,7 @@ export async function sendQuoteToClient({
     <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">
       Il prezzo include tutti i costi operativi, tasse aeroportuali e handling. Catering e servizi aggiuntivi sono quotabili su richiesta.
     </p>
-    ${goldBtn('https://aerojet.private/search', 'ACCETTA E PRENOTA')}
+    ${goldBtn(`${baseUrl}/accept-quote/${quoteId}`, 'ACCETTA E PAGA DEPOSITO')}
   `)
   return send(to, `Preventivo volo privato ${from} → ${dest} — Aerojet Private`, html)
 }
@@ -313,6 +314,42 @@ export async function sendFollowUpVIP({
     ${goldBtn('mailto:concierge@aerojet.private?subject=Richiesta%20prioritaria%20' + requestId, 'CONTATTA CONCIERGE DEDICATO')}
   `)
   return send(to, `Il suo concierge sta verificando disponibilità dedicate — ${requestId}`, html)
+}
+
+// ─── 8. Notifica Broker — Deposito Ricevuto ───────────────
+export async function sendBrokerDepositReceived({
+  brokerEmail, clientName, clientEmail, from, dest, flightDate,
+  depositAmount, totalPrice, confirmationCode, inquiryId,
+}: {
+  brokerEmail: string; clientName: string; clientEmail: string
+  from: string; dest: string; flightDate: string
+  depositAmount: number; totalPrice: number
+  confirmationCode: string; inquiryId: string
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.private'
+  const html = base(`
+    <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);padding:12px 20px;margin-bottom:28px;display:inline-block;">
+      <span style="color:#4ade80;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">✓ DEPOSITO RICEVUTO</span>
+    </div>
+    <h2 style="color:#F0EDE6;font-size:28px;font-weight:300;margin:0 0 8px;">${from} → ${dest}</h2>
+    <p style="color:rgba(240,237,230,0.45);font-size:14px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">${flightDate}</p>
+    <div style="background:#0F1220;border:1px solid rgba(74,222,128,0.15);padding:28px;margin-bottom:28px;">
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Cliente', `${clientName} — ${clientEmail}`)}
+        ${row('Rotta', `${from} → ${dest}`)}
+        ${row('Data volo', flightDate)}
+        ${row('Deposito ricevuto', `<strong style="color:#4ade80;font-size:20px;">€${depositAmount.toLocaleString('it-IT')}</strong>`)}
+        ${row('Totale charter', `€${totalPrice.toLocaleString('it-IT')}`)}
+        ${row('Saldo residuo', `€${(totalPrice - depositAmount).toLocaleString('it-IT')}`)}
+        ${row('Codice conferma', `<span style="color:#C9A84C;letter-spacing:3px;">${confirmationCode}</span>`)}
+      </table>
+    </div>
+    <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 32px;">
+      Il cliente ha completato il pagamento del deposito. Aggiorna lo stato della pratica e procedi con la conferma operativa.
+    </p>
+    ${goldBtn(`${baseUrl}/dashboard/requests`, 'APRI DASHBOARD →')}
+  `)
+  return send(brokerEmail, `✓ Deposito ricevuto — ${clientName} · ${from} → ${dest} · €${depositAmount.toLocaleString('it-IT')}`, html)
 }
 
 // ─── 5. Empty Leg Alert ────────────────────────────────────

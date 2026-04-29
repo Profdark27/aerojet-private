@@ -1,9 +1,5 @@
-/**
- * Lead Scoring Engine V2 — Aerojet Private
- * Score 0–100 · Auto-decision · Margin optimization per tier
- */
+import { calculateEconomics, LeadTier } from './pricing'
 
-export type LeadTier = 'VIP' | 'HIGH' | 'MEDIUM' | 'LOW' | 'UNQUALIFIED'
 export type PipelineStatus = 'NEW' | 'CONTACTED' | 'QUOTING' | 'QUOTED' | 'WON' | 'LOST'
 export type NextAction = 'CALL_NOW' | 'WHATSAPP_NOW' | 'EMAIL_ONLY' | 'LOW_PRIORITY'
 
@@ -31,26 +27,13 @@ export interface LeadScoringResult {
   nextAction: NextAction
   operatorCostEstimate: number
   clientQuoteEstimate: number
-  suggestedQuote: number     // min(budget, operatorCost × 1.25)
-  optimizedQuote: number     // tier-based markup: VIP×1.35, HIGH×1.25, MEDIUM×1.15
+  suggestedQuote: number
+  optimizedQuote: number
   optimizedMargin: number
   marginEstimate: number
   marginPercent: number
   revenuePotential: number
   suggestedAction: string
-}
-
-// ─── Configurazione ────────────────────────────────────────
-const BROKER_MARKUP_PERCENT = 12
-const BROKER_FIXED_FEE = 500
-
-// Markup ottimizzato per tier
-const TIER_MARKUP: Record<LeadTier, number> = {
-  VIP: 1.35,
-  HIGH: 1.25,
-  MEDIUM: 1.15,
-  LOW: 1.10,
-  UNQUALIFIED: 1.08,
 }
 
 // Budget display → midpoint EUR
@@ -83,11 +66,11 @@ export function parseBudgetNumeric(budget?: string): number {
 }
 
 export function tierFromBudget(budgetNumeric: number): LeadTier {
-  if (budgetNumeric >= 100000) return 'VIP'   // > €100,000
-  if (budgetNumeric >= 40000)  return 'HIGH'   // €40,000 – €100,000
-  if (budgetNumeric >= 15000)  return 'MEDIUM' // €15,000 – €40,000
-  if (budgetNumeric >= 5000)   return 'LOW'    // €5,000 – €15,000
-  return 'UNQUALIFIED'                          // < €5,000
+  if (budgetNumeric >= 100000) return 'VIP'
+  if (budgetNumeric >= 40000)  return 'HIGH'
+  if (budgetNumeric >= 15000)  return 'MEDIUM'
+  if (budgetNumeric >= 5000)   return 'LOW'
+  return 'UNQUALIFIED'
 }
 
 // ─── Detection helpers ─────────────────────────────────────
@@ -127,7 +110,6 @@ function detectInternationalRoute(from?: string, to?: string): boolean {
   const toLower = to.toLowerCase()
   const fromItalian = ITALIAN_CITIES.some(c => fromLower.includes(c))
   const toItalian = ITALIAN_CITIES.some(c => toLower.includes(c))
-  // Internazionale = almeno una città non italiana, o entrambe non italiane
   return !fromItalian || !toItalian
 }
 
@@ -138,7 +120,6 @@ export function decideNextAction(
   score: number,
   urgencyFlag: boolean,
 ): NextAction {
-  // Urgency override sempre CALL_NOW
   if (urgencyFlag) return 'CALL_NOW'
   if (tier === 'VIP' || score > 85) return 'CALL_NOW'
   if (tier === 'HIGH') return 'WHATSAPP_NOW'
@@ -175,67 +156,33 @@ export function calculateLeadScore(input: LeadInput): LeadScoringResult {
 
   let score = 0
 
-  // ── Budget (0–40 pt) — allineato ai tier ──
-  if (budgetNumeric >= 100000) score += 40      // VIP
-  else if (budgetNumeric >= 40000) score += 32  // HIGH
-  else if (budgetNumeric >= 15000) score += 20  // MEDIUM
-  else if (budgetNumeric >= 5000)  score += 10  // LOW
+  if (budgetNumeric >= 100000) score += 40
+  else if (budgetNumeric >= 40000) score += 32
+  else if (budgetNumeric >= 15000) score += 20
+  else if (budgetNumeric >= 5000)  score += 10
 
-  // ── VIP bonus (+15 solo ≥100k) ──
   if (budgetNumeric >= 100000) score += 15
 
-  // ── Timing / Urgenza ──
   if (urgency) score += 20
-  if (sameDay) score += 20   // V2: era +10, ora +20
+  if (sameDay) score += 20
 
-  // ── Contatto ──
-  if (input.phone?.trim()) score += 15  // V2: era +10, ora +15
+  if (input.phone?.trim()) score += 15
   if (input.email) score += 3
 
-  // ── Interesse membership ──
   if (membershipInterest) score += 12
 
-  // ── Pax (V2: >4 → +10, semplificato) ──
   const pax = input.pax || 0
   if (pax > 4) score += 10
   else if (pax >= 2) score += 3
 
-  // ── Rotta ──
   if (input.fromCity && input.toCity) score += 4
-  if (isInternational) score += 10  // V2: nuovo
+  if (isInternational) score += 10
 
-  // ── Data fornita ──
   if (input.flightDate) score += 3
 
   score = Math.min(100, Math.max(0, score))
 
-  // ── Economics ──
-  const operatorCostEstimate = budgetNumeric > 0
-    ? Math.round(budgetNumeric / (1 + BROKER_MARKUP_PERCENT / 100))
-    : 0
-
-  const clientQuoteEstimate = operatorCostEstimate > 0
-    ? Math.round(operatorCostEstimate * (1 + BROKER_MARKUP_PERCENT / 100) + BROKER_FIXED_FEE)
-    : 0
-
-  const marginEstimate = Math.max(0, clientQuoteEstimate - operatorCostEstimate)
-  const marginPercent = clientQuoteEstimate > 0
-    ? Math.round((marginEstimate / clientQuoteEstimate) * 1000) / 10
-    : 0
-
-  // ── Suggested quote (vecchio, mantenuto per compatibilità) ──
-  const suggestedQuote = budgetNumeric > 0
-    ? Math.round(Math.min(budgetNumeric, operatorCostEstimate * 1.25))
-    : 0
-
-  // ── Optimized quote (V2: markup per tier) ──
-  const markup = TIER_MARKUP[leadTier]
-  const optimizedQuote = budgetNumeric > 0
-    ? Math.round(Math.min(budgetNumeric, operatorCostEstimate * markup))
-    : 0
-  const optimizedMargin = Math.max(0, optimizedQuote - operatorCostEstimate)
-
-  // ── Decision ──
+  const economics = calculateEconomics(budgetNumeric, leadTier)
   const nextAction = decideNextAction(leadTier, score, urgencyFlag)
   const suggestedActionText = suggestAction(leadTier, urgencyFlag, sameDay, nextAction)
 
@@ -248,14 +195,7 @@ export function calculateLeadScore(input: LeadInput): LeadScoringResult {
     sameDay,
     membershipInterest,
     nextAction,
-    operatorCostEstimate,
-    clientQuoteEstimate,
-    suggestedQuote,
-    optimizedQuote,
-    optimizedMargin,
-    marginEstimate,
-    marginPercent,
-    revenuePotential: budgetNumeric,
+    ...economics,
     suggestedAction: suggestedActionText,
   }
 }

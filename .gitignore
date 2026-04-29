@@ -46,3 +46,12 @@ skills/
 obsidian-aerojet/
 prisma/dev.db
 !.env.example
+
+.vercel
+
+# Local debug/temp files
+checkout_url.txt
+inquiry_id.txt
+get_token.js
+*.log
+bot_logs/

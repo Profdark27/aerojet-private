@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
           confirmationCode = `AJ-${session.id.slice(-6).toUpperCase()}`
         }
 
-        // ── Send confirmation email ──
+        // ── Send confirmation email to client ──
         if (session.customer_email) {
           try {
             const { sendBookingConfirmation } = await import('@/lib/email')
@@ -214,6 +214,39 @@ export async function POST(request: NextRequest) {
             console.error('Email confirmation failed (non-fatal):', err)
           }
         }
+
+        // ── Broker notifications (fire-and-forget) ──
+        void Promise.allSettled([
+          // Push notification real-time alla dashboard
+          import('@/app/api/notifications/route').then(({ pushNotification }) =>
+            pushNotification('deposit_received', {
+              clientName: customerName,
+              route: fromCity && toCity ? `${fromCity} → ${toCity}` : 'N/D',
+              depositAmount,
+              totalPrice,
+              inquiryId: meta.inquiry_id || null,
+              confirmationCode: confirmationCode ?? '',
+              ts: Date.now(),
+            })
+          ).catch(() => {}),
+          // Email al broker
+          process.env.BROKER_EMAIL
+            ? import('@/lib/email').then(({ sendBrokerDepositReceived }) =>
+                sendBrokerDepositReceived({
+                  brokerEmail: process.env.BROKER_EMAIL!,
+                  clientName: customerName,
+                  clientEmail: session.customer_email ?? '',
+                  from: fromCity || 'N/D',
+                  dest: toCity || 'N/D',
+                  flightDate: meta.flight_date || 'Da definire',
+                  depositAmount,
+                  totalPrice,
+                  confirmationCode: confirmationCode ?? `AJ-${session.id.slice(-6).toUpperCase()}`,
+                  inquiryId: meta.inquiry_id || session.id,
+                })
+              ).catch(err => console.error('Broker deposit email failed (non-fatal):', err))
+            : Promise.resolve(),
+        ])
 
         break
       }
