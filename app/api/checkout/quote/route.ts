@@ -37,6 +37,16 @@ export async function POST(req: NextRequest) {
         data: { stripeSessionId: mockSessionId },
       })
       
+      // Track started
+      fetch(new URL('/api/track', req.url).toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'checkout_started',
+          metadata: { quoteId: quote.id, sessionId: mockSessionId, mock: true }
+        })
+      }).catch(() => {})
+      
       return NextResponse.json({
         url: `${origin}/booking/success?mock=true&from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}&deposit=${depositAmount}&ref=${quote.id}`,
         sessionId: mockSessionId,
@@ -98,6 +108,16 @@ export async function POST(req: NextRequest) {
       where: { id: quote.inquiryId! },
       data: { stripeSessionId: stripeSession.id },
     })
+
+    // Track started
+    fetch(new URL('/api/track', req.url).toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'checkout_started',
+        metadata: { quoteId: quote.id, sessionId: stripeSession.id }
+      })
+    }).catch(() => {})
 
     return NextResponse.json({
       url: stripeSession.url,

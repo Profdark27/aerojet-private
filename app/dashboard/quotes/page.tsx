@@ -340,6 +340,21 @@ export default function QuotesPage() {
                             APRI ↗
                           </a>
                         </div>
+                        {q.status === 'PENDING' && (
+                          <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <a href={`mailto:${q.clientEmail}?subject=${encodeURIComponent(`Promemoria Preventivo — ${q.fromCity} → ${q.toCity}`)}&body=${encodeURIComponent(`Buongiorno, il preventivo per ${q.fromCity} → ${q.toCity} è ancora disponibile. Può confermare la priorità sul velivolo da qui:\n${window.location.origin}/accept-quote/${q.id}`)}`}
+                              onClick={e => e.stopPropagation()}
+                              style={{ fontSize: 10, letterSpacing: 1, color: '#60a5fa', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif' }}>
+                              ✉ REMINDER
+                            </a>
+                            <a href={`https://wa.me/?text=${encodeURIComponent(`Buongiorno, il preventivo per ${q.fromCity} → ${q.toCity} è ancora disponibile. Può confermare la priorità sul velivolo da qui:\n${window.location.origin}/accept-quote/${q.id}`)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ fontSize: 10, letterSpacing: 1, color: '#4ade80', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif' }}>
+                              💬 WA REMINDER
+                            </a>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )
