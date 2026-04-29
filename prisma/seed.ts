@@ -25,7 +25,7 @@ const fromNow = (days: number) => {
 
 // ── Users ───────────────────────────────────────────────────────────────────
 const USERS = [
-  { name: 'Admin Broker', email: 'admin@aerojet.private', role: 'BROKER' }
+  { name: 'Admin Broker', email: 'admin@aerojet.app', role: 'BROKER' }
 ]
 
 // ── Operators ─────────────────────────────────────────────────────────────────

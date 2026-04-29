@@ -152,7 +152,7 @@ export default function ContactSection() {
             </p>
             <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[
-                { icon: '✉', label: 'concierge@aerojet.private' },
+                { icon: '✉', label: 'concierge@aerojet.app' },
                 { icon: '📞', label: '+39 02 1234 5678' },
                 { icon: '⏱', label: 'Risposta entro 2 ore' },
               ].map(({ icon, label }) => (

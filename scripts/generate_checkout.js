@@ -42,8 +42,8 @@ const fs = require('fs');
       deposit: String(depositAmount),
       customer_name: inquiry.name,
     },
-    success_url: `https://aerojet-private.vercel.app/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `https://aerojet-private.vercel.app/search`,
+    success_url: `https://aerojet.app/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `https://aerojet.app/search`,
   });
   
   console.log('Session URL:', stripeSession.url);

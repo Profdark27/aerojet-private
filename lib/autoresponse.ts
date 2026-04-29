@@ -66,22 +66,22 @@ Cordialmente,
 Corrado
 Broker Privato · Aerojet Private
 📱 +39 331 882 4030
-✉ corrado@aerojet.private`,
+✉ corrado@aerojet.app`,
 
   STAFF: `
 Cordiali saluti,
 
 Team Aerojet Private
-✉ concierge@aerojet.private
+✉ concierge@aerojet.app
 📱 +39 02 1234 5678
-🌐 aerojet.private`,
+🌐 aerojet.app`,
 
   MARCO_AI: `
 Con stima,
 
 Marco · Concierge Virtuale Aerojet Private
 🤖 Disponibile 24/7
-🌐 aerojet.private`,
+🌐 aerojet.app`,
 }
 
 // ── Template library ──────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const BASE = 'https://aerojet.private'
+const BASE = 'https://aerojet.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = ['milano-londra', 'roma-dubai', 'milano-new-york']

@@ -125,7 +125,7 @@ function SuccessContent() {
 
         <p style={{ fontSize: 13, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 40 }}>
           Una conferma è stata inviata alla sua email.<br />
-          Per assistenza: <span style={{ color: '#C9A84C' }}>concierge@aerojet.private</span>
+          Per assistenza: <span style={{ color: '#C9A84C' }}>concierge@aerojet.app</span>
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 
 const mockUsers = [
-  { id: 'U001', name: 'Corrado Aerojet', email: 'corrado@aerojet.private', role: 'BROKER', flights: 12, spent: 284000, joined: '01 Gen 2026', status: 'ACTIVE' },
+  { id: 'U001', name: 'Corrado Aerojet', email: 'corrado@aerojet.app', role: 'BROKER', flights: 12, spent: 284000, joined: '01 Gen 2026', status: 'ACTIVE' },
   { id: 'U002', name: 'Sofia Ricci', email: 's.ricci@luxury.com', role: 'CLIENT', flights: 4, spent: 156000, joined: '15 Feb 2026', status: 'ACTIVE' },
   { id: 'U003', name: 'Marco Ferretti', email: 'm.ferretti@email.it', role: 'CLIENT', flights: 1, spent: 9800, joined: '10 Mar 2026', status: 'ACTIVE' },
   { id: 'U004', name: 'Luca Bianchi', email: 'luca@vc.fund', role: 'CLIENT', flights: 8, spent: 620000, joined: '22 Gen 2026', status: 'ACTIVE' },
@@ -249,7 +249,7 @@ export default function AdminPage() {
 
               <div style={{ marginBottom: 32, paddingBottom: 32, borderBottom: '1px solid rgba(239,68,68,0.08)' }}>
                 <div style={{ fontSize: 10, letterSpacing: 2, color: '#f87171', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>BROKER EMAILS (ACCESSO AUTOMATICO)</div>
-                <textarea defaultValue="corrado@aerojet.private" style={{ width: '100%', background: '#0A0C14', border: '1px solid rgba(239,68,68,0.2)', color: '#F0EDE6', padding: '12px 14px', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', outline: 'none', resize: 'vertical', minHeight: 80, lineHeight: 1.6, boxSizing: 'border-box' }} />
+                <textarea defaultValue="corrado@aerojet.app" style={{ width: '100%', background: '#0A0C14', border: '1px solid rgba(239,68,68,0.2)', color: '#F0EDE6', padding: '12px 14px', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', outline: 'none', resize: 'vertical', minHeight: 80, lineHeight: 1.6, boxSizing: 'border-box' }} />
                 <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 8 }}>Una email per riga. Questi account ricevono ruolo BROKER automaticamente al primo accesso.</div>
               </div>
 

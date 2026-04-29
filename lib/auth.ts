@@ -17,7 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     Resend({
       apiKey: process.env.RESEND_API_KEY || 're_dummy_dev_key',
-      from: process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.private',
+      from: process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.app',
       sendVerificationRequest: async ({ identifier: email, url }) => {
         // Fallback: log magic link if Resend not configured
         if (!process.env.RESEND_API_KEY) {
@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { Resend: ResendClient } = await import('resend')
         const resend = new ResendClient(process.env.RESEND_API_KEY)
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.private',
+          from: process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.app',
           to: email,
           subject: 'Accesso ad Aerojet Private',
           html: `

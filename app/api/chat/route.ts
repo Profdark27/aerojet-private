@@ -69,7 +69,7 @@ async function persistInquiry(fields: Record<string, string>) {
   const { from, to, date, pax, budget, name, email, phone, msg } = fields
   const data = {
     name: name || 'Cliente via Chat Marco',
-    email: email || 'chat@aerojet.private',
+    email: email || 'chat@aerojet.app',
     phone: phone !== 'N/D' ? phone : undefined,
     fromCity: from,
     toCity: to,
@@ -223,7 +223,7 @@ export async function POST(req: Request) {
             pax: '2',
             budget: context.budget || 'N/D',
             name: context.userName || 'Lead da Fallback AI',
-            email: context.userEmail || 'chat@aerojet.private',
+            email: context.userEmail || 'chat@aerojet.app',
             phone: context.userPhone || 'N/D',
             msg: lastMessage,
           })

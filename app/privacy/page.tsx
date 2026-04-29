@@ -12,7 +12,7 @@ const sections = [
     title: '1. Titolare del Trattamento',
     body: `Aerojet Private S.r.l., con sede legale in Milano, Italia, è il Titolare del Trattamento dei dati personali raccolti tramite la piattaforma.
 
-Per esercitare i diritti previsti dal GDPR o per qualsiasi richiesta relativa alla privacy, scrivere a: privacy@aerojet.private`,
+Per esercitare i diritti previsti dal GDPR o per qualsiasi richiesta relativa alla privacy, scrivere a: privacy@aerojet.app`,
   },
   {
     title: '2. Dati Raccolti',
@@ -65,7 +65,7 @@ I dati non vengono mai venduti a terzi né utilizzati per finalità pubblicitari
 • Portabilità: ricevere i dati in formato strutturato e leggibile
 • Opposizione: opporsi al trattamento per legittimo interesse
 
-Per esercitare questi diritti: privacy@aerojet.private. Risposta entro 30 giorni.`,
+Per esercitare questi diritti: privacy@aerojet.app. Risposta entro 30 giorni.`,
   },
   {
     title: '7. Cookie',
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
           <div style={{ padding: '24px 32px', background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)' }}>
             <p style={{ fontSize: 13, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.7, margin: 0 }}>
               Per reclami o richieste riguardanti la privacy:{' '}
-              <a href="mailto:privacy@aerojet.private" style={{ color: '#C9A84C', textDecoration: 'none' }}>privacy@aerojet.private</a>
+              <a href="mailto:privacy@aerojet.app" style={{ color: '#C9A84C', textDecoration: 'none' }}>privacy@aerojet.app</a>
               <br />
               Garante Privacy Italiano:{' '}
               <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" style={{ color: '#C9A84C', textDecoration: 'none' }}>garanteprivacy.it</a>

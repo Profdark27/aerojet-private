@@ -7,7 +7,7 @@
  * Senza chiave Resend → log in console (dev mode)
  */
 
-const FROM = process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.private'
+const FROM = process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.app'
 const RESEND_KEY = process.env.RESEND_API_KEY
 
 export async function send(to: string, subject: string, html: string) {
@@ -52,7 +52,7 @@ function base(content: string) {
   <div style="padding:28px 48px;border-top:1px solid rgba(201,168,76,0.08);">
     <p style="color:rgba(240,237,230,0.2);font-size:11px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">
       © 2026 Aerojet Private · Il lusso del tempo. La libertà del cielo.<br>
-      Per assistenza: <a href="mailto:concierge@aerojet.private" style="color:#C9A84C;">concierge@aerojet.private</a>
+      Per assistenza: <a href="mailto:concierge@aerojet.app" style="color:#C9A84C;">concierge@aerojet.app</a>
     </p>
   </div>
 </div>
@@ -99,7 +99,7 @@ export async function sendBookingConfirmation({
       Il saldo residuo sarà addebitato 72 ore prima della partenza.<br>
       Catering, transfer e servizi aggiuntivi possono essere richiesti al concierge.
     </p>
-    ${goldBtn('https://aerojet.private/dashboard', 'AREA PERSONALE')}
+    ${goldBtn('https://aerojet.app/dashboard', 'AREA PERSONALE')}
   `)
   return send(to, `✦ Prenotazione confermata — ${from} → ${dest}`, html)
 }
@@ -161,7 +161,7 @@ export async function notifyBrokerNewRequest({
       <div style="font-size:10px;letter-spacing:2px;color:#C9A84C;font-family:Helvetica Neue,sans-serif;margin-bottom:8px;">MESSAGGIO</div>
       <p style="color:rgba(240,237,230,0.7);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">${message}</p>
     </div>
-    ${goldBtn('https://aerojet.private/dashboard/requests', 'APRI DASHBOARD →')}
+    ${goldBtn('https://aerojet.app/dashboard/requests', 'APRI DASHBOARD →')}
   `)
   return send(brokerEmail, `🔔 Nuova richiesta ${requestId} — ${from} → ${to}`, html)
 }
@@ -188,7 +188,7 @@ export async function sendRequestReceived({
     <div style="display:flex;gap:16px;">
       <a href="tel:+390212345678" style="color:#C9A84C;font-family:Helvetica Neue,sans-serif;font-size:13px;text-decoration:none;">📞 +39 02 1234 5678</a>
       &nbsp;&nbsp;·&nbsp;&nbsp;
-      <a href="mailto:concierge@aerojet.private" style="color:#C9A84C;font-family:Helvetica Neue,sans-serif;font-size:13px;text-decoration:none;">✉ concierge@aerojet.private</a>
+      <a href="mailto:concierge@aerojet.app" style="color:#C9A84C;font-family:Helvetica Neue,sans-serif;font-size:13px;text-decoration:none;">✉ concierge@aerojet.app</a>
     </div>
   `)
   return send(to, `Richiesta ${requestId} ricevuta — Aerojet Private`, html)
@@ -261,7 +261,7 @@ export async function notifyBrokerScoredLead({
       <p style="color:rgba(240,237,230,0.65);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">${message}</p>
     </div>
 
-    ${goldBtn('https://aerojet.private/dashboard/requests', 'APRI DASHBOARD →')}
+    ${goldBtn('https://aerojet.app/dashboard/requests', 'APRI DASHBOARD →')}
   `)
 
   const prefix = leadTier === 'VIP' ? '🔥 VIP' : leadTier === 'HIGH' ? '💰 HIGH' : '🔔'
@@ -289,7 +289,7 @@ export async function sendFollowUpNotContacted({
     <p style="color:rgba(240,237,230,0.35);font-size:13px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 28px;">
       Se ha già trovato alternative o desidera aggiornare la richiesta, può rispondere direttamente a questa email o contattarci.
     </p>
-    ${goldBtn('mailto:concierge@aerojet.private?subject=Richiesta%20' + requestId, 'RISPONDI AL CONCIERGE')}
+    ${goldBtn('mailto:concierge@aerojet.app?subject=Richiesta%20' + requestId, 'RISPONDI AL CONCIERGE')}
   `)
   return send(to, `Pratica ${requestId} — Disponibilità ancora in verifica`, html)
 }
@@ -311,7 +311,7 @@ export async function sendFollowUpVIP({
     <p style="color:rgba(240,237,230,0.55);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.85;margin:0 0 32px;">
       Il concierge assegnato sta contattando direttamente gli operatori per verificare disponibilità e configurazioni aeromobile in linea con le sue aspettative. La aggiorneremo con una proposta personalizzata.
     </p>
-    ${goldBtn('mailto:concierge@aerojet.private?subject=Richiesta%20prioritaria%20' + requestId, 'CONTATTA CONCIERGE DEDICATO')}
+    ${goldBtn('mailto:concierge@aerojet.app?subject=Richiesta%20prioritaria%20' + requestId, 'CONTATTA CONCIERGE DEDICATO')}
   `)
   return send(to, `Il suo concierge sta verificando disponibilità dedicate — ${requestId}`, html)
 }
@@ -326,7 +326,7 @@ export async function sendBrokerDepositReceived({
   depositAmount: number; totalPrice: number
   confirmationCode: string; inquiryId: string
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.private'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'
   const html = base(`
     <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);padding:12px 20px;margin-bottom:28px;display:inline-block;">
       <span style="color:#4ade80;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">✓ DEPOSITO RICEVUTO</span>
@@ -377,7 +377,7 @@ export async function sendEmptyLegAlert({
     <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">
       ⚠️ Disponibilità limitata. Queste offerte si esauriscono rapidamente.
     </p>
-    ${goldBtn('https://aerojet.private/#emptylegs', 'PRENOTA SUBITO')}
+    ${goldBtn('https://aerojet.app/#emptylegs', 'PRENOTA SUBITO')}
   `)
   return send(to, `⚡ Empty Leg ${from} → ${dest} — -${discount}% | Aerojet Private`, html)
 }

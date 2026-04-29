@@ -34,7 +34,7 @@ export default function ReferralSection() {
 
   const copy = () => {
     if (!referral) return
-    const url = `https://aerojet.private/?ref=${referral.code}`
+    const url = `https://aerojet.app/?ref=${referral.code}`
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -42,7 +42,7 @@ export default function ReferralSection() {
 
   const shareWhatsApp = () => {
     if (!referral) return
-    const msg = `Ho scoperto Aerojet Private per i voli privati in Italia e nel mondo. Usa il mio codice ${referral.code} per avere un vantaggio esclusivo: https://aerojet.private/?ref=${referral.code}`
+    const msg = `Ho scoperto Aerojet Private per i voli privati in Italia e nel mondo. Usa il mio codice ${referral.code} per avere un vantaggio esclusivo: https://aerojet.app/?ref=${referral.code}`
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
   }
 

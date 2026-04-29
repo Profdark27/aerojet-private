@@ -52,7 +52,7 @@ export async function sendDay1Followup({ to, name, from: fromCity, dest: toCity,
       Nel frattempo, ha considerato gli <strong style="color:#C9A84C;">empty legs</strong> su questa rotta?
       Spesso disponibili con sconti fino al 60%.
     </p>
-    ${btn('https://aerojet.private/#emptylegs', 'VERIFICA EMPTY LEGS')}
+    ${btn('https://aerojet.app/#emptylegs', 'VERIFICA EMPTY LEGS')}
   `)
   return send(to, `La sua richiesta ${requestId} — aggiornamento`, html)
 }
@@ -86,7 +86,7 @@ export async function sendDay3EmptyLeg({ to, name, from: fromCity, dest: toCity,
     <p style="color:rgba(240,237,230,0.4);font-size:12px;font-family:Helvetica Neue,sans-serif;margin:0 0 28px;">
       ⚠️ Disponibilità limitata — gli empty legs si esauriscono rapidamente.
     </p>
-    ${btn('https://aerojet.private/#emptylegs', 'PRENOTA EMPTY LEG')}
+    ${btn('https://aerojet.app/#emptylegs', 'PRENOTA EMPTY LEG')}
   `)
   return send(to, `⚡ Empty Leg ${legFrom} → ${legTo} — -${legDiscount}% | Aerojet Private`, html)
 }
@@ -111,7 +111,7 @@ export async function sendDay7CaseStudy({ to, name, from: fromCity, dest: toCity
       La sua richiesta <strong style="color:#F0EDE6;">${requestId}</strong> per ${fromCity} → ${toCity} è ancora disponibile.
       Possiamo inviare un preventivo aggiornato in meno di 2 ore.
     </p>
-    ${btn(`https://aerojet.private/search?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`, 'RIPRENDI LA RICERCA')}
+    ${btn(`https://aerojet.app/search?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`, 'RIPRENDI LA RICERCA')}
   `)
   return send(to, `La sua richiesta è ancora disponibile — Aerojet Private`, html)
 }
@@ -133,7 +133,7 @@ export async function sendDay14LastCall({ to, name, from: fromCity, dest: toCity
       Se i tempi non erano giusti, lo capiamo. Sa dove trovarci quando sarà pronto.
     </p>
     <div style="display:flex;gap:12px;">
-      ${btn('https://aerojet.private/#contact', 'RICHIEDI PREVENTIVO')}
+      ${btn('https://aerojet.app/#contact', 'RICHIEDI PREVENTIVO')}
     </div>
     <p style="color:rgba(240,237,230,0.25);font-size:12px;font-family:Helvetica Neue,sans-serif;margin-top:28px;">
       Non riceverà altri messaggi da noi su questa richiesta.

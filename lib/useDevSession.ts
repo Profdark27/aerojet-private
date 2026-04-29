@@ -28,7 +28,7 @@ type DevSessionState = {
 const DEV_USER: DevSessionUser = {
   id: 'dev-corrado',
   name: 'Corrado',
-  email: 'corrado@aerojet.private',
+  email: 'corrado@aerojet.app',
   role: 'BROKER',
   image: null,
 }

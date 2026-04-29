@@ -116,7 +116,7 @@ function buildQuotePDF(data: {
 
   <div class="footer">
     <p><strong>Validità preventivo:</strong> ${data.validUntil}</p>
-    <p><strong>Aerojet Private</strong> · concierge@aerojet.private · +39 02 1234 5678</p>
+    <p><strong>Aerojet Private</strong> · concierge@aerojet.app · +39 02 1234 5678</p>
     <p>P.IVA IT12345678901 · Broker certificato · EASA/FAA Verified Partners</p>
     <p style="margin-top:12px;color:#bbb;">Il presente preventivo è stato preparato da un nostro consulente e ha validità fino alla data indicata. I prezzi si intendono per l'intero aeromobile. Tutti i diritti riservati © 2026 Aerojet Private S.r.l.</p>
   </div>

@@ -60,7 +60,7 @@ export default function Footer() {
           <div>
             <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>CONTATTI</div>
             <div style={{ fontSize: 14, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 2 }}>
-              <div>concierge@aerojet.private</div>
+              <div>concierge@aerojet.app</div>
               <div>+39 02 1234 5678</div>
               <div style={{ marginTop: 16, fontSize: 12, color: '#C9A84C' }}>Disponibili 24/7</div>
             </div>

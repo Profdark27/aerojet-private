@@ -96,7 +96,7 @@ export default function TermsPage() {
           <div style={{ padding: '24px 32px', background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', marginTop: 16 }}>
             <p style={{ fontSize: 13, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.7, margin: 0 }}>
               Per qualsiasi domanda relativa ai presenti Termini, contattare:{' '}
-              <a href="mailto:legal@aerojet.private" style={{ color: '#C9A84C', textDecoration: 'none' }}>legal@aerojet.private</a>
+              <a href="mailto:legal@aerojet.app" style={{ color: '#C9A84C', textDecoration: 'none' }}>legal@aerojet.app</a>
             </p>
           </div>
         </div>

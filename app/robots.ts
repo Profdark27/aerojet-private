@@ -5,6 +5,6 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       { userAgent: '*', allow: '/', disallow: ['/dashboard/', '/api/', '/booking/'] },
     ],
-    sitemap: 'https://aerojet.private/sitemap.xml',
+    sitemap: 'https://aerojet.app/sitemap.xml',
   }
 }
