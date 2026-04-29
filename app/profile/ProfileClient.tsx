@@ -5,6 +5,28 @@ import Link from 'next/link'
 import Navbar from '@/components/luxury/Navbar'
 import { formatCurrency } from '@/lib/utils'
 import { signOut } from 'next-auth/react'
+import { ROUTE_IMAGES, FLEET_IMAGES } from '@/lib/imageAssets'
+import ImageWithFallback from '@/components/ImageWithFallback'
+
+function routeImg(city: string | null): string | undefined {
+  if (!city) return undefined
+  const c = city.toLowerCase()
+  for (const [key, path] of Object.entries(ROUTE_IMAGES)) {
+    if (c.includes(key.toLowerCase()) || key.toLowerCase().includes(c.split(' ')[0])) return path
+  }
+  return undefined
+}
+
+function fleetImg(model: string): string | undefined {
+  const m = model.toLowerCase()
+  if (m.includes('pc-12') || m.includes('king air') || m.includes('tbm')) return FLEET_IMAGES['turboprop']
+  if (m.includes('phenom') || m.includes(' cj') || m.includes('mustang')) return FLEET_IMAGES['light']
+  if (m.includes('challenger 3') || m.includes('citation xls') || m.includes('hawker')) return FLEET_IMAGES['midsize']
+  if (m.includes('latitude') || m.includes('falcon 2000') || m.includes('g4')) return FLEET_IMAGES['supermid']
+  if (m.includes('falcon 7') || m.includes('falcon 8') || m.includes('global 6') || m.includes('g550')) return FLEET_IMAGES['heavy']
+  if (m.includes('global 7') || m.includes('g700') || m.includes('g650')) return FLEET_IMAGES['ultralong']
+  return undefined
+}
 
 type SessionUser = {
   id?: string
@@ -142,12 +164,19 @@ export default function ProfileClient({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
                         {bookings.map(bk => {
                           const s = statusStyle[bk.status] || statusStyle['PENDING']
+                          const thumb = routeImg(bk.toCity) ?? routeImg(bk.fromCity)
                           return (
-                            <div key={bk.id} style={{ background: '#0A0C14', padding: '24px 32px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', transition: 'background 0.2s' }}
+                            <div key={bk.id} style={{ background: '#0A0C14', padding: '20px 32px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', transition: 'background 0.2s' }}
                               onMouseEnter={e => (e.currentTarget.style.background = '#0D0F1A')}
                               onMouseLeave={e => (e.currentTarget.style.background = '#0A0C14')}>
-                              
-                              <div style={{ flex: 1, minWidth: 200 }}>
+
+                              {thumb && (
+                                <div style={{ position: 'relative', width: 72, height: 44, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(201,168,76,0.1)' }}>
+                                  <ImageWithFallback src={thumb} alt={bk.toCity} fill sizes="72px" objectFit="cover" fallback={<></>} />
+                                </div>
+                              )}
+
+                              <div style={{ flex: 1, minWidth: 180 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
                                   <span style={{ fontSize: 18, fontWeight: 500 }}>{bk.fromCity}</span>
                                   <span style={{ color: '#C9A84C' }}>→</span>
@@ -212,11 +241,20 @@ export default function ProfileClient({
                               {inq.quotes.length > 0 && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, borderTop: '1px solid rgba(201,168,76,0.1)', paddingTop: 16 }}>
                                   <div style={{ fontSize: 12, color: '#C9A84C', letterSpacing: 1, textTransform: 'uppercase' }}>Preventivi Ricevuti:</div>
-                                  {inq.quotes.map(quote => (
+                                  {inq.quotes.map(quote => {
+                                    const jImg = fleetImg(quote.aircraftModel)
+                                    return (
                                     <div key={quote.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 4 }}>
-                                      <div>
-                                        <div style={{ fontSize: 14, fontWeight: 500 }}>{quote.aircraftModel}</div>
-                                        <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>{quote.operatorName}</div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        {jImg && (
+                                          <div style={{ position: 'relative', width: 56, height: 34, overflow: 'hidden', flexShrink: 0 }}>
+                                            <ImageWithFallback src={jImg} alt={quote.aircraftModel} fill sizes="56px" objectFit="cover" fallback={<></>} />
+                                          </div>
+                                        )}
+                                        <div>
+                                          <div style={{ fontSize: 14, fontWeight: 500 }}>{quote.aircraftModel}</div>
+                                          <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>{quote.operatorName}</div>
+                                        </div>
                                       </div>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                                         <div style={{ fontSize: 16, color: '#C9A84C' }}>{formatCurrency(quote.price)}</div>
@@ -225,7 +263,7 @@ export default function ProfileClient({
                                         </Link>
                                       </div>
                                     </div>
-                                  ))}
+                                  )})}
                                 </div>
                               )}
                             </div>
