@@ -140,9 +140,33 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
           </p>
         </div>
 
+        {/* Social proof */}
+        {!alreadyPaid && !isExpired && (
+          <p style={{ fontSize: 11, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center', letterSpacing: 2, marginBottom: 16, margin: '0 0 16px' }}>
+            PAGAMENTO SICURO · RISPOSTA GARANTITA ENTRO 2H · OLTRE 200 VOLI GESTITI
+          </p>
+        )}
+
         {/* CTA */}
         {!alreadyPaid && !isExpired && (
           <PayButton quoteId={quote.id} depositAmount={depositAmount} />
+        )}
+
+        {/* Step post-pagamento */}
+        {!alreadyPaid && !isExpired && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, marginTop: 12 }}>
+            {([
+              { n: '①', label: 'Deposito confermato', sub: 'Riceve conferma via email' },
+              { n: '②', label: 'Il concierge la contatta', sub: 'Entro 2 ore' },
+              { n: '③', label: 'Volo confermato', sub: 'Documenti e briefing' },
+            ] as const).map(s => (
+              <div key={s.n} style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.08)', padding: '16px 10px', textAlign: 'center' }}>
+                <div style={{ fontSize: 18, color: '#C9A84C', marginBottom: 6 }}>{s.n}</div>
+                <div style={{ fontSize: 11, letterSpacing: 1, color: '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 4, lineHeight: 1.3 }}>{s.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
         )}
 
         {alreadyPaid && (
