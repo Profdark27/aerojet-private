@@ -2,9 +2,33 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { DEPOSIT_RATE } from '@/lib/stripe'
+import { ROUTE_IMAGES, FLEET_IMAGES } from '@/lib/imageAssets'
+import ImageWithFallback from '@/components/ImageWithFallback'
 import PayButton from './PayButton'
 
 export const dynamic = 'force-dynamic'
+
+function findRouteImage(city: string): string | null {
+  if (!city || city === 'N/D') return null
+  const c = city.toLowerCase()
+  for (const [key, path] of Object.entries(ROUTE_IMAGES)) {
+    if (c.includes(key.toLowerCase()) || key.toLowerCase().includes(c.split(' ')[0])) {
+      return path
+    }
+  }
+  return null
+}
+
+function getFleetImage(model: string): string | null {
+  const m = model.toLowerCase()
+  if (m.includes('pc-12') || m.includes('pc12') || m.includes('king air') || m.includes('tbm')) return FLEET_IMAGES['turboprop'] ?? null
+  if (m.includes('phenom') || m.includes(' cj') || m.includes('mustang') || m.includes('citation m')) return FLEET_IMAGES['light'] ?? null
+  if (m.includes('challenger 3') || m.includes('citation xls') || m.includes('hawker') || m.includes('learjet')) return FLEET_IMAGES['midsize'] ?? null
+  if (m.includes('latitude') || m.includes('falcon 2000') || m.includes('challenger 6') || m.includes('g4')) return FLEET_IMAGES['supermid'] ?? null
+  if (m.includes('falcon 7') || m.includes('falcon 8') || m.includes('global 6') || m.includes('g550') || m.includes('g600')) return FLEET_IMAGES['heavy'] ?? null
+  if (m.includes('global 7') || m.includes('global 8') || m.includes('g700') || m.includes('g650') || m.includes('g6')) return FLEET_IMAGES['ultralong'] ?? null
+  return null
+}
 
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
@@ -44,6 +68,9 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
   const flightDate = inquiry.flightDate || 'Da definire'
   const pax = inquiry.pax || 1
 
+  const destImage = findRouteImage(toCity) ?? findRouteImage(fromCity) ?? null
+  const fleetImage = getFleetImage(quote.aircraftModel)
+
   return (
     <div style={{ minHeight: '100vh', background: '#0A0C14', color: '#F0EDE6', fontFamily: 'Georgia, serif', position: 'relative', overflow: 'hidden' }}>
 
@@ -59,6 +86,26 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
           <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: 6, color: '#F0EDE6', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>AEROJET</span>
           <span style={{ fontSize: 10, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', alignSelf: 'flex-end', marginBottom: 2 }}>PRIVATE</span>
         </Link>
+
+        {/* Destination strip */}
+        {destImage && (
+          <div style={{ position: 'relative', height: 220, marginBottom: 40, overflow: 'hidden', marginLeft: -24, marginRight: -24 }}>
+            <ImageWithFallback
+              src={destImage}
+              alt={toCity}
+              fill
+              priority
+              sizes="(max-width: 640px) 100vw, 640px"
+              objectFit="cover"
+              fallback={<div style={{ width: '100%', height: '100%', background: 'rgba(201,168,76,0.04)' }} />}
+            />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10,12,20,0.35) 0%, rgba(10,12,20,0.82) 100%)', zIndex: 1 }} />
+            <div style={{ position: 'absolute', bottom: 20, left: 24, zIndex: 2 }}>
+              <div style={{ fontSize: 10, letterSpacing: 4, color: 'rgba(201,168,76,0.65)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 4 }}>DESTINAZIONE</div>
+              <div style={{ fontSize: 22, fontWeight: 300, color: '#F0EDE6', letterSpacing: 3 }}>{toCity.toUpperCase()}</div>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
@@ -92,8 +139,20 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
 
         {/* Quote details */}
         <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', padding: '32px', marginBottom: 24 }}>
-          <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>
-            DETTAGLI VOLO
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>DETTAGLI VOLO</div>
+            {fleetImage && (
+              <div style={{ position: 'relative', width: 80, height: 50, overflow: 'hidden', flexShrink: 0 }}>
+                <ImageWithFallback
+                  src={fleetImage}
+                  alt={quote.aircraftModel}
+                  fill
+                  sizes="80px"
+                  objectFit="cover"
+                  fallback={<></>}
+                />
+              </div>
+            )}
           </div>
           <Row label="Velivolo" value={`${quote.aircraftModel} · ${quote.operatorName}`} />
           <Row label="Rotta" value={`${fromCity} → ${toCity}`} />
