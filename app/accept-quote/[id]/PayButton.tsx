@@ -44,20 +44,23 @@ export default function PayButton({ quoteId, depositAmount }: { quoteId: string;
           display: 'inline-block',
           background: loading ? 'rgba(201,168,76,0.5)' : '#C9A84C',
           color: '#0A0C14',
-          padding: '18px 48px',
+          padding: '20px 48px',
           border: 'none',
           cursor: loading ? 'not-allowed' : 'pointer',
           fontFamily: 'Helvetica Neue, sans-serif',
-          fontSize: 12,
-          letterSpacing: 3,
+          fontSize: 13,
+          letterSpacing: 2,
           fontWeight: 600,
           width: '100%',
-          transition: 'background 0.2s',
+          transition: 'all 0.3s ease',
+          boxShadow: loading ? 'none' : '0 0 20px rgba(201,168,76,0.25)',
         }}
+        onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 0 35px rgba(201,168,76,0.5)'; e.currentTarget.style.transform = 'translateY(-1px)' } }}
+        onMouseLeave={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 0 20px rgba(201,168,76,0.25)'; e.currentTarget.style.transform = 'translateY(0)' } }}
       >
         {loading
-          ? 'REINDIRIZZAMENTO...'
-          : `ASSICURATI QUESTO JET — €${depositAmount.toLocaleString('it-IT')}`}
+          ? 'ELABORAZIONE...'
+          : `CONFERMA E BLOCCA IL JET — €${depositAmount.toLocaleString('it-IT')}`}
       </button>
       {error && (
         <p style={{ color: '#f87171', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', marginTop: 12, textAlign: 'center' }}>

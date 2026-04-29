@@ -203,11 +203,11 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
         {!alreadyPaid && !isExpired && (
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px 24px', marginBottom: 28 }}>
             {[
-              '✓ Pagamento Protetto Stripe',
-              '✓ Operatori EASA / FAA',
-              '✓ Concierge 24/7'
+              '🔒 Pagamento Protetto Stripe',
+              '✈️ Operatori EASA / FAA',
+              '🛡️ Rimborso Garantito'
             ].map(trust => (
-              <div key={trust} style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
+              <div key={trust} style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, fontWeight: 500 }}>
                 {trust}
               </div>
             ))}
@@ -218,8 +218,8 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
         {!alreadyPaid && !isExpired && (
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <PayButton quoteId={quote.id} depositAmount={depositAmount} />
-            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, letterSpacing: 0.5, marginBottom: 0, lineHeight: 1.6, maxWidth: 400, margin: '16px auto 0' }}>
-              Il deposito conferma la priorità sulla disponibilità proposta. Il nostro concierge completerà la verifica operativa con l'operatore e la contatterà entro 2 ore.
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 20, letterSpacing: 0.5, marginBottom: 0, lineHeight: 1.6, maxWidth: 440, margin: '20px auto 0' }}>
+              Il deposito blocca la priorità sul velivolo ed è <strong style={{ color: '#F0EDE6', fontWeight: 500 }}>totalmente rimborsabile</strong> in caso di mancata conferma operativa. Il concierge la contatterà entro 2 ore con i dettagli finali.
             </p>
           </div>
         )}

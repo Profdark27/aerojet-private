@@ -64,7 +64,7 @@ function persistMessages(messages: Message[]) {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: 'Benvenuto a bordo. Sono Marco, il suo concierge personale per voli privati.\n\nCome posso assisterla oggi? Posso aiutarla con preventivi personalizzati, disponibilità di aeromobili, empty legs o qualsiasi informazione sui nostri servizi.',
+  content: 'Benvenuto. Sono Marco, il suo Aviation Advisor dedicato.\n\nCome posso assisterla oggi? Sono a disposizione per verificare disponibilità, opzionare aeromobili o fornirle quotazioni in tempo reale.',
 }
 
 function InquiryConfirmCard({ card }: { card: InquiryCard }) {
@@ -308,7 +308,7 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
               <div style={{ fontSize: 16, fontWeight: 500 }}>Marco</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: streaming ? '#C9A84C' : '#22c55e', display: 'inline-block', transition: 'background 0.3s' }} />
-                {streaming ? 'Sta scrivendo...' : 'Concierge Privato · 24/7'}
+                {streaming ? 'Sta scrivendo...' : 'Senior Aviation Advisor · Online'}
               </div>
             </div>
             {hasNewMessages && (
