@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import crypto from 'crypto'
 
 // Store in-memory per dev — in prod: Prisma o analytics SaaS
 // Max 10k eventi, poi rotazione FIFO
@@ -9,6 +10,8 @@ const events: Array<{
   sessionId: string
   ts: number
   metadata?: Record<string, unknown>
+  userAgent?: string
+  ipHash?: string
 }> = []
 
 export async function POST(req: NextRequest) {
@@ -22,12 +25,18 @@ export async function POST(req: NextRequest) {
 
     if (events.length >= MAX_EVENTS) events.shift()
 
+    const rawIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1'
+    const ipHash = crypto.createHash('sha256').update(rawIp).digest('hex').slice(0, 16)
+    const userAgent = req.headers.get('user-agent') || 'Unknown'
+
     events.push({
       event: String(event).slice(0, 64),
       path: String(path || '/').slice(0, 256),
       sessionId: String(sessionId || 'anon').slice(0, 64),
       ts: typeof ts === 'number' ? ts : Date.now(),
       metadata,
+      userAgent: String(userAgent).slice(0, 256),
+      ipHash,
     })
 
     return Response.json({ ok: true }, { status: 201 })

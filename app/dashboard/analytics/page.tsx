@@ -81,6 +81,52 @@ function EmptyChart({ message, height = 220 }: { message: string; height?: numbe
   )
 }
 
+function FunnelWidget() {
+  const [funnel, setFunnel] = useState<Record<string, number> | null>(null)
+  
+  useEffect(() => {
+    fetch('/api/track?limit=10000')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.counts) setFunnel(d.counts) })
+      .catch(() => null)
+  }, [])
+
+  if (!funnel || Object.keys(funnel).length === 0) return null
+
+  const steps = [
+    { id: 'hero_search_click', label: 'Ricerche Effettuate' },
+    { id: 'inquiry_sent', label: 'Richieste Inviate' },
+    { id: 'quote_viewed', label: 'Preventivi Visualizzati' },
+    { id: 'quote_payment_clicked', label: 'Click Conferma' },
+    { id: 'checkout_started', label: 'Checkout Iniziati' },
+    { id: 'booking_success', label: 'Booking Confermati' },
+  ]
+
+  const max = Math.max(...steps.map(s => funnel[s.id] || 0), 1)
+
+  return (
+    <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '28px 24px', marginBottom: 32 }}>
+      <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 4 }}>LIVE FUNNEL TRACKING</div>
+      <div style={{ fontSize: 18, marginBottom: 24 }}>Eventi Recenti (in-memory)</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {steps.map(s => {
+          const val = funnel[s.id] || 0
+          const pct = Math.round((val / max) * 100)
+          return (
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ width: 160, fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif' }}>{s.label}</div>
+              <div style={{ flex: 1, height: 24, background: 'rgba(240,237,230,0.04)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: '#C9A84C', opacity: 0.8 }} />
+              </div>
+              <div style={{ width: 50, fontSize: 14, color: '#F0EDE6', textAlign: 'right', fontWeight: 500 }}>{val}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('quarter')
   const [stats, setStats] = useState<StatsResponse | null>(null)
@@ -316,6 +362,9 @@ export default function AnalyticsPage() {
           </ResponsiveContainer>
         )}
       </div>
+
+      {/* Funnel Tracking Widget */}
+      <FunnelWidget />
 
       {/* Top routes table */}
       <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)' }}>
