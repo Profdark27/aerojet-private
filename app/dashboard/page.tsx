@@ -89,6 +89,80 @@ function LeadBadges({ lead }: { lead: Inquiry }) {
   )
 }
 
+function FunnelWidget() {
+  const [funnel, setFunnel] = useState<Record<string, number> | null>(null)
+  
+  useEffect(() => {
+    fetch('/api/track?limit=10000')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.counts) setFunnel(d.counts) })
+      .catch(() => null)
+  }, [])
+
+  if (!funnel || Object.keys(funnel).length === 0) return null
+
+  const steps = [
+    { id: 'inquiry_sent', label: 'Richieste Inviate' },
+    { id: 'quote_viewed', label: 'Preventivi Visti' },
+    { id: 'quote_payment_clicked', label: 'Click Conferma' },
+    { id: 'booking_success', label: 'Prenotazioni' },
+  ]
+
+  const max = Math.max(...steps.map(s => funnel[s.id] || 0), 1)
+
+  return (
+    <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '28px 24px' }}>
+      <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>LIVE FUNNEL</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {steps.map(s => {
+          const val = funnel[s.id] || 0
+          const pct = Math.round((val / max) * 100)
+          return (
+            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 120, fontSize: 11, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif' }}>{s.label}</div>
+              <div style={{ flex: 1, height: 16, background: 'rgba(240,237,230,0.04)', position: 'relative' }}>
+                <div style={{ width: `${pct}%`, height: '100%', background: '#C9A84C', opacity: 0.8 }} />
+              </div>
+              <div style={{ width: 30, fontSize: 12, color: '#F0EDE6', textAlign: 'right', fontWeight: 500 }}>{val}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function RecentEventsWidget() {
+  const [events, setEvents] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch('/api/track?limit=10')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.events) setEvents(d.events) })
+      .catch(() => null)
+  }, [])
+
+  if (events.length === 0) return null
+
+  return (
+    <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '28px 24px' }}>
+      <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>ULTIMI EVENTI</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {events.slice(0, 5).map((e, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderBottom: '1px solid rgba(201,168,76,0.05)', paddingBottom: 12 }}>
+            <div style={{ fontSize: 10, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', width: 40, paddingTop: 2 }}>{new Date(e.ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, color: '#F0EDE6', marginBottom: 2 }}>{e.event}</div>
+              {e.metadata?.route && <div style={{ fontSize: 11, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>{e.metadata.route}</div>}
+              {e.metadata?.price && <div style={{ fontSize: 11, color: '#4ade80', fontFamily: 'Helvetica Neue, sans-serif' }}>€{e.metadata.price.toLocaleString('it-IT')}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 type FilterKey = 'all' | 'vip' | 'high_margin' | 'urgent'
 
 const NEXT_ACTION_CONFIG: Record<string, { label: string; color: string }> = {
@@ -258,6 +332,12 @@ export default function DashboardPage() {
             </LineChart>
           </ResponsiveContainer>
         )}
+      </div>
+
+      {/* Funnel & Recents Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 40 }}>
+        <FunnelWidget />
+        <RecentEventsWidget />
       </div>
 
       {/* Lead pipeline */}

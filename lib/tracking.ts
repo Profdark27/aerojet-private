@@ -17,15 +17,33 @@ export function trackEvent(eventName: string, metadata?: Record<string, unknown>
       console.log(`[TRACKING] ${eventName}`, payload);
     }
 
-    // Fire and forget
+    // Fire and forget: internal memory tracking
     fetch('/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
       keepalive: true
-    }).catch(() => {
-      // Silenzioso in caso di errore (adblocker, network error)
-    });
+    }).catch(() => {});
+
+    // Export lead e alert in parallelo per eventi critici
+    if (['inquiry_sent', 'quote_viewed', 'booking_success', 'quote_payment_clicked'].includes(eventName)) {
+      const exportPayload = {
+         event: eventName,
+         quoteId: metadata?.quoteId,
+         inquiryId: metadata?.inquiryId,
+         route: metadata?.route || (metadata?.from && metadata?.dest ? `${metadata.from} → ${metadata.dest}` : undefined),
+         email: metadata?.email || metadata?.clientEmail,
+         phone: metadata?.phone,
+         price: metadata?.price || metadata?.amount || metadata?.total,
+         clientName: metadata?.name || metadata?.clientName || metadata?.client
+      }
+      fetch('/api/export/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(exportPayload),
+        keepalive: true
+      }).catch(() => {});
+    }
   } catch (err) {
     // Evitiamo che bug del tracking rompano l'UX
   }

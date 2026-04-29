@@ -381,3 +381,37 @@ export async function sendEmptyLegAlert({
   `)
   return send(to, `⚡ Empty Leg ${from} → ${dest} — -${discount}% | Aerojet Private`, html)
 }
+
+// ─── 9. Alert Operativo Interno ──────────────────────────────
+export async function sendInternalAlert({
+  type, route, price, clientName, link
+}: {
+  type: string; route: string; price?: number; clientName: string; link: string
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'
+  
+  let emoji = '🔥'
+  let label = 'NUOVO LEAD / EVENTO'
+  
+  if (type === 'booking_success') { emoji = '✅'; label = 'NUOVO BOOKING' }
+  else if (type === 'quote_payment_clicked') { emoji = '💰'; label = 'INTENZIONE PAGAMENTO' }
+  else if (type === 'inquiry_sent') { emoji = '⚡'; label = 'NUOVA RICHIESTA' }
+
+  const html = base(`
+    <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);padding:12px 20px;margin-bottom:28px;display:inline-block;">
+      <span style="color:#C9A84C;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">${emoji} ${label}</span>
+    </div>
+    <h2 style="color:#F0EDE6;font-size:28px;font-weight:300;margin:0 0 8px;">${route}</h2>
+    ${price ? `<p style="color:#4ade80;font-size:24px;font-family:Helvetica Neue,sans-serif;margin:0 0 24px;">€${price.toLocaleString('it-IT')}</p>` : ''}
+    <div style="background:#0F1220;border:1px solid rgba(201,168,76,0.15);padding:24px;margin-bottom:32px;">
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Cliente', clientName)}
+        ${row('Evento', type)}
+      </table>
+    </div>
+    ${goldBtn(`${baseUrl}${link}`, 'APRI PRATICA →')}
+  `)
+  
+  // Manda sempre al concierge centrale (oppure potremmo mandarlo ai vari broker nel DB)
+  return send('concierge@aerojet.app', `${emoji} ALERT OPERATIVO: ${label} — ${route}`, html)
+}
