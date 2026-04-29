@@ -51,7 +51,7 @@ export default function PayButton({ quoteId, depositAmount }: { quoteId: string;
       >
         {loading
           ? 'REINDIRIZZAMENTO...'
-          : `CONFERMA IL VOLO — €${depositAmount.toLocaleString('it-IT')}`}
+          : `ASSICURATI QUESTO JET — €${depositAmount.toLocaleString('it-IT')}`}
       </button>
       {error && (
         <p style={{ color: '#f87171', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', marginTop: 12, textAlign: 'center' }}>

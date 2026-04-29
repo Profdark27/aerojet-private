@@ -102,8 +102,9 @@ export default function ProfileClient({
             </div>
 
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
                 {sessionUser.role} · MEMBRO
+                <span style={{ background: '#0A0C14', border: '1px solid #C9A84C', padding: '2px 8px', color: '#C9A84C', fontSize: 9, letterSpacing: 2 }}>Aerojet Member</span>
               </div>
               <h1 style={{ fontSize: 32, fontWeight: 300, margin: '0 0 6px' }}>
                 {sessionUser.name || 'Membro Aerojet'}

@@ -208,7 +208,12 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
 
         {/* CTA */}
         {!alreadyPaid && !isExpired && (
-          <PayButton quoteId={quote.id} depositAmount={depositAmount} />
+          <div style={{ textAlign: 'center' }}>
+            <PayButton quoteId={quote.id} depositAmount={depositAmount} />
+            <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, letterSpacing: 0.5, marginBottom: 0 }}>
+              Aeromobile riservato temporaneamente · Pagamento sicuro Stripe
+            </p>
+          </div>
         )}
 
         {/* Step post-pagamento */}

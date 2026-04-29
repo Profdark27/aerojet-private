@@ -355,10 +355,15 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
             {streaming && messages[messages.length - 1]?.content === '' && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#0A0C14', flexShrink: 0 }}>M</div>
-                <div style={{ display: 'flex', gap: 4, padding: '12px 14px', background: '#0F1220', borderRadius: '16px 16px 16px 4px', alignItems: 'center' }}>
-                  {[0, 150, 300].map(delay => (
-                    <span key={delay} style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', display: 'block', animation: `pulse-gold 1.2s ${delay}ms infinite` }} />
-                  ))}
+                <div>
+                  <div style={{ display: 'flex', gap: 4, padding: '12px 14px', background: '#0F1220', borderRadius: '16px 16px 16px 4px', alignItems: 'center', width: 'fit-content' }}>
+                    {[0, 150, 300].map(delay => (
+                      <span key={delay} style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', display: 'block', animation: `pulse-gold 1.2s ${delay}ms infinite` }} />
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', marginTop: 6, marginLeft: 2 }}>
+                    Il tuo Aviation Advisor sta valutando la rotta...
+                  </div>
                 </div>
               </div>
             )}

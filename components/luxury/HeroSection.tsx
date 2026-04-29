@@ -70,8 +70,8 @@ export default function HeroSection() {
 
         {/* Title */}
         <h1 style={{ fontSize: 'clamp(52px, 9vw, 104px)', fontWeight: 300, lineHeight: 1.0, margin: '0 0 28px', letterSpacing: 2 }}>
-          Il Cielo<br />
-          <span className="text-shimmer" style={{ fontStyle: 'italic' }}>è il Limite</span>
+          Il lusso del tempo.<br />
+          <span className="text-shimmer" style={{ fontStyle: 'italic' }}>La libertà del cielo.</span>
         </h1>
 
         <p style={{ fontSize: 18, color: 'rgba(240,237,230,0.6)', lineHeight: 1.8, margin: '0 0 52px', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, letterSpacing: 0.5 }}>
@@ -114,8 +114,8 @@ export default function HeroSection() {
               </select>
             </div>
 
-            <button onClick={handleSearch} className="btn-gold" style={{ padding: '16px 32px', whiteSpace: 'nowrap', marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-              CERCA ✦
+            <button onClick={handleSearch} className="btn-gold" style={{ padding: '16px 32px', whiteSpace: 'nowrap', marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8, transition: 'box-shadow 0.2s', boxShadow: '0 0 0 rgba(201,168,76,0)' }} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(201,168,76,0.4)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 0 rgba(201,168,76,0)'}>
+              PIANIFICA IL TUO ITINERARIO ✦
             </button>
           </div>
         </div>
