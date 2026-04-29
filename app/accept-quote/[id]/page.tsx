@@ -1,11 +1,10 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
+import { DEPOSIT_RATE } from '@/lib/stripe'
 import PayButton from './PayButton'
 
 export const dynamic = 'force-dynamic'
-
-const DEPOSIT_RATE = 0.30
 
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
@@ -155,15 +154,19 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
         )}
 
         {isExpired && !alreadyPaid && (
-          <a href={`mailto:concierge@aerojet.private?subject=Rinnovo preventivo ${quote.id}`}
-            style={{ display: 'block', textAlign: 'center', padding: '18px 48px', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 12, letterSpacing: 3 }}>
+          <a
+            href={`https://wa.me/${(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Buongiorno, vorrei rinnovare il preventivo per ${fromCity} → ${toCity} (ref. ${quote.id})`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'block', textAlign: 'center', padding: '18px 48px', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 12, letterSpacing: 3 }}
+          >
             RICHIEDI AGGIORNAMENTO PREVENTIVO
           </a>
         )}
 
         {/* Footer info */}
         <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.2)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 40, textAlign: 'center', lineHeight: 1.8 }}>
-          Per assistenza: <span style={{ color: '#C9A84C' }}>concierge@aerojet.private</span><br />
+          Per assistenza: <a href={`mailto:${process.env.BROKER_EMAIL || 'concierge@aerojet-private.com'}`} style={{ color: '#C9A84C', textDecoration: 'none' }}>{process.env.BROKER_EMAIL || 'concierge@aerojet-private.com'}</a><br />
           Pagamento sicuro gestito da Stripe — nessun dato carta viene memorizzato da Aerojet Private
         </p>
       </div>
