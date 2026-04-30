@@ -1,9 +1,8 @@
+'use client'
 /**
- * Dev-mode session hook
  * In dev senza OAuth: restituisce una sessione mock senza fare chiamate di rete.
  * In produzione: usa useSession() di NextAuth normalmente.
  */
-'use client'
 import { useEffect, useState } from 'react'
 
 type DevSessionUser = {
