@@ -1,14 +1,18 @@
 import { stripe, calcDeposit, calcCommission } from '@/lib/stripe'
 import { NextRequest } from 'next/server'
+import { CheckoutSchema } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { aircraft, from, to, date, pax, customerEmail } = body
-
-    if (!aircraft || !from || !to) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 })
-    }
+    let rawBody: unknown
+        try { rawBody = await request.json() } catch {
+                return Response.json({ error: 'Formato non valido' }, { status: 400 })
+        }
+        const parsed = CheckoutSchema.safeParse(rawBody)
+        if (!parsed.success) {
+                return Response.json({ error: 'Dati non validi', details: parsed.error.flatten().fieldErrors }, { status: 422 })
+        }
+        const { aircraft, from, to, date, pax, customerEmail } = parsed.data
 
     const totalPrice = aircraft.price
     const deposit = calcDeposit(totalPrice)
