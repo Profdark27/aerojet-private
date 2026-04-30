@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import crypto from 'crypto'
+import { auth } from '@/lib/auth'
 
 // Store in-memory per dev — in prod: Prisma o analytics SaaS
 // Max 10k eventi, poi rotazione FIFO
