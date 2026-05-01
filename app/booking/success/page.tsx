@@ -36,12 +36,12 @@ function SuccessContent() {
       .finally(() => setLoading(false))
   }, [sessionId])
 
-  const confirmationCode = details?.confirmationCode ?? (
+  const confirmationCode: string | null = details?.confirmationCode ?? (
     isMock
       ? `AJ-DEV${Math.random().toString(36).substring(2, 5).toUpperCase()}`
       : sessionId
         ? `AJ-${sessionId.slice(-6).toUpperCase()}`
-        : 'AJ-XXXXXX'
+        : null // no session_id = show syncing state, never fake AJ-XXXXXX
   )
 
   const fromCity = details?.fromCity || fromParam || ''
@@ -85,7 +85,13 @@ function SuccessContent() {
             {loading ? (
               <div style={{ height: 40, background: 'rgba(201,168,76,0.06)', margin: '0 auto', width: 180 }} />
             ) : (
-              <div style={{ fontSize: 32, letterSpacing: 6, color: '#C9A84C', fontWeight: 300 }}>{confirmationCode}</div>
+              <div style={{ fontSize: 32, letterSpacing: 6, color: '#C9A84C', fontWeight: 300 }}>
+                {confirmationCode ?? (
+                  <span style={{ fontSize: 14, letterSpacing: 2, color: 'rgba(201,168,76,0.5)' }}>
+                    Prenotazione in sincronizzazione...
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
