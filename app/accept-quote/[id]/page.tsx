@@ -14,7 +14,7 @@ function isValidId(id: string): boolean {
 }
 
 function findRouteImage(city: string): string | null {
-      if (!city || city === 'N/D') return nullh
+      if (!city || city === 'N/D') return null
       const c = city.toLowerCase()
       for (const [key, path] of Object.entries(ROUTE_IMAGES)) {
               if (c.includes(key.toLowerCase()) || key.toLowerCase().includes(c.split(' ')[0])) {
