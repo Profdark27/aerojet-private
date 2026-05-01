@@ -157,7 +157,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                                                       fill
                                                                       sizes="100px"
                                                                       objectFit="cover"
-                                                                      fallback={<></>>}
+                                                                      fallback={<></>}
                                                                                           />
                             </div>
                                                           )}
