@@ -94,7 +94,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
 
                     <div style={{ position: 'relative', zIndex: 1, maxWidth: 640, margin: '0 auto', padding: '48px 24px 80px' }}>
                                 <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', marginBottom: 56 }}>
-                                              <span style={{ color: '#C9A84C', fontSize: 18 }}>&#10022;</span>
+                                              <span style={{ color: '#C9A84C', fontSize: 18 }}>✦</span>
                                               <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: 6, color: '#F0EDE6', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>AEROJET</span>
                                               <span style={{ fontSize: 10, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', alignSelf: 'flex-end', marginBottom: 2 }}>PRIVATE</span>
                                 </Link>
@@ -123,17 +123,17 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                                               PREVENTIVO PERSONALIZZATO
                                               </p>
                                               <h1 style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 300, margin: '0 0 8px', letterSpacing: 1 }}>
-                                                  {fromCity} &rarr; {toCity}
+                                                  {fromCity} → {toCity}
                                               </h1>
                                               <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', margin: 0 }}>
-                                                              Gentile {inquiry.name}, il suo preventivo personalizzato &egrave; pronto.
+                                                              Gentile {inquiry.name}, il suo preventivo personalizzato è pronto.
                                               </p>
                                 </div>
 
                         {alreadyPaid && (
                         <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', padding: '14px 20px', marginBottom: 28 }}>
                                         <p style={{ color: '#4ade80', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
-                                                          &#10003; Deposito gi&agrave; ricevuto &mdash; prenotazione in elaborazione
+                                                          ✓ Deposito già ricevuto — prenotazione in elaborazione
                                         </p>
                         </div>
                       )}
@@ -141,7 +141,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                         {isExpired && !alreadyPaid && (
                         <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', padding: '14px 20px', marginBottom: 28 }}>
                                         <p style={{ color: '#f87171', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
-                                                          &#9888; Preventivo scaduto il {validUntilStr} &mdash; contatta il concierge per un aggiornamento
+                                                          ⚠ Preventivo scaduto il {validUntilStr} — contatta il concierge per un aggiornamento
                                         </p>
                         </div>
                       )}
@@ -178,7 +178,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                                                 PREZZO TOTALE CHARTER
                                                   </div>
                                                   <div style={{ fontSize: 44, fontWeight: 300, color: '#F0EDE6', letterSpacing: 1 }}>
-                                                                &euro;{quote.price.toLocaleString('it-IT')}
+                                                                €{quote.price.toLocaleString('it-IT')}
                                                   </div>
                                                   <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 4 }}>
                                                       {quote.currency}
@@ -187,12 +187,12 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 8 }}>
                                                   <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)', padding: '20px', textAlign: 'center' }}>
                                                                 <div style={{ fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>DEPOSITO (30%)</div>
-                                                                <div style={{ fontSize: 26, color: '#C9A84C', fontWeight: 300 }}>&euro;{depositAmount.toLocaleString('it-IT')}</div>
+                                                                <div style={{ fontSize: 26, color: '#C9A84C', fontWeight: 300 }}>€{depositAmount.toLocaleString('it-IT')}</div>
                                                                 <div style={{ fontSize: 10, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 4 }}>Da pagare ora</div>
                                                   </div>
                                                   <div style={{ background: '#0A0C14', border: '1px solid rgba(201,168,76,0.08)', padding: '20px', textAlign: 'center' }}>
                                                                 <div style={{ fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>SALDO RESIDUO</div>
-                                                                <div style={{ fontSize: 26, color: 'rgba(240,237,230,0.6)', fontWeight: 300 }}>&euro;{remaining.toLocaleString('it-IT')}</div>
+                                                                <div style={{ fontSize: 26, color: 'rgba(240,237,230,0.6)', fontWeight: 300 }}>€{remaining.toLocaleString('it-IT')}</div>
                                                                 <div style={{ fontSize: 10, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 4 }}>Entro 72h dal volo</div>
                                                   </div>
                                       </div>
@@ -214,30 +214,30 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                     <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', padding: '14px 20px', marginBottom: 12 }}>
                                                   <p style={{ color: '#C9A84C', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
                                                                   Questo preventivo include:<br />
-                                                                  &bull; Velivolo privato dedicato (non condiviso)<br />
-                                                                  &bull; Partenza da terminal privato (zero code)<br />
-                                                                  &bull; Orario flessibile su richiesta<br />
-                                                                  &bull; Assistenza concierge completa
+                                                                  • Velivolo privato dedicato (non condiviso)<br />
+                                                                  • Partenza da terminal privato (zero code)<br />
+                                                                  • Orario flessibile su richiesta<br />
+                                                                  • Assistenza concierge completa
                                                   </p>
                                     </div>
                         
                                     <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', padding: '14px 20px', marginBottom: 16 }}>
                                                   <p style={{ color: '#C9A84C', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', margin: 0, letterSpacing: 1 }}>
-                                                                  Il deposito blocca la disponibilit&agrave; del velivolo.<br />
-                                                                  Se l&apos;operativit&agrave; non viene confermata, l&apos;importo &egrave; completamente rimborsato.<br />
-                                                                  Un Aviation Advisor la contatter&agrave; entro 2 ore.
+                                                                  Il deposito blocca la disponibilità del velivolo.<br />
+                                                                  Se l'operatività non viene confermata, l'importo è completamente rimborsato.<br />
+                                                                  Un Aviation Advisor la contatterà entro 2 ore.
                                                   </p>
                                     </div>
                         
                                     <PayButton quoteId={quote.id} depositAmount={depositAmount} />
                         
                                     <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', margin: '12px 0', textAlign: 'center' }}>
-                                                  Oltre 200 voli gestiti &middot; Operatori certificati EASA/FAA &middot; Pagamento sicuro Stripe
+                                                  Oltre 200 voli gestiti · Operatori certificati EASA/FAA · Pagamento sicuro Stripe
                                     </p>
                         
                             {new Date(quote.validUntil).getTime() - Date.now() < 48 * 60 * 60 * 1000 && (
                                           <p style={{ fontSize: 12, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', margin: '4px 0', textAlign: 'center' }}>
-                                                          Disponibilit&agrave; limitata per queste date
+                                                          Disponibilità limitata per queste date
                                           </p>
                                     )}
                         </div>
@@ -262,7 +262,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                         {alreadyPaid && (
                         <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.15)' }}>
                                     <p style={{ color: '#4ade80', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 14, margin: 0 }}>
-                                                  Il suo deposito &egrave; stato ricevuto. Il concierge la contatter&agrave; entro 2 ore.
+                                                  Il suo deposito è stato ricevuto. Il concierge la contatterà entro 2 ore.
                                     </p>
                         </div>
                             )}
@@ -284,7 +284,7 @@ export default async function AcceptQuotePage({ params }: { params: Promise<{ id
                                           {process.env.BROKER_EMAIL || 'concierge@aerojet-private.com'}
                                       </a>
                                       <br />
-                                      Pagamento sicuro gestito da Stripe &mdash; nessun dato carta viene memorizzato da Aerojet Private
+                                      Pagamento sicuro gestito da Stripe — nessun dato carta viene memorizzato da Aerojet Private
                             </p>
                     </div>
           </div>
