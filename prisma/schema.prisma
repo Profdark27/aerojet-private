@@ -8,38 +8,37 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String        @id @default(cuid())
+  email         String        @unique
   name          String?
-  role          String    @default("CLIENT")
+  role          String        @default("CLIENT")
   phone         String?
   company       String?
-  createdAt     DateTime  @default(now())
-  bookings      Booking[]
-  inquiries     Inquiry[]
-  chatSessions  ChatSession[]
+  createdAt     DateTime      @default(now())
   emailVerified DateTime?
   image         String?
   accounts      Account[]
+  bookings      Booking[]
+  chatSessions  ChatSession[]
+  inquiries     Inquiry[]
   sessions      Session[]
   auditLogs     AuditLog[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -61,114 +60,104 @@ model VerificationToken {
 }
 
 model Operator {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   name           String
   logo           String
   website        String
   fleet          String
   routes         String
-  rating         Float    @default(4.5)
+  rating         Float     @default(4.5)
   certifications String
   specialty      String
-  active         Boolean  @default(true)
-  color          String   @default("#1A1A2E")
+  active         Boolean   @default(true)
+  color          String    @default("#1A1A2E")
   bookings       Booking[]
 }
 
 model Booking {
-  id            String   @id @default(cuid())
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id])
-  operatorId    String?
-  operator      Operator? @relation(fields: [operatorId], references: [id])
-  fromICAO      String?
-  toICAO        String?
-  fromCity      String
-  toCity        String
-  departureDate DateTime
-  returnDate    DateTime?
-  pax           Int      @default(1)
-  jetCategory   String?
-  status        String   @default("PENDING")
-  totalPrice    Float?
-  commission    Float?
-  currency      String   @default("EUR")
-  avionodeId    String?
-  notes         String?
-
-  // Real-world logistics
-  tailNumber         String?
-  handlingAgentFrom  String?
-  handlingAgentTo    String?
-  paxManifest        String?   // JSON string of passenger details
-  flightStatus       String    @default("SCHEDULED") // SCHEDULED | CONFIRMED | TAXI | AIRBORNE | ARRIVED | CANCELLED
+  id                  String              @id @default(cuid())
+  userId              String?
+  operatorId          String?
+  fromICAO            String?
+  toICAO              String?
+  fromCity            String
+  toCity              String
+  departureDate       DateTime
+  returnDate          DateTime?
+  pax                 Int                 @default(1)
+  jetCategory         String?
+  status              String              @default("PENDING")
+  totalPrice          Float?
+  commission          Float?
+  currency            String              @default("EUR")
+  avionodeId          String?
+  notes               String?
+  tailNumber          String?
+  handlingAgentFrom   String?
+  handlingAgentTo     String?
+  paxManifest         String?
+  flightStatus        String              @default("SCHEDULED")
   actualDepartureTime DateTime?
   actualArrivalTime   DateTime?
-
-  // Stripe deposit
-  stripeSessionId   String?  @unique
-  depositAmount     Float    @default(0)
-  depositPaid       Boolean  @default(false)
-  depositPaidAt     DateTime?
-  confirmationCode  String?  @unique
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  quotes        Quote[]
-  operationalTasks OperationalTask[]
-  documents     PassengerDocument[]
+  stripeSessionId     String?             @unique
+  depositAmount       Float               @default(0)
+  depositPaid         Boolean             @default(false)
+  depositPaidAt       DateTime?
+  confirmationCode    String?             @unique
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  operator            Operator?           @relation(fields: [operatorId], references: [id])
+  user                User?               @relation(fields: [userId], references: [id])
+  operationalTasks    OperationalTask[]
+  documents           PassengerDocument[]
+  quotes              Quote[]
 
   @@index([status])
   @@index([createdAt])
 }
 
 model OperationalTask {
-  id          String   @id @default(cuid())
-  bookingId   String
-  booking     Booking  @relation(fields: [bookingId], references: [id])
-  title       String
-  description String?
-  category    String   // FLIGHT | TRANSFER | CATERING | DOCUMENTS | CLIENT | INTERNAL
-  status      String   @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED | CANCELLED
-  priority    String   @default("NORMAL")  // LOW | NORMAL | HIGH | URGENT
-  dueDate     DateTime?
-  assignedTo  String?  // Name of agent or human broker
-  
-  // Real-world vendor info
+  id                String    @id @default(cuid())
+  bookingId         String
+  title             String
+  description       String?
+  category          String
+  status            String    @default("PENDING")
+  priority          String    @default("NORMAL")
+  dueDate           DateTime?
+  assignedTo        String?
   vendorName        String?
   vendorContact     String?
   externalReference String?
   cost              Float?
-  currency          String   @default("EUR")
-  
-  // Communication
+  currency          String    @default("EUR")
   notesInternal     String?
   notesClient       String?
-  isClientVisible   Boolean  @default(false)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isClientVisible   Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  booking           Booking   @relation(fields: [bookingId], references: [id])
 
   @@index([bookingId])
   @@index([status])
 }
 
 model Quote {
-  id           String   @id @default(cuid())
-  bookingId    String?
-  booking      Booking?  @relation(fields: [bookingId], references: [id])
-  inquiryId    String?
-  inquiry      Inquiry?  @relation(fields: [inquiryId], references: [id])
-  operatorName String
+  id            String    @id @default(cuid())
+  bookingId     String?
+  inquiryId     String?
+  operatorName  String
   aircraftModel String
-  price        Float
-  currency     String   @default("EUR")
-  validUntil   DateTime
-  avionodeId   String?
-  commission   Float?
-  status       String   @default("PENDING")
-  sentAt       DateTime?
-  createdAt    DateTime @default(now())
+  price         Float
+  currency      String    @default("EUR")
+  validUntil    DateTime
+  avionodeId    String?
+  commission    Float?
+  status        String    @default("PENDING")
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  booking       Booking?  @relation(fields: [bookingId], references: [id])
+  inquiry       Inquiry?  @relation(fields: [inquiryId], references: [id])
 
   @@index([bookingId])
   @@index([inquiryId])
@@ -176,63 +165,50 @@ model Quote {
 }
 
 model Inquiry {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  quotes      Quote[]
-  name        String
-  email       String
-  phone       String?
-  fromCity    String?
-  toCity      String?
-  flightDate  String?
-  pax         Int?
-  budget      String?
-  message     String
-  flightType  String   @default("oneway")
-
-  // Pipeline
-  status          String  @default("NEW")
-  pipelineStatus  String  @default("NEW") // NEW | CONTACTED | QUOTING | QUOTED | WON | LOST
-
-  // Lead scoring
-  leadScore         Int     @default(0)
-  leadTier          String  @default("UNQUALIFIED") // VIP | HIGH | MEDIUM | LOW | UNQUALIFIED
-  budgetNumeric     Float   @default(0)
-  urgency           Boolean @default(false)
-  sameDay           Boolean @default(false)
-  membershipInterest Boolean @default(false)
-  suggestedAction   String  @default("")
-
-  // Auto-decision engine
-  nextAction    String  @default("") // CALL_NOW | WHATSAPP_NOW | EMAIL_ONLY | LOW_PRIORITY
-  urgencyFlag   Boolean @default(false) // sameDay OR date < 48h
-
-  // Broker economics
-  operatorCostEstimate Float @default(0)
-  clientQuoteEstimate  Float @default(0)
-  suggestedQuote       Float @default(0)  // min(budget, operatorCost × 1.25)
-  optimizedQuote       Float @default(0)  // tier-based: VIP × 1.35, HIGH × 1.25, MEDIUM × 1.15
-  optimizedMargin      Float @default(0)  // optimizedQuote - operatorCostEstimate
-  marginEstimate       Float @default(0)
-  marginPercent        Float @default(0)
-  revenuePotential     Float @default(0)  // = budgetNumeric
-  marginRealized       Float @default(0)  // popolato su WON
-
-  // Broker internal
-  internalNotes   String?
-  nextFollowUpAt  DateTime?   // +30 min
-  followUp2hAt    DateTime?   // +2 ore
-  followUp24hAt   DateTime?   // +24 ore
-
-  // Stripe deposit
-  stripeSessionId  String?  @unique
-  depositAmount    Float    @default(0)
-  depositPaid      Boolean  @default(false)
-  depositPaidAt    DateTime?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  userId               String?
+  name                 String
+  email                String
+  phone                String?
+  fromCity             String?
+  toCity               String?
+  flightDate           String?
+  pax                  Int?
+  budget               String?
+  message              String
+  flightType           String    @default("oneway")
+  status               String    @default("NEW")
+  pipelineStatus       String    @default("NEW")
+  leadScore            Int       @default(0)
+  leadTier             String    @default("UNQUALIFIED")
+  budgetNumeric        Float     @default(0)
+  urgency              Boolean   @default(false)
+  sameDay              Boolean   @default(false)
+  membershipInterest   Boolean   @default(false)
+  suggestedAction      String    @default("")
+  nextAction           String    @default("")
+  urgencyFlag          Boolean   @default(false)
+  operatorCostEstimate Float     @default(0)
+  clientQuoteEstimate  Float     @default(0)
+  suggestedQuote       Float     @default(0)
+  optimizedQuote       Float     @default(0)
+  optimizedMargin      Float     @default(0)
+  marginEstimate       Float     @default(0)
+  marginPercent        Float     @default(0)
+  revenuePotential     Float     @default(0)
+  marginRealized       Float     @default(0)
+  internalNotes        String?
+  nextFollowUpAt       DateTime?
+  followUp2hAt         DateTime?
+  followUp24hAt        DateTime?
+  stripeSessionId      String?   @unique
+  depositAmount        Float     @default(0)
+  depositPaid          Boolean   @default(false)
+  depositPaidAt        DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User?     @relation(fields: [userId], references: [id])
+  quotes               Quote[]
 
   @@index([leadScore])
   @@index([pipelineStatus])
@@ -243,24 +219,24 @@ model Inquiry {
 model ChatSession {
   id        String   @id @default(cuid())
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
   messages  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model PassengerDocument {
-  id              String   @id @default(cuid())
-  bookingId       String
-  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  type            PassengerDocumentType
-  passengerName   String?
-  fileUrl         String?
-  status          PassengerDocumentStatus @default(REQUESTED)
-  notesClient     String?
-  notesInternal   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String                  @id @default(cuid())
+  bookingId     String
+  type          PassengerDocumentType
+  passengerName String?
+  fileUrl       String?
+  status        PassengerDocumentStatus @default(REQUESTED)
+  notesClient   String?
+  notesInternal String?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  booking       Booking                 @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@index([status])
@@ -281,18 +257,20 @@ enum PassengerDocumentStatus {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  action      String   
-  entityType  String   
-  entityId    String
-  oldValue    Json?
-  newValue    Json?
-  metadata    Json?    
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldValue  String?
+  newValue  String?
+  metadata  String?
+  ip        String?
+  userAgent String?
+  user      User?    @relation(fields: [userId], references: [id])
 
-  @@index([entityId])
+  @@index([timestamp])
+  @@index([entity, entityId])
   @@index([userId])
-  @@index([createdAt])
 }
