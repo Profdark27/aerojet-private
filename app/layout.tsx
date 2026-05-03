@@ -3,6 +3,7 @@ import './globals.css'
 import AuthProvider from '@/components/AuthProvider'
 import { ToastProvider } from '@/components/Toast'
 import JsonLd from '@/components/luxury/JsonLd'
+import LinkedInInsight from '@/components/marketing/LinkedInInsight'
 
 export const metadata: Metadata = {
   title: {
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ToastProvider>
             {children}
+            <LinkedInInsight />
           </ToastProvider>
         </AuthProvider>
       </body>

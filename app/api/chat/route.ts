@@ -122,6 +122,15 @@ export async function POST(req: Request) {
   const session = await auth()
   const body = await req.json() as { messages: Array<{ role: string; content: string }>; context?: ChatContext }
 
+  // Security: Basic input validation
+  if (!body.messages || body.messages.length > 20) {
+    return new Response(JSON.stringify({ error: 'Too many messages' }), { status: 400 })
+  }
+  const lastMsg = body.messages[body.messages.length - 1]
+  if (lastMsg?.content && lastMsg.content.length > 1000) {
+    return new Response(JSON.stringify({ error: 'Message too long' }), { status: 400 })
+  }
+
   // Merge auth session data into context
   const context: ChatContext = {
     userName: session?.user?.name || body.context?.userName,

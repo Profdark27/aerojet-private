@@ -92,7 +92,13 @@ export default function EmptyLegsSection() {
                       €{leg.discountedPrice.toLocaleString('it-IT')}
                     </div>
                   </div>
-                  <button className="btn-gold" style={{ padding: '10px 20px' }}>
+                  <button 
+                    className="btn-gold" 
+                    style={{ padding: '10px 20px' }}
+                    onClick={() => {
+                      window.location.href = `/search?from=${encodeURIComponent(leg.fromCity)}&fromICAO=${leg.fromICAO}&to=${encodeURIComponent(leg.toCity)}&toICAO=${leg.toICAO}&date=${leg.departureDate}&pax=${leg.pax}`
+                    }}
+                  >
                     PRENOTA
                   </button>
                 </div>

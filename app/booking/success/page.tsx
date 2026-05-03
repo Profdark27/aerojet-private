@@ -3,6 +3,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { trackEvent } from '@/lib/tracking'
+import { trackMarketingEvent, EVENTS } from '@/lib/analytics'
 
 interface BookingDetails {
   id: string
@@ -28,6 +29,7 @@ function SuccessContent() {
   useEffect(() => {
     if (!sessionId) return
     trackEvent('booking_success', { sessionId, from: fromParam, to: toParam })
+    trackMarketingEvent(EVENTS.BOOKING_SUCCESS, { from: fromParam, to: toParam })
     
     // Fetch booking details by stripeSessionId to get the persistent confirmationCode
     fetch(`/api/booking/by-session?sessionId=${encodeURIComponent(sessionId)}`)

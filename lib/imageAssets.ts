@@ -83,8 +83,9 @@ export const OPERATOR_IMAGES: Record<string, string> = {
   'TAG Aviation':       '/images/operator-tag-aviation.svg',
 }
 
-export const HERO_BG      = '/images/hero-bg.jpg'
-export const HERO_INTERIOR = '/images/hero-interior.jpg'
+export const HERO_BG         = '/images/hero-premium-bg.png'
+export const HERO_JET_3D     = '/images/3d-jet-element.png'
+export const HERO_INTERIOR   = '/images/hero-interior.jpg'
 
 export const JET_IMAGES: Record<string, string> = {
   'phenom 300': '/images/jet-phenom-300.webp',

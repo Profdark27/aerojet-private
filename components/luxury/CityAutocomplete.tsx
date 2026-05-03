@@ -98,7 +98,13 @@ export default function CityAutocomplete({ label, value, onChange, placeholder =
         className="luxury-input"
         placeholder={placeholder}
         value={query}
-        onChange={e => { setQuery(e.target.value); setOpen(true); setHighlighted(0) }}
+        onChange={e => { 
+          const val = e.target.value; 
+          setQuery(val); 
+          setOpen(true); 
+          setHighlighted(0);
+          onChange(val, ''); // Pass raw value immediately to sync parent state
+        }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKey}

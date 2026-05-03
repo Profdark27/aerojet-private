@@ -42,10 +42,11 @@ h1, h2, h3, .luxury-text {
 
 /* Premium Utility Classes */
 .glass-panel {
-  background: var(--dark-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  background: rgba(10, 12, 20, 0.4);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
 .gold-glow-border {
@@ -59,10 +60,15 @@ h1, h2, h3, .luxury-text {
 }
 
 .text-gold-gradient {
-  background: linear-gradient(135deg, var(--cream) 0%, var(--gold) 50%, var(--gold-light) 100%);
+  background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, var(--gold-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.text-gold-glow {
+  color: var(--gold);
+  text-shadow: 0 0 15px rgba(201, 168, 76, 0.5);
 }
 
 .bg-noise {

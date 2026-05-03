@@ -173,6 +173,12 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streaming])
   useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 300) }, [open])
   useEffect(() => { persistMessages(messages) }, [messages])
+  
+  useEffect(() => {
+    const handleToggle = () => setOpen(true)
+    window.addEventListener('toggle-concierge', handleToggle)
+    return () => window.removeEventListener('toggle-concierge', handleToggle)
+  }, [])
 
   const doStream = useCallback(async (apiMessages: Message[], retrying = false) => {
     abortRef.current = new AbortController()

@@ -17,7 +17,13 @@ interface WhatsAppOption {
   icon: string
 }
 
-const OPTIONS: WhatsAppOption[] = [
+const OPTIONS: (WhatsAppOption | { id: 'marco', label: string, description: string, icon: string })[] = [
+  {
+    id: 'marco',
+    label: 'Marco (AI Advisor)',
+    description: 'Assistente AI per quotazioni rapide',
+    icon: '✦',
+  },
   {
     id: 'volo',
     label: 'Richiedi preventivo volo',
@@ -54,9 +60,14 @@ export default function WhatsAppButton() {
 
   if (!configured) return null
 
-  const handleClick = (template: WhatsAppTemplate) => {
-    track('click_whatsapp', { template })
-    const url = buildWhatsAppUrl(template)
+  const handleClick = (id: string) => {
+    if (id === 'marco') {
+      window.dispatchEvent(new CustomEvent('toggle-concierge'))
+      setOpen(false)
+      return
+    }
+    track('click_whatsapp', { template: id })
+    const url = buildWhatsAppUrl(id as WhatsAppTemplate)
     window.open(url, '_blank', 'noopener,noreferrer')
     setOpen(false)
   }
