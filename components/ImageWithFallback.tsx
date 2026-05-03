@@ -18,6 +18,7 @@ interface ImageWithFallbackProps {
   /** Rendered when src is missing or fails to load. */
   fallback: React.ReactNode
   style?: React.CSSProperties
+  className?: string
 }
 
 /**
@@ -40,6 +41,7 @@ export default function ImageWithFallback({
   objectFit = 'cover',
   fallback,
   style,
+  className,
 }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -73,6 +75,7 @@ export default function ImageWithFallback({
           fill
           priority={priority}
           sizes={sizes ?? '100vw'}
+          className={className}
           style={{ objectFit, opacity: loaded ? 1 : 0, transition: 'opacity 0.5s ease', ...style }}
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}
@@ -85,6 +88,7 @@ export default function ImageWithFallback({
           height={height ?? 500}
           priority={priority}
           sizes={sizes}
+          className={className}
           style={{ objectFit, opacity: loaded ? 1 : 0, transition: 'opacity 0.5s ease', display: 'block', ...style }}
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}

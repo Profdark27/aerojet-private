@@ -22,6 +22,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  auditLogs     AuditLog[]
 }
 
 model Account {
@@ -95,6 +96,15 @@ model Booking {
   avionodeId    String?
   notes         String?
 
+  // Real-world logistics
+  tailNumber         String?
+  handlingAgentFrom  String?
+  handlingAgentTo    String?
+  paxManifest        String?   // JSON string of passenger details
+  flightStatus       String    @default("SCHEDULED") // SCHEDULED | CONFIRMED | TAXI | AIRBORNE | ARRIVED | CANCELLED
+  actualDepartureTime DateTime?
+  actualArrivalTime   DateTime?
+
   // Stripe deposit
   stripeSessionId   String?  @unique
   depositAmount     Float    @default(0)
@@ -105,9 +115,42 @@ model Booking {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   quotes        Quote[]
+  operationalTasks OperationalTask[]
+  documents     PassengerDocument[]
 
   @@index([status])
   @@index([createdAt])
+}
+
+model OperationalTask {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  title       String
+  description String?
+  category    String   // FLIGHT | TRANSFER | CATERING | DOCUMENTS | CLIENT | INTERNAL
+  status      String   @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED | CANCELLED
+  priority    String   @default("NORMAL")  // LOW | NORMAL | HIGH | URGENT
+  dueDate     DateTime?
+  assignedTo  String?  // Name of agent or human broker
+  
+  // Real-world vendor info
+  vendorName        String?
+  vendorContact     String?
+  externalReference String?
+  cost              Float?
+  currency          String   @default("EUR")
+  
+  // Communication
+  notesInternal     String?
+  notesClient       String?
+  isClientVisible   Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
 }
 
 model Quote {
@@ -126,6 +169,10 @@ model Quote {
   status       String   @default("PENDING")
   sentAt       DateTime?
   createdAt    DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([inquiryId])
+  @@index([status])
 }
 
 model Inquiry {
@@ -200,4 +247,52 @@ model ChatSession {
   messages  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PassengerDocument {
+  id              String   @id @default(cuid())
+  bookingId       String
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  type            PassengerDocumentType
+  passengerName   String?
+  fileUrl         String?
+  status          PassengerDocumentStatus @default(REQUESTED)
+  notesClient     String?
+  notesInternal   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+enum PassengerDocumentType {
+  PASSPORT
+  VISA
+  ID_CARD
+  OTHER
+}
+
+enum PassengerDocumentStatus {
+  REQUESTED
+  UPLOADED
+  VERIFIED
+  REJECTED
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String   
+  entityType  String   
+  entityId    String
+  oldValue    Json?
+  newValue    Json?
+  metadata    Json?    
+  createdAt   DateTime @default(now())
+
+  @@index([entityId])
+  @@index([userId])
+  @@index([createdAt])
 }

@@ -1,0 +1,130 @@
+// ═══════════════════════════════════════════════════════════════
+// AGGIUNGI QUESTI BLOCCHI AL TUO prisma/schema.prisma ESISTENTE
+// Poi: npx prisma migrate dev --name add_booking_and_tasks
+// ═══════════════════════════════════════════════════════════════
+
+// ── Enums ────────────────────────────────────────────────────────
+
+enum BookingStatus {
+  PENDING_DEPOSIT
+  CONFIRMED
+  OPERATIONS_IN_PROGRESS
+  FLIGHT_RESERVED
+  SERVICES_CONFIRMED
+  READY_TO_FLY
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskType {
+  FLIGHT
+  TRANSFER
+  CATERING
+  DOCUMENTS
+  PAYMENT
+  CLIENT_CONFIRMATION
+  BROKER_ACTION
+  OTHER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  WAITING_VENDOR
+  WAITING_CLIENT
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ── Booking ──────────────────────────────────────────────────────
+// Rappresenta la prenotazione confermata post-deposito.
+// Creato automaticamente dal webhook Stripe.
+
+model Booking {
+  id              String        @id @default(cuid())
+  quoteId         String        @unique
+  quote           Quote         @relation(fields: [quoteId], references: [id])
+  inquiryId       String?
+  inquiry         Inquiry?      @relation(fields: [inquiryId], references: [id])
+
+  // Cliente (denormalizzato per accesso rapido)
+  clientName      String
+  clientEmail     String
+  fromCity        String
+  toCity          String
+  flightDate      DateTime?
+  passengerCount  Int           @default(1)
+  aircraftType    String?
+  operator        String?
+
+  // Economico
+  totalPrice      Float
+  depositAmount   Float
+  currency        String        @default("EUR")
+  depositPaid     Boolean       @default(false)
+  depositPaidAt   DateTime?
+  stripeSessionId String?
+
+  // Servizi extra
+  transferRequired  Boolean     @default(false)
+  cateringRequired  Boolean     @default(false)
+  cateringNotes     String?
+  transferNotes     String?
+
+  // Operativo
+  status          BookingStatus @default(CONFIRMED)
+  assignedTo      String?       // Aviation Advisor interno
+  internalNotes   String?
+  confirmationCode String?      // AJ-XXXXXX
+
+  // Relazioni
+  tasks           OperationalTask[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([clientEmail])
+  @@index([flightDate])
+}
+
+// ── OperationalTask ───────────────────────────────────────────────
+// Task operativi creati automaticamente dopo ogni pagamento deposito.
+// Gestiti dal team concierge/operations nella dashboard.
+
+model OperationalTask {
+  id          String       @id @default(cuid())
+  bookingId   String
+  booking     Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  type        TaskType
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  assignedTo  String?
+  dueAt       DateTime?
+  completedAt DateTime?
+  notes       String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([priority])
+}
+
+// ── Modifiche ai modelli esistenti ───────────────────────────────
+// Nel modello Quote esistente aggiungi:
+//   bookings  Booking[]
+//
+// Nel modello Inquiry esistente aggiungi:
+//   bookings  Booking[]

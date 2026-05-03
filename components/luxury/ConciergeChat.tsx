@@ -1,6 +1,7 @@
-// TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, Send, RotateCcw, X, MessageSquare, ShieldCheck, Zap } from 'lucide-react'
 import { trackEvent } from '@/lib/tracking'
 
 interface ChatContext {
@@ -56,10 +57,9 @@ function loadPersistedMessages(): Message[] | null {
 
 function persistMessages(messages: Message[]) {
   try {
-    // Don't persist card messages — they'll be re-created via API on next conversation
     const toSave = messages.filter(m => m.role !== 'card')
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages: toSave, ts: Date.now() }))
-  } catch { /* storage quota exceeded or private mode */ }
+  } catch { }
 }
 
 const INITIAL_MESSAGE: Message = {
@@ -100,56 +100,63 @@ function InquiryConfirmCard({ card }: { card: InquiryCard }) {
   }
 
   return (
-    <div style={{ background: '#0A0C14', border: '1px solid rgba(201,168,76,0.25)', padding: '16px', marginTop: 4, maxWidth: '78%' }}>
-      <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 10 }}>RICHIESTA REGISTRATA ✓</div>
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-darker border border-gold/30 p-5 rounded-sm my-4 shadow-xl shadow-black/40"
+    >
+      <div className="flex items-center gap-2 text-[9px] tracking-[0.2em] text-gold font-bold mb-4 uppercase">
+        <ShieldCheck size={12} /> Richiesta Confermata
+      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+      <div className="space-y-3 mb-6">
         {[
           ['Rotta', `${card.from} → ${card.to}`],
           ['Data', card.date || 'Da definire'],
           ['Preventivo est.', card.estimatedQuote > 0 ? `€${card.estimatedQuote.toLocaleString('it-IT')}` : '—'],
           ['Deposito (30%)', card.depositEstimate > 0 ? `€${card.depositEstimate.toLocaleString('it-IT')}` : '—'],
         ].map(([label, value]) => (
-          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, fontFamily: 'Helvetica Neue, sans-serif' }}>
-            <span style={{ color: 'rgba(240,237,230,0.4)' }}>{label}</span>
-            <span style={{ color: '#F0EDE6', textAlign: 'right' }}>{value}</span>
+          <div key={label} className="flex justify-between items-center text-[12px]">
+            <span className="text-white/40">{label}</span>
+            <span className="text-white font-medium">{value}</span>
           </div>
         ))}
       </div>
 
-      {/* Deposit CTA */}
       {card.depositEstimate > 0 && (
-        <div style={{ marginBottom: 12 }}>
+        <div className="mb-6">
           {depositState === 'noauth' ? (
-            <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.5 }}>
-              Il team Le invierà il link di pagamento entro 2 ore.
-            </div>
+            <p className="text-[10px] text-white/40 leading-relaxed italic">
+              Il team Le invierà il link di pagamento non appena l'operatore confermerà gli slot.
+            </p>
           ) : depositState === 'done' && depositUrl ? (
-            <a href={depositUrl} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'block', fontSize: 11, letterSpacing: 1, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', textDecoration: 'none', border: '1px solid rgba(201,168,76,0.35)', padding: '8px 12px', textAlign: 'center' }}>
-              ↗ APRI PAGAMENTO
+            <a href={depositUrl} target="_blank" rel="noopener noreferrer" className="btn-gold-premium w-full text-[10px] py-3">
+              Completa Deposito ↗
             </a>
           ) : (
-            <button onClick={requestDeposit} disabled={depositState === 'loading'}
-              style={{ width: '100%', padding: '8px', fontSize: 11, letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif', cursor: depositState === 'loading' ? 'wait' : 'pointer', background: 'rgba(201,168,76,0.1)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)', transition: 'all 0.2s', opacity: depositState === 'loading' ? 0.6 : 1 }}>
-              {depositState === 'loading' ? 'PREPARAZIONE...' : `PAGA DEPOSITO — €${card.depositEstimate.toLocaleString('it-IT')}`}
+            <button 
+              onClick={requestDeposit} 
+              disabled={depositState === 'loading'}
+              className="w-full bg-gold/10 border border-gold/30 text-gold py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gold hover:text-darker transition-all disabled:opacity-50"
+            >
+              {depositState === 'loading' ? 'ELABORAZIONE...' : `Paga Deposito · €${card.depositEstimate.toLocaleString('it-IT')}`}
             </button>
           )}
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid rgba(201,168,76,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 10, padding: '2px 8px', color: tierColor, background: `${tierColor}18`, fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 0.5 }}>
+      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+        <div className="flex items-center gap-3">
+          <span className="text-[9px] px-2 py-0.5 rounded-sm font-bold tracking-tighter" style={{ color: tierColor, background: `${tierColor}15` }}>
             {card.leadTier}
           </span>
-          <span style={{ fontSize: 10, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>score {card.leadScore}</span>
+          <span className="text-[9px] text-white/20 uppercase tracking-widest">Score {card.leadScore}</span>
         </div>
-        <button onClick={copyId} style={{ background: 'none', border: 'none', fontSize: 10, color: copied ? '#4ade80' : 'rgba(240,237,230,0.3)', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
+        <button onClick={copyId} className="text-[9px] text-white/30 hover:text-gold transition-colors font-mono">
           {copied ? '✓ COPIATO' : `#${card.id.slice(-6).toUpperCase()}`}
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -197,7 +204,7 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
         const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
 
         for (const line of lines) {
-          const raw = line.slice(6) // strip 'data: '
+          const raw = line.slice(6)
           try {
             const parsed = JSON.parse(raw)
 
@@ -224,30 +231,21 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
               trackEvent('inquiry_sent', { id: card.id, from: card.from, to: card.to })
             }
 
-            if (parsed.error) {
-              setError(parsed.error)
-            }
-          } catch { /* partial JSON chunk — ignore */ }
+            if (parsed.error) setError(parsed.error)
+          } catch { }
         }
       }
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') return
-
-      // Retry once on network error
       if (!retrying) {
         await new Promise(r => setTimeout(r, 800))
         return doStream(apiMessages, true)
       }
-
       setMessages(prev => {
         const updated = [...prev]
-        updated[updated.length - 1] = {
-          role: 'assistant',
-          content: 'Mi scuso, si è verificato un problema tecnico. La prego di riprovare tra un momento.',
-        }
+        updated[updated.length - 1] = { role: 'assistant', content: 'Mi scuso, il sistema sta processando troppe richieste. La prego di riprovare.' }
         return updated
       })
-      setError('Connessione interrotta')
     } finally {
       setStreaming(false)
       abortRef.current = null
@@ -263,160 +261,140 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
     setMessages(updated)
     setStreaming(true)
     setMessages(prev => [...prev, { role: 'assistant', content: '' }])
-
     await doStream(updated)
   }
 
-  const reset = () => {
-    abortRef.current?.abort()
-    sessionStorage.removeItem(STORAGE_KEY)
-    setMessages([INITIAL_MESSAGE])
-    setError(null)
-    setStreaming(false)
-  }
-
-  const hasNewMessages = messages.length > 1
-
   return (
     <>
-      {/* Floating Button */}
       <button
-        onClick={() => {
-          const newOpen = !open;
-          setOpen(newOpen);
-          if (newOpen) trackEvent('chat_opened');
-        }}
-        title="Parla con Marco"
-        style={{ position: 'fixed', bottom: 58, right: 28, zIndex: 200, width: 60, height: 60, borderRadius: '50%', background: '#C9A84C', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: '0 8px 32px rgba(201,168,76,0.35)', transition: 'transform 0.2s' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}>
-        {open ? '✕' : '✦'}
-        {/* Unread dot */}
-        {!open && hasNewMessages && (
-          <span style={{ position: 'absolute', top: 8, right: 8, width: 10, height: 10, borderRadius: '50%', background: '#22c55e', border: '2px solid #0A0C14' }} />
-        )}
-      </button>
-
-      {/* Chat Panel */}
-      {open && (
-        <div style={{ position: 'fixed', bottom: 104, right: 28, zIndex: 199, width: 400, maxWidth: 'calc(100vw - 40px)', background: '#0A0C14', border: '1px solid rgba(201,168,76,0.25)', boxShadow: '0 24px 80px rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column', maxHeight: '72vh', animation: 'slideUp 0.25s ease' }}>
-
-          {/* Header */}
-          <div style={{ padding: '18px 20px', borderBottom: '1px solid rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg, #C9A84C, #E8C97A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#0A0C14', fontFamily: 'Cormorant Garamond, serif', flexShrink: 0 }}>M</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 500 }}>Marco</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: streaming ? '#C9A84C' : '#22c55e', display: 'inline-block', transition: 'background 0.3s' }} />
-                {streaming ? 'Sta scrivendo...' : 'Senior Aviation Advisor · Online'}
-              </div>
-            </div>
-            {hasNewMessages && (
-              <button onClick={reset} title="Nuova conversazione" style={{ background: 'none', border: 'none', color: 'rgba(240,237,230,0.25)', cursor: 'pointer', fontSize: 18, padding: '4px', flexShrink: 0, lineHeight: 1 }}>↺</button>
+        onClick={() => setOpen(!open)}
+        className="fixed bottom-10 right-8 z-[200] group"
+      >
+        <div className="relative">
+          <div className="absolute inset-0 bg-gold rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+          <div className="relative w-16 h-16 rounded-full bg-gold flex items-center justify-center text-darker shadow-2xl group-active:scale-90 transition-transform">
+            <AnimatePresence mode="wait">
+              {open ? (
+                <motion.div key="x" initial={{ opacity: 0, rotate: -90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 90 }}>
+                  <X size={24} strokeWidth={3} />
+                </motion.div>
+              ) : (
+                <motion.div key="chat" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+                  <Sparkles size={24} strokeWidth={2.5} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {!open && messages.length > 1 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-4 border-dark" />
             )}
-          </div>
-
-          {/* Error banner */}
-          {error && (
-            <div style={{ padding: '8px 16px', background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid rgba(239,68,68,0.15)', fontSize: 12, color: '#f87171', fontFamily: 'Helvetica Neue, sans-serif', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <span>{error}</span>
-              <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>✕</button>
-            </div>
-          )}
-
-          {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {messages.map((msg, i) => {
-              if (msg.role === 'card' && msg.card) {
-                return <InquiryConfirmCard key={i} card={msg.card} />
-              }
-              return (
-                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', gap: 8 }}>
-                  {msg.role === 'assistant' && (
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#0A0C14', flexShrink: 0, marginTop: 3 }}>M</div>
-                  )}
-                  <div style={{
-                    maxWidth: '80%',
-                    padding: '11px 14px',
-                    fontSize: 13,
-                    fontFamily: 'Helvetica Neue, sans-serif',
-                    lineHeight: 1.65,
-                    color: msg.role === 'user' ? '#F0EDE6' : 'rgba(240,237,230,0.85)',
-                    background: msg.role === 'user' ? 'rgba(201,168,76,0.12)' : '#0F1220',
-                    borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                  }}>
-                    {msg.content}
-                    {/* Cursor during streaming */}
-                    {streaming && i === messages.length - 1 && msg.role === 'assistant' && msg.content.length > 0 && (
-                      <span style={{ display: 'inline-block', width: 2, height: 13, background: '#C9A84C', marginLeft: 2, verticalAlign: 'middle', animation: 'pulse-gold 1s infinite' }} />
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-
-            {/* Typing indicator */}
-            {streaming && messages[messages.length - 1]?.content === '' && (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#C9A84C', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#0A0C14', flexShrink: 0 }}>M</div>
-                <div>
-                  <div style={{ display: 'flex', gap: 4, padding: '12px 14px', background: '#0F1220', borderRadius: '16px 16px 16px 4px', alignItems: 'center', width: 'fit-content' }}>
-                    {[0, 150, 300].map(delay => (
-                      <span key={delay} style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', display: 'block', animation: `pulse-gold 1.2s ${delay}ms infinite` }} />
-                    ))}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.5)', fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', marginTop: 6, marginLeft: 2 }}>
-                    Il tuo Aviation Advisor sta valutando la rotta...
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Quick suggestions — only when chat is fresh */}
-          {messages.length <= 1 && (
-            <div style={{ padding: '8px 12px', display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0, borderTop: '1px solid rgba(201,168,76,0.08)' }}>
-              {[
-                context?.from && context?.to ? `Volo ${context.from} → ${context.to}` : 'Preventivo volo',
-                'Empty legs disponibili',
-                'Flotta e categorie',
-                'Come funziona il deposito',
-              ].map(s => (
-                <button key={s}
-                  onClick={() => { setInput(s); setTimeout(() => inputRef.current?.focus(), 0) }}
-                  style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.18)', color: 'rgba(240,237,230,0.5)', padding: '4px 10px', fontSize: 10, letterSpacing: 0.8, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Helvetica Neue, sans-serif', flexShrink: 0, transition: 'all 0.2s' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#C9A84C'; el.style.color = '#C9A84C' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(201,168,76,0.18)'; el.style.color = 'rgba(240,237,230,0.5)' }}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input */}
-          <div style={{ padding: '12px 14px', borderTop: '1px solid rgba(201,168,76,0.15)', display: 'flex', gap: 8, flexShrink: 0 }}>
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-              placeholder="Scriva qui la sua richiesta..."
-              disabled={streaming}
-              style={{ flex: 1, background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', color: '#F0EDE6', padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'Helvetica Neue, sans-serif', opacity: streaming ? 0.6 : 1 }}
-            />
-            <button
-              onClick={send}
-              disabled={streaming || !input.trim()}
-              style={{ background: streaming || !input.trim() ? 'rgba(201,168,76,0.3)' : '#C9A84C', border: 'none', color: '#0A0C14', padding: '9px 14px', cursor: streaming || !input.trim() ? 'not-allowed' : 'pointer', fontSize: 15, transition: 'background 0.2s', flexShrink: 0, fontWeight: 700 }}>
-              →
-            </button>
           </div>
         </div>
-      )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            className="fixed bottom-28 right-8 z-[199] w-[420px] max-w-[calc(100vw-40px)] glass-panel overflow-hidden shadow-2xl shadow-black/80 flex flex-col h-[70vh] rounded-sm"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-darker font-serif text-xl font-bold">M</div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[3px] border-dark-card" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium text-sm">Marco</h3>
+                  <p className="text-[10px] text-white/40 tracking-widest uppercase flex items-center gap-1.5">
+                    {streaming ? (
+                      <span className="text-gold animate-pulse">Analisi in corso...</span>
+                    ) : (
+                      <>Aviation Concierge · <span className="text-emerald-400/80">Online</span></>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setMessages([INITIAL_MESSAGE]); persistMessages([INITIAL_MESSAGE]); }}
+                className="p-2 text-white/20 hover:text-gold transition-colors"
+                title="Reset Conversation"
+              >
+                <RotateCcw size={16} />
+              </button>
+            </div>
+
+            {/* Messages Feed */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}>
+                  {msg.role === 'assistant' && (
+                    <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold text-[10px] font-bold flex-shrink-0 mt-1">M</div>
+                  )}
+                  {msg.role === 'card' && msg.card ? (
+                    <InquiryConfirmCard card={msg.card} />
+                  ) : (
+                    <div className={`max-w-[85%] px-5 py-4 text-[13.5px] leading-relaxed tracking-wide ${
+                      msg.role === 'user' 
+                        ? 'bg-gold/10 text-white rounded-2xl rounded-tr-none border border-gold/10' 
+                        : 'bg-white/5 text-white/80 rounded-2xl rounded-tl-none border border-white/5'
+                    }`}>
+                      {msg.content || (streaming && i === messages.length - 1 && <span className="inline-block w-2 h-4 bg-gold/50 animate-pulse" />)}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Suggestions */}
+            {messages.length <= 1 && (
+              <div className="px-6 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
+                {[
+                  'Verifica disponibilità per Dubai',
+                  'Quali sono i vantaggi VIP?',
+                  'Preventivo per Olbia'
+                ].map(s => (
+                  <button 
+                    key={s} 
+                    onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                    className="flex-shrink-0 px-4 py-2 border border-white/5 rounded-full text-[10px] text-white/40 hover:border-gold/30 hover:text-gold transition-all whitespace-nowrap"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input Area */}
+            <div className="p-6 bg-white/5 border-t border-white/5">
+              <div className="relative flex items-center">
+                <input 
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  placeholder="Come posso aiutarla oggi?"
+                  className="w-full bg-dark/50 border border-white/5 rounded-sm px-5 py-4 text-sm text-white placeholder:text-white/20 focus:border-gold/50 focus:outline-none transition-all pr-12"
+                  disabled={streaming}
+                />
+                <button 
+                  onClick={send}
+                  disabled={streaming || !input.trim()}
+                  className="absolute right-3 p-2 text-gold hover:text-gold-light disabled:opacity-30 disabled:hover:text-gold transition-all"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+              <p className="mt-3 text-[9px] text-center text-white/20 uppercase tracking-[0.2em] font-medium">
+                <Zap size={8} className="inline mr-1" /> AI Powered Aviation Concierge
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

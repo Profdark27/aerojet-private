@@ -75,12 +75,12 @@ export const ROUTE_IMAGES: Record<string, string> = {
 }
 
 export const OPERATOR_IMAGES: Record<string, string> = {
-  'VistaJet':           '/images/operator-vistajet.jpg',
-  'NetJets':            '/images/operator-netjets.jpg',
-  'Air Charter Service':'/images/operator-air-charter.jpg',
-  'Wheels Up':          '/images/operator-wheels-up.jpg',
-  'Luxaviation':        '/images/operator-luxaviation.jpg',
-  'TAG Aviation':       '/images/operator-tag-aviation.jpg',
+  'VistaJet':           '/images/operator-vistajet.svg',
+  'NetJets':            '/images/operator-netjets.svg',
+  'Air Charter Service':'/images/operator-air-charter.svg',
+  'Wheels Up':          '/images/operator-wheels-up.svg',
+  'Luxaviation':        '/images/operator-luxaviation.svg',
+  'TAG Aviation':       '/images/operator-tag-aviation.svg',
 }
 
 export const HERO_BG      = '/images/hero-bg.jpg'

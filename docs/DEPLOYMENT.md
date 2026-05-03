@@ -1,52 +1,123 @@
-# Aerojet Private - Deployment Checklist
+# AeroJet Private — Guida al Deploy Production
 
-**URL repository GitHub:** [https://github.com/Profdark27/aerojet-private](https://github.com/Profdark27/aerojet-private)
+Questa guida contiene i passi critici per il lancio reale del sistema **AeroJet AI OS** su Vercel con database PostgreSQL (Neon).
 
-Questo documento traccia i passaggi e i requisiti necessari per portare con successo il progetto online sulla piattaforma Vercel. Il sistema implementa una forte resilienza agli errori ("graceful degradation"), pertanto gran parte dei servizi accessori può funzionare in "mock mode" qualora le relative chiavi API non fossero immediatamente fornite.
+---
 
-## 1. Importazione su Vercel
+## 0. Dominio & Configurazione Vercel
 
-1.  Accedi alla tua dashboard su [Vercel](https://vercel.com/dashboard).
-2.  Clicca su **Add New...** e seleziona **Project**.
-3.  Seleziona il repository `aerojet-private` dalla lista dei tuoi progetti GitHub e clicca **Import**.
-4.  Mantieni il "Framework Preset" rilevato in automatico (Next.js).
+- **Dominio produzione**: `aerojet-private.com`
+- **Vercel project**: `corlatino2001-4887s-projects/aerojet-private`
+- **Deploy command**: `vercel --prod --yes`
+- **Stripe webhook URL**: `https://aerojet-private.com/api/webhooks/stripe`
 
-## 2. Variabili d'Ambiente (ENV)
+### DNS Records da aggiungere al Registrar (UNICA AZIONE MANUALE)
 
-Prima di cliccare "Deploy", devi popolare la sezione **Environment Variables**. Le variabili sono divise in due categorie in base alla loro criticità.
+Questi record vanno aggiunti nel pannello DNS del registrar dove hai acquistato `aerojet-private.com`:
 
-### 🔴 Obbligatorie Minime (Senza queste, il login e il database andranno in crash in produzione)
-Queste tre variabili devono essere fornite *prima* del primo avvio per garantire l'accesso al sistema.
-*   `DATABASE_URL`: La stringa di connessione fornita dal tuo database Postgres (es. Supabase, Neon, Vercel Postgres).
-*   `NEXTAUTH_SECRET`: Stringa casuale (genera con `openssl rand -base64 32`) per criptare i token delle sessioni.
-*   `RESEND_API_KEY`: API Key di Resend, necessaria per recapitare i Magic Link alla mail degli utenti.
+| Type  | Host | Value                  | TTL  |
+|-------|------|------------------------|------|
+| A     | @    | `76.76.21.21`          | 3600 |
+| CNAME | www  | `cname.vercel-dns.com` | 3600 |
 
-### 🟡 Opzionali / Fallback (Il sistema continuerà a funzionare con mock o avvisi)
-*   `STRIPE_SECRET_KEY`: Senza questa chiave, il checkout andrà in modalità "Mock", simulando un acquisto e saltando l'infrastruttura reale.
-*   `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Vedi sopra.
-*   `STRIPE_WEBHOOK_SECRET`: Senza questa chiave, le firme dei webhook non verranno verificate (comportamento "dev-mode").
-*   `ANTHROPIC_API_KEY`: Se mancante, il concierge AI (Marco) restituirà in chat un elegante avviso di manutenzione.
-*   `NEXT_PUBLIC_WHATSAPP_NUMBER`: Numero per la prenotazione manuale. Se mancante, il bottone reindirizzerà a un placeholder generico.
+> Note: `76.76.21.21` e `cname.vercel-dns.com` sono gli IP/CNAME ufficiali di Vercel per domini custom con nameserver di terze parti. Vercel verificherà automaticamente il dominio dopo la propagazione DNS (tipicamente entro 24-48h).
 
-## 3. Sincronizzazione Database (Prisma)
+---
 
-Prima che Vercel termini la compilazione, devi instanziare lo schema sul tuo DB di produzione appena creato.
-Apri PowerShell sul tuo computer locale, inserisci il `DATABASE_URL` effettivo, ed esegui il push dello schema:
+## 1. Database (PostgreSQL / Neon)
 
-```powershell
-$env:DATABASE_URL="LA_TUA_STRINGA_DEL_DATABASE_PROD"
-npx prisma db push
-```
+Poiché il progetto è passato da SQLite a PostgreSQL, la cronologia delle migrazioni deve essere reinizializzata.
 
-## 4. Checklist Test Post-Deploy
+### Primo Deploy (Baseline)
+1. Assicurati che `DATABASE_URL` punti a Neon.
+2. Elimina la cartella `prisma/migrations` locale (se contiene migrazioni SQLite).
+3. Esegui:
+   ```bash
+   npx prisma db push
+   ```
+   *Questo sincronizza lo schema senza creare file di migrazione storici.*
 
-Una volta ottenuto il bollino verde su Vercel, visita l'URL di produzione ed esegui la seguente verifica incrociata:
+### Deploy Successivi
+Ogni volta che lo schema cambia:
+1. `npx prisma migrate dev` (in locale)
+2. `npx prisma migrate deploy` (su Vercel/CI)
+3. `npx prisma generate` (sempre necessario per aggiornare il client)
 
-- [ ] L'**Homepage** si carica istantaneamente senza artefatti o 404 (Placeholder o Immagini Live).
-- [ ] La rotta `/api/health` restituisce un JSON formato con code `207 Multi-Status`.
-- [ ] La rotta `/api/avinode/empty-legs` restituisce la lista json `200 OK`.
-- [ ] La pagina `/login` renderizza il form.
-- [ ] Inserendo l'email, l'invio restituisce successo. Il link "Magic Link" arriva nella casella email indicata tramite Resend.
-- [ ] Cliccando il link dall'email, si accede a `/dashboard` con lo stato auth correttamente popolato in alto a destra.
-- [ ] Il processo di checkout (deposito volo) raggiunge la /booking/success. A seconda degli ENV, usa il finto mock URL o le vere schermate Stripe.
-- [ ] Interrogando la pagina, il widget Chat in basso a destra si apre. Risponde come "Marco" (Live via Anthropic) oppure restituisce il corretto testo di fallback di configurazione.
+---
+
+## 1.1 Health Monitoring
+Verifica lo stato del sistema post-deploy visitando:
+`https://aerojet-private.com/api/health`
+
+Questo endpoint verifica:
+- Connessione al database.
+- Configurazione chiavi API (Stripe, Anthropic, Resend).
+- Integrità del sistema di tracking voli (FlightAware).
+- White-list degli amministratori (Broker Auth).
+
+---
+
+## 2. Configurazione Vercel
+
+Imposta le seguenti Environment Variables su Vercel:
+
+### Core & Auth
+*   `DATABASE_URL`: URL PostgreSQL di Neon.
+*   `NEXT_PUBLIC_BASE_URL`: `https://aerojet-private.com`
+*   `NEXTAUTH_URL`: `https://aerojet-private.com`
+*   `AUTH_URL`: `https://aerojet-private.com`
+*   `AUTH_SECRET`: Genera con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+*   `AUTH_TRUST_HOST`: `true`
+*   `NEXTAUTH_SECRET`: (legacy, mantieni allineato ad AUTH_SECRET)
+
+### Stripe (Live)
+*   `STRIPE_SECRET_KEY`: `sk_live_...`
+*   `STRIPE_WEBHOOK_SECRET`: `whsec_...` (Ottenuta dopo aver creato il webhook su Stripe)
+*   `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: `pk_live_...`
+
+### Email (Resend)
+*   `RESEND_API_KEY`: `re_...`
+*   `RESEND_FROM_EMAIL`: `concierge@aerojet-private.com` (Deve essere un dominio verificato su Resend)
+
+### Broker Config
+*   `BROKER_EMAIL`: `admin@aerojet-private.com` (Per notifiche lead)
+*   `BROKER_EMAILS`: `admin@aerojet-private.com,broker@aerojet-private.com` (Email con accesso alla dashboard)
+
+---
+
+## 3. Stripe Webhook
+
+1. Vai nella Dashboard Stripe -> Developers -> Webhooks.
+2. Aggiungi endpoint: `https://aerojet-private.com/api/webhooks/stripe`.
+3. Seleziona evento: `checkout.session.completed`.
+4. Copia il `Signing Secret` e incollalo in `STRIPE_WEBHOOK_SECRET` su Vercel.
+
+---
+
+## 4. Sicurezza Dashboard
+
+La dashboard è protetta da un **Middleware** (`middleware.ts`). Solo le email presenti in `BROKER_EMAILS` avranno il ruolo `BROKER` e potranno accedere a:
+*   `/dashboard/*`
+*   `/api/operations/*`
+*   `/api/dashboard/*`
+
+Se un utente non autorizzato prova ad accedere, verrà reindirizzato al login.
+
+---
+
+## 5. Verifica Post-Deploy (E2E)
+
+Dopo il deploy, esegui questi test sul dominio reale:
+
+1.  **Form Lead**: Invia una richiesta dalla home. Verifica di ricevere l'email "Richiesta Ricevuta".
+2.  **Login Broker**: Accedi con una delle email in `BROKER_EMAILS`. Verifica di ricevere il Magic Link via email.
+3.  **Generazione Preventivo**: Crea un preventivo e invialo. Il link nell'email deve puntare al dominio reale.
+4.  **Pagamento**: Esegui un pagamento di test (o reale con 1€). Verifica che il webhook crei il `Booking` e i task in `Operations`.
+
+---
+
+## ⚠️ Rischi Comuni
+
+*   **Trailing Slash**: Assicurati che `NEXT_PUBLIC_BASE_URL` NON abbia lo slash finale.
+*   **Stripe Metadata**: Non modificare la struttura del metadata nel codice, è essenziale per il webhook.
+*   **Provider Switch**: Se `db push` fallisce, potrebbe essere necessario svuotare le tabelle esistenti in Neon.

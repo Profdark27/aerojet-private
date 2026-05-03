@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { calculateLeadScore } from '@/lib/services/lead-scoring'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'placeholder' })
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 interface ChatContext {
   from?: string

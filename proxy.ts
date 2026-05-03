@@ -26,7 +26,7 @@ export default auth((req) => {
       return NextResponse.redirect(url)
     }
     // Broker + Admin only sections
-    const brokerOnly = ['/dashboard/quotes', '/dashboard/operators', '/dashboard/analytics']
+    const brokerOnly = ['/dashboard/quotes', '/dashboard/operators', '/dashboard/analytics', '/dashboard/operations']
     if (brokerOnly.some(p => pathname.startsWith(p))) {
       if (role !== 'BROKER' && role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/dashboard', req.url))

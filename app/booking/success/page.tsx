@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { trackEvent } from '@/lib/tracking'
 
 interface BookingDetails {
+  id: string
   confirmationCode: string
   fromCity?: string
   toCity?: string
@@ -38,7 +39,7 @@ function SuccessContent() {
 
   const confirmationCode: string | null = details?.confirmationCode ?? (
     isMock
-      ? `AJ-DEV${Math.random().toString(36).substring(2, 5).toUpperCase()}`
+      ? `AJ-MOCK-${(fromParam + toParam + depositParam).length % 1000}`
       : sessionId
         ? `AJ-${sessionId.slice(-6).toUpperCase()}`
         : null // no session_id = show syncing state, never fake AJ-XXXXXX
@@ -121,10 +122,12 @@ function SuccessContent() {
         )}
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>
-            TORNA AL SITO
-          </Link>
-          <Link href="/profile" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', background: '#C9A84C', color: '#0A0C14', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500 }}>
+          {details?.id && (
+            <Link href={`/trip/${details.id}`} style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', background: '#C9A84C', color: '#0A0C14', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 600 }}>
+              APRI TRIP PORTAL
+            </Link>
+          )}
+          <Link href="/profile" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>
             AREA PERSONALE
           </Link>
         </div>

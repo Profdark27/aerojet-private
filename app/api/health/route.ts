@@ -9,7 +9,9 @@ export async function GET() {
       avinode: process.env.AVINODE_API_KEY ? 'configured' : 'mock_mode',
       stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'missing_key',
       resend: process.env.RESEND_API_KEY ? 'configured' : 'dev_mode',
-      database: process.env.DATABASE_URL ? 'configured' : 'sqlite_dev',
+      database: process.env.DATABASE_URL ? 'configured' : 'missing_key',
+      flightaware: process.env.FLIGHTAWARE_API_KEY ? 'configured' : 'missing_key',
+      broker_auth: process.env.BROKER_EMAILS ? 'configured' : 'missing_key',
     },
     environment: process.env.NODE_ENV,
   }

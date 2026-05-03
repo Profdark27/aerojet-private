@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#060810;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0D1526;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#C9A84C;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#C9A84C;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#C9A84C;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Stars -->
+  <circle cx="100" cy="80" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="280" cy="50" r="1" fill="white" opacity="0.5"/>
+  <circle cx="500" cy="110" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="750" cy="65" r="1" fill="white" opacity="0.7"/>
+  <circle cx="950" cy="95" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="1100" cy="40" r="1" fill="white" opacity="0.6"/>
+  <circle cx="1180" cy="130" r="1.5" fill="white" opacity="0.4"/>
+  <circle cx="180" cy="200" r="1" fill="white" opacity="0.4"/>
+  <circle cx="1050" cy="180" r="1" fill="white" opacity="0.5"/>
+  <!-- Center glow -->
+  <ellipse cx="600" cy="315" rx="450" ry="200" fill="#0D2060" opacity="0.12"/>
+  <!-- Jet silhouette center -->
+  <g transform="translate(600,280)">
+    <path d="M-200,0 L-35,-14 L0,-9 L35,-14 L200,0 L35,14 L0,9 L-35,14 Z" fill="none" stroke="#C9A84C" stroke-width="2" opacity="0.4"/>
+    <path d="M-70,-9 L0,-45 L0,-9 Z" fill="none" stroke="#C9A84C" stroke-width="1.5" opacity="0.3"/>
+    <path d="M-25,9 L0,48 L0,9 Z" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity="0.25"/>
+    <circle cx="0" cy="0" r="5" fill="#C9A84C" opacity="0.6"/>
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#C9A84C" stroke-width="0.5" opacity="0.1"/>
+  </g>
+  <!-- Gold separator line -->
+  <rect x="350" y="380" width="500" height="1" fill="url(#gold)"/>
+  <!-- Brand name -->
+  <text x="600" y="450" font-family="Georgia, serif" font-size="52" fill="white" text-anchor="middle" letter-spacing="8" font-weight="300">AEROJET</text>
+  <text x="600" y="490" font-family="Georgia, serif" font-size="18" fill="#C9A84C" text-anchor="middle" letter-spacing="12" opacity="0.8">PRIVATE</text>
+  <!-- Tagline -->
+  <text x="600" y="540" font-family="Arial, sans-serif" font-size="13" fill="white" text-anchor="middle" letter-spacing="3" opacity="0.45">VOLI PRIVATI DI LUSSO</text>
+  <!-- Corner marks -->
+  <path d="M40,40 L40,70 M40,40 L70,40" stroke="#C9A84C" stroke-width="1.5" opacity="0.3" fill="none"/>
+  <path d="M1160,40 L1160,70 M1160,40 L1130,40" stroke="#C9A84C" stroke-width="1.5" opacity="0.3" fill="none"/>
+  <path d="M40,590 L40,560 M40,590 L70,590" stroke="#C9A84C" stroke-width="1.5" opacity="0.3" fill="none"/>
+  <path d="M1160,590 L1160,560 M1160,590 L1130,590" stroke="#C9A84C" stroke-width="1.5" opacity="0.3" fill="none"/>
+</svg>

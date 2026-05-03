@@ -18,10 +18,13 @@ export async function POST(request: NextRequest) {
     const deposit = calcDeposit(totalPrice)
     const commission = calcCommission(totalPrice)
 
-    const origin = request.headers.get('origin') || 'http://localhost:3000'
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
     // Check Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_placeholder') {
+      if (process.env.NODE_ENV === 'production') {
+        return Response.json({ error: 'Payment provider not configured' }, { status: 500 })
+      }
       // Return mock session for development
       return Response.json({
         url: `${origin}/booking/success?mock=true&aircraft=${encodeURIComponent(aircraft.model)}&from=${from}&to=${to}&deposit=${deposit}`,

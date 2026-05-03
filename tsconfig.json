@@ -33,6 +33,7 @@
   "exclude": [
     "node_modules",
     "_cleanup_archive_windows",
-    "skills"
+    "skills",
+    "aerojet-ai-os"
   ]
 }

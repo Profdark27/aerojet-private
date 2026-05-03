@@ -1,91 +1,115 @@
 'use client'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Sparkles, Linkedin, Twitter, Instagram, ShieldCheck, Mail, Phone, MapPin } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#030508', padding: '72px 48px 32px', borderTop: '1px solid rgba(201,168,76,0.12)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
-        {/* Top grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 48, marginBottom: 64 }}>
-
-          {/* Brand */}
-          <div style={{ gridColumn: 'span 1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <span style={{ color: '#C9A84C', fontSize: 18 }}>✦</span>
-              <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: 6 }}>AEROJET</span>
-              <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', alignSelf: 'flex-end', marginBottom: 2 }}>PRIVATE</span>
-            </div>
-            <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.8, fontWeight: 300 }}>
-              Il lusso del tempo.<br />La libertà del cielo.
+    <footer className="bg-darker pt-24 pb-12 px-8 md:px-16 border-t border-white/5 overflow-hidden relative">
+      <div className="bg-noise opacity-[0.02]" />
+      
+      <div className="max-w-screen-2xl mx-auto relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
+          
+          {/* Brand & Mission */}
+          <div className="lg:col-span-2">
+            <Link href="/" className="flex items-center gap-3 no-underline mb-8">
+              <div className="w-10 h-10 rounded-sm bg-gold/10 flex items-center justify-center text-gold">
+                <Sparkles size={22} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-serif tracking-[0.4em] text-white font-bold leading-none">AEROJET</span>
+                <span className="text-[10px] tracking-[0.2em] text-gold uppercase mt-1">Private Aviation</span>
+              </div>
+            </Link>
+            <p className="text-cream-dim text-lg font-serif font-light leading-relaxed max-w-sm mb-10 italic">
+              "Definiamo nuovi standard nell'aviazione privata, dove l'eccellenza operativa incontra l'intelligenza artificiale."
             </p>
-            <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
-              {['in', 'tw', 'ig'].map(s => (
-                <div key={s} style={{ width: 36, height: 36, border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'rgba(240,237,230,0.4)', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                  {s}
-                </div>
+            <div className="flex gap-4">
+              {[
+                { icon: Linkedin, href: '#' },
+                { icon: Twitter, href: '#' },
+                { icon: Instagram, href: '#' }
+              ].map((social, idx) => (
+                <Link 
+                  key={idx} 
+                  href={social.href}
+                  className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center text-white/30 hover:border-gold hover:text-gold transition-all duration-300"
+                >
+                  <social.icon size={18} strokeWidth={1.5} />
+                </Link>
               ))}
             </div>
           </div>
 
-          {/* Services */}
+          {/* Quick Links */}
           <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>SERVIZI</div>
-            {['Charter Privato', 'Jet Card', 'Empty Legs', 'Membership', 'Elicottero', 'Cargo Aereo'].map(l => (
-              <div key={l} style={{ marginBottom: 12 }}>
-                <Link href="#" style={{ fontSize: 14, color: 'rgba(240,237,230,0.5)', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, transition: 'color 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#C9A84C')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,237,230,0.5)')}>
-                  {l}
-                </Link>
-              </div>
-            ))}
+            <h4 className="text-[10px] uppercase tracking-[0.4em] text-gold font-bold mb-10">Servizi</h4>
+            <ul className="space-y-4">
+              {['Charter Privato', 'Empty Legs', 'Membership VIP', 'Gestione Flotta', 'Heli-Transfer'].map(item => (
+                <li key={item}>
+                  <Link href="#" className="text-[13px] text-white/40 hover:text-white no-underline transition-colors font-light">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Operators */}
+          {/* Network */}
           <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>OPERATORI</div>
-            {[['VistaJet', 'https://www.vistajet.com'], ['NetJets', 'https://www.netjets.com'], ['Air Charter Service', 'https://www.aircharterservice.com'], ['Wheels Up', 'https://www.wheelsup.com'], ['Luxaviation', 'https://www.luxaviation.com'], ['TAG Aviation', 'https://www.tagaviation.com']].map(([name, href]) => (
-              <div key={name} style={{ marginBottom: 12 }}>
-                <a href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: 'rgba(240,237,230,0.5)', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300 }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#C9A84C')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,237,230,0.5)')}>
-                  {name}
-                </a>
-              </div>
-            ))}
+            <h4 className="text-[10px] uppercase tracking-[0.4em] text-gold font-bold mb-10">Global Network</h4>
+            <ul className="space-y-4">
+              {['VistaJet Partner', 'NetJets Solutions', 'Wheels Up Global', 'AOC Certified', 'EASA Standards'].map(item => (
+                <li key={item}>
+                  <Link href="#" className="text-[13px] text-white/40 hover:text-white no-underline transition-colors font-light">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>CONTATTI</div>
-            <div style={{ fontSize: 14, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 2 }}>
-              <div>concierge@aerojet.app</div>
-              <div>+39 02 1234 5678</div>
-              <div style={{ marginTop: 16, fontSize: 12, color: '#C9A84C' }}>Disponibili 24/7</div>
-            </div>
-            <div style={{ marginTop: 24 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 12 }}>CERTIFICAZIONI</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['EASA', 'FAA', 'IATA', 'AOC'].map(c => (
-                  <span key={c} style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', border: '1px solid rgba(201,168,76,0.3)', padding: '3px 8px', fontFamily: 'Helvetica Neue, sans-serif' }}>{c}</span>
-                ))}
-              </div>
-            </div>
+            <h4 className="text-[10px] uppercase tracking-[0.4em] text-gold font-bold mb-10">Contatti</h4>
+            <ul className="space-y-6">
+              <li className="flex items-start gap-3">
+                <Mail size={16} className="text-gold/60 mt-1" />
+                <span className="text-[13px] text-white/40 font-light">concierge@aerojet.app</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Phone size={16} className="text-gold/60 mt-1" />
+                <span className="text-[13px] text-white/40 font-light">+39 02 1234 5678</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <MapPin size={16} className="text-gold/60 mt-1" />
+                <span className="text-[13px] text-white/40 font-light">Private Terminal, Linate<br />Milano, Italia</span>
+              </li>
+            </ul>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(201,168,76,0.1)', margin: '0 0 28px' }} />
+        <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent mb-12" />
 
-        {/* Bottom */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontSize: 12, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-            © 2026 Aerojet Private. Tutti i diritti riservati. P.IVA IT12345678901
-          </span>
-          <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy Policy', 'Termini di Servizio', 'Cookie Policy', 'Broker Area'].map(l => (
-              <Link key={l} href="#" style={{ fontSize: 12, color: 'rgba(240,237,230,0.3)', textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif' }}>{l}</Link>
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-4 text-[11px] text-white/20 font-light">
+            <span>© 2026 Aerojet Private Solutions.</span>
+            <span className="hidden md:block w-1 h-1 bg-white/10 rounded-full" />
+            <span className="uppercase tracking-widest">Part of AeroJet Group</span>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-8">
+            {['Privacy', 'Terms', 'Cookie', 'Broker Login'].map(l => (
+              <Link 
+                key={l} 
+                href={l === 'Broker Login' ? '/dashboard' : '#'} 
+                className="text-[11px] text-white/30 hover:text-gold no-underline transition-colors uppercase tracking-widest font-medium"
+              >
+                {l}
+              </Link>
             ))}
           </div>
         </div>

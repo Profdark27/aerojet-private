@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { stripe, calcDeposit, calcCommission, DEPOSIT_RATE } from '@/lib/stripe'
+import { stripe, calcDeposit, DEPOSIT_RATE } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
 
     // Mock Mode fallback
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_0')) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Stripe non configurato per la produzione' }, { status: 500 })
+      }
       const mockSessionId = `mock_${Date.now()}`
       await prisma.inquiry.update({
         where: { id: quote.inquiryId! },
@@ -82,7 +85,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         type: 'flight_deposit',
         quote_id: quote.id,
-        inquiry_id: quote.inquiryId,
+        inquiry_id: quote.inquiryId ?? '',
         from_city: fromCity,
         to_city: toCity,
         flight_date: flightDate,
@@ -97,7 +100,7 @@ export async function POST(req: NextRequest) {
         description: `Aerojet Private — Deposito Preventivo ${quote.id}`,
         metadata: {
           quote_id: quote.id,
-          inquiry_id: quote.inquiryId,
+          inquiry_id: quote.inquiryId ?? '',
           customer_name: quote.inquiry.name,
         },
       },
@@ -118,6 +121,11 @@ export async function POST(req: NextRequest) {
         metadata: { quoteId: quote.id, sessionId: stripeSession.id }
       })
     }).catch(() => {})
+
+    if (!stripeSession.url) {
+      console.error('Stripe returned null url for session:', stripeSession.id)
+      return NextResponse.json({ error: 'Stripe non ha restituito un URL di pagamento' }, { status: 500 })
+    }
 
     return NextResponse.json({
       url: stripeSession.url,

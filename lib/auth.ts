@@ -21,6 +21,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       sendVerificationRequest: async ({ identifier: email, url }) => {
         // Fallback: log magic link if Resend not configured
         if (!process.env.RESEND_API_KEY) {
+          if (process.env.NODE_ENV === 'production') {
+            throw new Error('Resend API Key is missing in production')
+          }
           console.log('\n─────────────────────────────────────')
           console.log('🔑 MAGIC LINK (dev mode, no Resend key):')
           console.log(url)

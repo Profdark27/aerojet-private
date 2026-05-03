@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0D1020"/>
+  <rect x="1" y="1" width="198" height="198" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.3"/>
+  <!-- Hexagonal luxury mark -->
+  <path d="M100,48 L128,64 L128,96 L100,112 L72,96 L72,64 Z" fill="none" stroke="#C9A84C" stroke-width="1.5" opacity="0.5"/>
+  <path d="M100,56 L122,68 L122,92 L100,104 L78,92 L78,68 Z" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.25"/>
+  <!-- L initial -->
+  <path d="M92,68 L92,96 L112,96" fill="none" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+  <!-- Outer ring -->
+  <circle cx="100" cy="100" r="58" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.2"/>
+  <!-- Label -->
+  <text x="100" y="172" font-family="Georgia, serif" font-size="11" fill="#C9A84C" text-anchor="middle" letter-spacing="3" opacity="0.85">LUXAVIATION</text>
+  <!-- Corner marks -->
+  <path d="M12,12 L12,24 M12,12 L24,12" stroke="#C9A84C" stroke-width="1" opacity="0.3" fill="none"/>
+  <path d="M188,12 L188,24 M188,12 L176,12" stroke="#C9A84C" stroke-width="1" opacity="0.3" fill="none"/>
+  <path d="M12,188 L12,176 M12,188 L24,188" stroke="#C9A84C" stroke-width="1" opacity="0.3" fill="none"/>
+  <path d="M188,188 L188,176 M188,188 L176,188" stroke="#C9A84C" stroke-width="1" opacity="0.3" fill="none"/>
+</svg>

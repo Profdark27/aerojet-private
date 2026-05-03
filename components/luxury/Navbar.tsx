@@ -1,80 +1,143 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Menu, X, Sparkles } from 'lucide-react'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 60)
+    const fn = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', fn)
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
   return (
     <>
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: scrolled ? '14px 48px' : '22px 48px',
-        background: scrolled ? 'rgba(10,12,20,0.96)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(201,168,76,0.15)' : 'none',
-        transition: 'all 0.4s ease',
-      }}>
-        {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <span style={{ color: '#C9A84C', fontSize: 18 }}>✦</span>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: 6, color: '#F0EDE6', fontFamily: 'Cormorant Garamond, serif' }}>AEROJET</span>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', alignSelf: 'flex-end', marginBottom: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>PRIVATE</span>
-        </Link>
+      <nav 
+        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-8 md:px-16 ${
+          scrolled 
+            ? 'py-4 glass-panel border-b border-white/5 bg-dark-glass' 
+            : 'py-8 bg-transparent'
+        }`}
+      >
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-3 no-underline">
+            <div className={`w-8 h-8 rounded-sm flex items-center justify-center transition-all duration-500 ${scrolled ? 'bg-gold/10 text-gold' : 'text-white'}`}>
+              <Sparkles size={20} className={scrolled ? 'animate-pulse-soft' : ''} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-serif tracking-[0.4em] text-white font-bold leading-none">AEROJET</span>
+              <span className="text-[9px] tracking-[0.2em] text-gold uppercase mt-1 font-medium">Private</span>
+            </div>
+          </Link>
 
-        {/* Desktop Links */}
-        <div className="desktop-only" style={{ display: 'flex', gap: 32 }}>
-          {[['Charter', '/search'], ['Flotta', '/#fleet'], ['Operatori', '/#operators'], ['Empty Legs', '/#emptylegs'], ['Membership', '/#membership']].map(([label, href]) => (
-            <Link key={label} href={href} style={{ color: 'rgba(240,237,230,0.7)', fontSize: 13, letterSpacing: 2, textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#C9A84C')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,237,230,0.7)')}>
-              {label}
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-12">
+            {[
+              ['Charter', '/search'], 
+              ['Flotta', '/#fleet'], 
+              ['Operatori', '/#operators'], 
+              ['Empty Legs', '/empty-legs'], 
+              ['Membership', '/#membership']
+            ].map(([label, href]) => (
+              <Link 
+                key={label} 
+                href={href} 
+                className="text-[11px] uppercase tracking-[0.2em] text-white/50 hover:text-gold transition-colors no-underline font-medium"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="hidden lg:flex items-center gap-6">
+            <Link 
+              href="/dashboard" 
+              className="text-[10px] uppercase tracking-[0.2em] text-white/30 hover:text-white no-underline font-bold transition-colors"
+            >
+              Broker Area
             </Link>
-          ))}
-        </div>
+            <Link 
+              href="/search" 
+              className="btn-gold-premium px-8 py-3.5"
+            >
+              Prenota ✦
+            </Link>
+          </div>
 
-        {/* CTA + Dashboard */}
-        <div className="desktop-only" style={{ display: 'flex', gap: 12 }}>
-          <Link href="/dashboard" style={{ color: 'rgba(240,237,230,0.6)', fontSize: 12, letterSpacing: 2, textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', padding: '10px 16px', border: '1px solid rgba(201,168,76,0.2)' }}>
-            Dashboard
-          </Link>
-          <Link href="/search" style={{ background: '#C9A84C', color: '#0A0C14', padding: '10px 24px', fontSize: 12, letterSpacing: 2, textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500 }}>
-            Prenota Ora
-          </Link>
+          {/* Mobile Toggle */}
+          <button 
+            className="lg:hidden text-gold p-2"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
         </div>
-
-        {/* Mobile Hamburger */}
-        <button className="mobile-only" onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: 'none', border: 'none', color: '#C9A84C', cursor: 'pointer', padding: 8 }}>
-          <div style={{ width: 22, height: 2, background: '#C9A84C', marginBottom: 5, transition: 'all 0.3s' }} />
-          <div style={{ width: 22, height: 2, background: '#C9A84C', marginBottom: 5 }} />
-          <div style={{ width: 22, height: 2, background: '#C9A84C' }} />
-        </button>
       </nav>
 
       {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="mobile-only" style={{ position: 'fixed', inset: 0, background: 'rgba(10,12,20,0.98)', zIndex: 99, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
-          {[['Charter', '/search'], ['Flotta', '/#fleet'], ['Operatori', '/#operators'], ['Empty Legs', '/#emptylegs'], ['Membership', '/#membership'], ['Dashboard', '/dashboard']].map(([label, href]) => (
-            <Link key={label} href={href} onClick={() => setMenuOpen(false)}
-              style={{ color: '#F0EDE6', fontSize: 28, letterSpacing: 4, textDecoration: 'none', fontFamily: 'Cormorant Garamond, serif', fontWeight: 300 }}>
-              {label}
-            </Link>
-          ))}
-          <Link href="/search" onClick={() => setMenuOpen(false)}
-            style={{ background: '#C9A84C', color: '#0A0C14', padding: '16px 48px', fontSize: 13, letterSpacing: 3, textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500, marginTop: 16 }}>
-            PRENOTA ORA
-          </Link>
-        </div>
-      )}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[110] bg-darker flex flex-col p-10"
+          >
+            <div className="flex justify-between items-center mb-20">
+              <div className="flex flex-col">
+                <span className="text-xl font-serif tracking-[0.4em] text-white font-bold">AEROJET</span>
+                <span className="text-[9px] tracking-[0.2em] text-gold uppercase mt-1">Private</span>
+              </div>
+              <button onClick={() => setMenuOpen(false)} className="text-gold p-2">
+                <X size={32} strokeWidth={1} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-8">
+              {[
+                ['Charter', '/search'], 
+                ['Flotta', '/#fleet'], 
+                ['Operatori', '/#operators'], 
+                ['Empty Legs', '/empty-legs'], 
+                ['Membership', '/#membership'],
+                ['Broker Dashboard', '/dashboard']
+              ].map(([label, href], idx) => (
+                <motion.div
+                  key={label}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Link 
+                    href={href} 
+                    onClick={() => setMenuOpen(false)}
+                    className="text-3xl font-serif font-light text-white/80 hover:text-gold no-underline transition-colors tracking-wide"
+                  >
+                    {label}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-auto">
+              <Link 
+                href="/search" 
+                onClick={() => setMenuOpen(false)}
+                className="btn-gold-premium w-full text-[13px] py-6"
+              >
+                PRENOTA ORA ✦
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

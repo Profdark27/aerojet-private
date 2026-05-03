@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'inquiryId o bookingId richiesto' }, { status: 400 })
   }
 
-  const origin = request.headers.get('origin') || 'http://localhost:3000'
+  const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   // ── Load source record ──────────────────────────────────────────
   let totalAmount: number
@@ -98,6 +98,9 @@ export async function POST(request: NextRequest) {
 
   // ── Dev mock (no Stripe key) ─────────────────────────────────────
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_0')) {
+    if (process.env.NODE_ENV === 'production') {
+      return Response.json({ error: 'Stripe non configurato per la produzione' }, { status: 500 })
+    }
     // Save sessionId placeholder so we can test the rest of the flow
     const mockSessionId = `mock_${Date.now()}`
     if (metaType === 'inquiry') {

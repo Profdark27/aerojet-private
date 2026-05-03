@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const booking = await prisma.booking.findFirst({
     where: { stripeSessionId: sessionId },
     select: {
+      id: true,
       confirmationCode: true,
       fromCity: true,
       toCity: true,

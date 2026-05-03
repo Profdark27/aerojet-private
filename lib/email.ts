@@ -9,6 +9,7 @@
 
 const FROM = process.env.RESEND_FROM_EMAIL || 'concierge@aerojet.app'
 const RESEND_KEY = process.env.RESEND_API_KEY
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'
 
 export async function send(to: string, subject: string, html: string) {
   if (!RESEND_KEY) {
@@ -72,18 +73,26 @@ function row(label: string, value: string) {
 
 // ─── 1. Conferma Prenotazione ──────────────────────────────
 export async function sendBookingConfirmation({
-  to, name, aircraft, from, dest, date, pax, deposit, total, confirmCode,
+  to, name, aircraft, from, dest, date, pax, deposit, total, confirmCode, bookingId,
 }: {
   to: string; name: string; aircraft: string
   from: string; dest: string; date: string; pax: number
-  deposit: number; total: number; confirmCode: string
+  deposit: number; total: number; confirmCode: string; bookingId?: string
 }) {
+  const tripUrl = bookingId ? `${BASE_URL}/trip/${bookingId}` : `${BASE_URL}/dashboard`
+  
   const html = base(`
     <h2 style="color:#F0EDE6;font-size:30px;font-weight:300;margin:0 0 8px;">Prenotazione Confermata</h2>
     <p style="color:#C9A84C;font-size:12px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">CODICE: ${confirmCode}</p>
+    
     <p style="color:rgba(240,237,230,0.65);font-size:15px;font-family:Helvetica Neue,sans-serif;line-height:1.8;margin:0 0 32px;">
-      Gentile ${name}, la sua prenotazione è stata confermata con successo. Il nostro concierge la contatterà entro 2 ore.
+      Gentile ${name}, la sua prenotazione è stata confermata con successo. Il suo itinerario completo e lo stato dei servizi sono ora disponibili nel suo portale dedicato.
     </p>
+
+    <div style="text-align:center;margin-bottom:40px;">
+      ${goldBtn(tripUrl, 'APRI TRIP PORTAL')}
+    </div>
+
     <div style="background:#0F1220;border:1px solid rgba(201,168,76,0.15);padding:28px;margin-bottom:36px;">
       <table style="width:100%;border-collapse:collapse;">
         ${row('Velivolo', aircraft)}
@@ -92,14 +101,21 @@ export async function sendBookingConfirmation({
         ${row('Passeggeri', `${pax} persone`)}
         ${row('Deposito pagato', `€${deposit.toLocaleString('it-IT')}`)}
         ${row('Totale charter', `€${total.toLocaleString('it-IT')}`)}
-        ${row('Saldo residuo', `€${(total - deposit).toLocaleString('it-IT')} (entro 72h dal volo)`)}
       </table>
     </div>
-    <p style="color:rgba(240,237,230,0.45);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 32px;">
+
+    <div style="background:rgba(201,168,76,0.05);border-left:3px solid #C9A84C;padding:24px;margin-bottom:32px;">
+      <div style="font-size:10px;letter-spacing:2px;color:#C9A84C;font-family:Helvetica Neue,sans-serif;margin-bottom:8px;">CONCIERGE DEDICATO</div>
+      <p style="color:rgba(240,237,230,0.7);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 16px;">
+        Il nostro team la contatterà a breve per coordinare catering e transfer. Può contattarci subito via WhatsApp per ogni esigenza.
+      </p>
+      <a href="https://wa.me/393471234567" style="color:#C9A84C;font-family:Helvetica Neue,sans-serif;font-size:13px;text-decoration:none;font-weight:600;">➔ CHATTA CON IL CONCIERGE</a>
+    </div>
+
+    <p style="color:rgba(240,237,230,0.35);font-size:13px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">
       Il saldo residuo sarà addebitato 72 ore prima della partenza.<br>
-      Catering, transfer e servizi aggiuntivi possono essere richiesti al concierge.
+      Tutte le informazioni operative saranno aggiornate in tempo reale sul Trip Portal.
     </p>
-    ${goldBtn('https://aerojet.app/dashboard', 'AREA PERSONALE')}
   `)
   return send(to, `✦ Prenotazione confermata — ${from} → ${dest}`, html)
 }
@@ -112,7 +128,6 @@ export async function sendQuoteToClient({
   from: string; dest: string; date: string; pax: number
   price: number; validUntil: string; brokerName: string; quoteId: string
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const html = base(`
     <h2 style="color:#F0EDE6;font-size:30px;font-weight:300;margin:0 0 32px;">Il suo Preventivo</h2>
     <p style="color:rgba(240,237,230,0.65);font-size:15px;font-family:Helvetica Neue,sans-serif;line-height:1.8;margin:0 0 32px;">
@@ -132,7 +147,7 @@ export async function sendQuoteToClient({
     <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">
       Il prezzo include tutti i costi operativi, tasse aeroportuali e handling. Catering e servizi aggiuntivi sono quotabili su richiesta.
     </p>
-    ${goldBtn(`${baseUrl}/accept-quote/${quoteId}`, 'ACCETTA E PAGA DEPOSITO')}
+    ${goldBtn(`${BASE_URL}/accept-quote/${quoteId}`, 'ACCETTA E PAGA DEPOSITO')}
   `)
   return send(to, `Preventivo volo privato ${from} → ${dest} — Aerojet Private`, html)
 }
@@ -161,7 +176,7 @@ export async function notifyBrokerNewRequest({
       <div style="font-size:10px;letter-spacing:2px;color:#C9A84C;font-family:Helvetica Neue,sans-serif;margin-bottom:8px;">MESSAGGIO</div>
       <p style="color:rgba(240,237,230,0.7);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">${message}</p>
     </div>
-    ${goldBtn('https://aerojet.app/dashboard/requests', 'APRI DASHBOARD →')}
+    ${goldBtn(`${BASE_URL}/dashboard/requests`, 'APRI DASHBOARD →')}
   `)
   return send(brokerEmail, `🔔 Nuova richiesta ${requestId} — ${from} → ${to}`, html)
 }
@@ -261,7 +276,7 @@ export async function notifyBrokerScoredLead({
       <p style="color:rgba(240,237,230,0.65);font-size:14px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0;">${message}</p>
     </div>
 
-    ${goldBtn('https://aerojet.app/dashboard/requests', 'APRI DASHBOARD →')}
+    ${goldBtn(`${BASE_URL}/dashboard/requests`, 'APRI DASHBOARD →')}
   `)
 
   const prefix = leadTier === 'VIP' ? '🔥 VIP' : leadTier === 'HIGH' ? '💰 HIGH' : '🔔'
@@ -326,7 +341,6 @@ export async function sendBrokerDepositReceived({
   depositAmount: number; totalPrice: number
   confirmationCode: string; inquiryId: string
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'
   const html = base(`
     <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);padding:12px 20px;margin-bottom:28px;display:inline-block;">
       <span style="color:#4ade80;font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">✓ DEPOSITO RICEVUTO</span>
@@ -347,7 +361,7 @@ export async function sendBrokerDepositReceived({
     <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;line-height:1.7;margin:0 0 32px;">
       Il cliente ha completato il pagamento del deposito. Aggiorna lo stato della pratica e procedi con la conferma operativa.
     </p>
-    ${goldBtn(`${baseUrl}/dashboard/requests`, 'APRI DASHBOARD →')}
+    ${goldBtn(`${BASE_URL}/dashboard/requests`, 'APRI DASHBOARD →')}
   `)
   return send(brokerEmail, `✓ Deposito ricevuto — ${clientName} · ${from} → ${dest} · €${depositAmount.toLocaleString('it-IT')}`, html)
 }
@@ -377,7 +391,7 @@ export async function sendEmptyLegAlert({
     <p style="color:rgba(240,237,230,0.4);font-size:13px;font-family:Helvetica Neue,sans-serif;margin:0 0 32px;">
       ⚠️ Disponibilità limitata. Queste offerte si esauriscono rapidamente.
     </p>
-    ${goldBtn('https://aerojet.app/#emptylegs', 'PRENOTA SUBITO')}
+    ${goldBtn(`${BASE_URL}/#emptylegs`, 'PRENOTA SUBITO')}
   `)
   return send(to, `⚡ Empty Leg ${from} → ${dest} — -${discount}% | Aerojet Private`, html)
 }
@@ -388,7 +402,6 @@ export async function sendInternalAlert({
 }: {
   type: string; route: string; price?: number; clientName: string; link: string
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'
   
   let emoji = '🔥'
   let label = 'NUOVO LEAD / EVENTO'
@@ -409,9 +422,35 @@ export async function sendInternalAlert({
         ${row('Evento', type)}
       </table>
     </div>
-    ${goldBtn(`${baseUrl}${link}`, 'APRI PRATICA →')}
+    ${goldBtn(`${BASE_URL}${link}`, 'APRI PRATICA →')}
   `)
   
   // Manda sempre al concierge centrale (oppure potremmo mandarlo ai vari broker nel DB)
   return send('concierge@aerojet.app', `${emoji} ALERT OPERATIVO: ${label} — ${route}`, html)
+}
+// ─── 10. Allerta Task Operativo (al team Ops) ──────────────────
+export async function sendOpsTeamTaskAlert({
+  to, bookingId, taskTitle, priority, category, dueDate
+}: {
+  to: string; bookingId: string; taskTitle: string; priority: string; category: string; dueDate?: string
+}) {
+  const priorityColor = priority === 'URGENT' ? '#f87171' : priority === 'HIGH' ? '#fb923c' : '#C9A84C'
+  
+  const html = base(`
+    <div style="background:rgba(201,168,76,0.08);border:1px solid ${priorityColor};padding:12px 20px;margin-bottom:28px;display:inline-block;">
+      <span style="color:${priorityColor};font-size:11px;letter-spacing:3px;font-family:Helvetica Neue,sans-serif;">⚠️ TASK OPERATIVO ${priority}</span>
+    </div>
+    <h2 style="color:#F0EDE6;font-size:24px;font-weight:300;margin:0 0 16px;">${taskTitle}</h2>
+    <div style="background:#0F1220;border:1px solid rgba(201,168,76,0.15);padding:24px;margin-bottom:32px;">
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Booking ID', bookingId)}
+        ${row('Categoria', category)}
+        ${row('Priorità', `<span style="color:${priorityColor};">${priority}</span>`)}
+        ${dueDate ? row('Scadenza', dueDate) : ''}
+      </table>
+    </div>
+    ${goldBtn(`${BASE_URL}/dashboard/operations`, 'GESTISCI OPERATIONS →')}
+  `)
+  
+  return send(to, `⚠️ [OPS] ${priority}: ${taskTitle} — Booking ${bookingId}`, html)
 }
