@@ -5,6 +5,8 @@ import { ToastProvider } from '@/components/Toast'
 import JsonLd from '@/components/luxury/JsonLd'
 import LinkedInInsight from '@/components/marketing/LinkedInInsight'
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet-private.vercel.app'
+
 export const metadata: Metadata = {
   title: {
     default: 'AeroJet Private | Voli Privati di Lusso',
@@ -14,11 +16,11 @@ export const metadata: Metadata = {
   keywords: 'voli privati, jet privato, charter aereo, Milano, Roma, luxury aviation',
   authors: [{ name: 'AeroJet Private' }],
   creator: 'AeroJet Private',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app'),
+  metadataBase: new URL(BASE_URL),
   openGraph: {
     title: 'AeroJet Private | Voli Privati di Lusso',
     description: 'Prenotate il vostro volo privato con AeroJet. Flotta esclusiva, servizio concierge 24/7.',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet.app',
+    url: BASE_URL,
     siteName: 'AeroJet Private',
     locale: 'it_IT',
     type: 'website',
