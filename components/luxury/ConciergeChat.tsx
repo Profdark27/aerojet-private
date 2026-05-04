@@ -103,8 +103,9 @@ function InquiryConfirmCard({ card }: { card: InquiryCard }) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-darker border border-gold/30 p-5 rounded-sm my-4 shadow-xl shadow-black/40"
+      className="glass-panel bg-white/[0.03] border-gold/30 p-6 rounded-xl my-4 shadow-2xl shadow-black/60 relative overflow-hidden group"
     >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-[50px] -z-10 group-hover:bg-gold/10 transition-colors duration-700" />
       <div className="flex items-center gap-2 text-[9px] tracking-[0.2em] text-gold font-bold mb-4 uppercase">
         <ShieldCheck size={12} /> Richiesta Confermata
       </div>
@@ -274,7 +275,8 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-10 right-8 z-[200] group"
+        className="fixed z-[210] group mobile-safe-bottom"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 160px)', right: '20px' }}
       >
         <div className="relative">
           <div className="absolute inset-0 bg-gold rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
@@ -303,7 +305,8 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-28 right-8 z-[199] w-[420px] max-w-[calc(100vw-40px)] glass-panel overflow-hidden shadow-2xl shadow-black/80 flex flex-col h-[70vh] rounded-sm"
+            className="fixed z-[209] w-[420px] max-w-[calc(100vw-40px)] glass-panel overflow-hidden shadow-2xl shadow-black/80 flex flex-col h-[70vh] rounded-sm"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 240px)', right: '20px' }}
           >
             {/* Header */}
             <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/5">
@@ -337,17 +340,23 @@ export default function ConciergeChat({ context }: ConciergeChatProps) {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}>
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold text-[10px] font-bold flex-shrink-0 mt-1">M</div>
+                    <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold text-[10px] font-bold flex-shrink-0 mt-1 shadow-[0_0_10px_rgba(201,168,76,0.15)]">M</div>
                   )}
                   {msg.role === 'card' && msg.card ? (
                     <InquiryConfirmCard card={msg.card} />
                   ) : (
-                    <div className={`max-w-[85%] px-5 py-4 text-[13.5px] leading-relaxed tracking-wide ${
+                    <div className={`max-w-[85%] px-5 py-4 text-[13.5px] leading-relaxed tracking-wide shadow-xl ${
                       msg.role === 'user' 
-                        ? 'bg-gold/10 text-white rounded-2xl rounded-tr-none border border-gold/10' 
-                        : 'bg-white/5 text-white/80 rounded-2xl rounded-tl-none border border-white/5'
+                        ? 'bg-gold/20 text-white rounded-2xl rounded-tr-none border border-gold/30' 
+                        : 'bg-white/[0.03] text-white/90 rounded-2xl rounded-tl-none border border-white/10 backdrop-blur-md'
                     }`}>
-                      {msg.content || (streaming && i === messages.length - 1 && <span className="inline-block w-2 h-4 bg-gold/50 animate-pulse" />)}
+                      {msg.content || (streaming && i === messages.length - 1 && (
+                        <div className="flex gap-1 items-center h-4">
+                          <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1 h-1 bg-gold rounded-full" />
+                          <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-gold rounded-full" />
+                          <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-gold rounded-full" />
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

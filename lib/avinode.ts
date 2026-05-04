@@ -111,10 +111,17 @@ export interface EmptyLeg {
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
-  const { fromCity, toCity, pax, departureDate } = params
+  const { fromICAO, toICAO, pax } = params
 
-  const flightHours = Math.floor(Math.random() * 4) + 1.5
-  const basePricePerHour = { turboprop: 2800, light: 3900, midsize: 5800, supermid: 7200, heavy: 9800, ultralong: 14500 }
+  // Realistic flight time estimation
+  let flightHours = 2.0
+  if (fromICAO === 'LIMC' && toICAO === 'KTEB') flightHours = 8.5 // Milano -> NYC
+  else if (fromICAO === 'LIRF' && toICAO === 'OMDB') flightHours = 6.0 // Roma -> Dubai
+  else if (fromICAO === 'LIPZ' && toICAO === 'LEIB') flightHours = 2.5 // Venezia -> Ibiza
+  else if (fromICAO === 'LIML' && toICAO === 'EGLL') flightHours = 2.0 // Milano -> Londra
+  else flightHours = Math.floor(Math.random() * 3) + 1.5
+
+  const basePricePerHour = { turboprop: 2800, light: 4200, midsize: 6500, supermid: 8200, heavy: 11500, ultralong: 16500 }
 
   const aircraft: Aircraft[] = [
     {
@@ -132,7 +139,7 @@ function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
       flightTime: `${Math.floor(flightHours)}h ${Math.round((flightHours % 1) * 60)}m`,
       amenities: ['WiFi', 'Catering', 'Bagaglio XL'],
       rating: 4.7,
-      available: true,
+      available: pax <= 8 && flightHours < 5.5,
       imageHint: 'turboprop aircraft',
     },
     {
@@ -147,10 +154,10 @@ function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
       yearBuilt: 2022,
       price: Math.round(basePricePerHour.light * flightHours),
       currency: 'EUR',
-      flightTime: `${Math.floor(flightHours * 0.85)}h ${Math.round(((flightHours * 0.85) % 1) * 60)}m`,
+      flightTime: `${Math.floor(flightHours * 0.9)}h ${Math.round(((flightHours * 0.9) % 1) * 60)}m`,
       amenities: ['WiFi', 'Catering Premium', 'Entertainment'],
       rating: 4.9,
-      available: true,
+      available: pax <= 7 && flightHours < 6.5,
       imageHint: 'light jet interior luxury',
     },
     {
@@ -165,10 +172,10 @@ function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
       yearBuilt: 2023,
       price: Math.round(basePricePerHour.supermid * flightHours),
       currency: 'EUR',
-      flightTime: `${Math.floor(flightHours * 0.82)}h ${Math.round(((flightHours * 0.82) % 1) * 60)}m`,
+      flightTime: `${Math.floor(flightHours * 0.85)}h ${Math.round(((flightHours * 0.85) % 1) * 60)}m`,
       amenities: ['WiFi Starlink', 'Catering Gourmet', 'Letto Flat-bed', 'Bar', 'Entertainment 4K'],
       rating: 4.8,
-      available: pax <= 10,
+      available: pax <= 10 && flightHours < 8.5,
       imageHint: 'private jet luxury cabin',
     },
     {
@@ -183,10 +190,10 @@ function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
       yearBuilt: 2020,
       price: Math.round(basePricePerHour.heavy * flightHours),
       currency: 'EUR',
-      flightTime: `${Math.floor(flightHours * 0.79)}h ${Math.round(((flightHours * 0.79) % 1) * 60)}m`,
+      flightTime: `${Math.floor(flightHours * 0.82)}h ${Math.round(((flightHours * 0.82) % 1) * 60)}m`,
       amenities: ['WiFi Starlink', 'Chef di bordo', 'Camera con bagno', 'Conference room', 'Bar aperto'],
       rating: 5.0,
-      available: true,
+      available: pax <= 16,
       imageHint: 'heavy jet private aircraft',
     },
     {
@@ -201,7 +208,7 @@ function generateMockAircraft(params: FlightSearchParams): Aircraft[] {
       yearBuilt: 2023,
       price: Math.round(basePricePerHour.ultralong * flightHours),
       currency: 'EUR',
-      flightTime: `${Math.floor(flightHours * 0.77)}h ${Math.round(((flightHours * 0.77) % 1) * 60)}m`,
+      flightTime: `${Math.floor(flightHours * 0.8)}h ${Math.round(((flightHours * 0.8) % 1) * 60)}m`,
       amenities: ['Starlink WiFi', 'Chef Michelin', '4 zone vita', 'Suite privata', 'Doccia a bordo', 'Cinema'],
       rating: 5.0,
       available: pax <= 19,

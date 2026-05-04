@@ -1,19 +1,24 @@
-// TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from '@/components/luxury/Navbar'
 import { formatCurrency } from '@/lib/utils'
+import { Check, Shield, Info, ArrowRight, User, Settings, CreditCard, ChevronLeft, Plane, Zap } from 'lucide-react'
 
-const steps = ['Dettagli Volo', 'Servizi Aggiuntivi', 'Dati Personali', 'Riepilogo & Pagamento']
+const steps = [
+  { id: 'details', label: 'Mission', icon: Plane },
+  { id: 'services', label: 'Elite Services', icon: Zap },
+  { id: 'customer', label: 'Passenger', icon: User },
+  { id: 'payment', label: 'Secure Pay', icon: CreditCard },
+]
 
 const extras = [
-  { id: 'catering', label: 'Catering Gourmet', desc: 'Menu preparato da chef stellato, servito a bordo', price: 350, icon: '🍾' },
-  { id: 'transfer', label: 'Transfer Limousine', desc: 'Mercedes S-Class o BMW Serie 7 da/per aeroporto', price: 180, icon: '🚗' },
-  { id: 'flowers', label: 'Allestimento Floreale', desc: 'Decorazioni fresh flowers per la cabina', price: 220, icon: '🌸' },
-  { id: 'wifi', label: 'WiFi Starlink Premium', desc: 'Connessione 100Mbps garantita in volo', price: 0, icon: '📡' },
-  { id: 'concierge', label: 'Concierge a Destinazione', desc: 'Assistente dedicato all\'arrivo per hotel, ristoranti, eventi', price: 280, icon: '✦' },
-  { id: 'security', label: 'Security Detail', desc: 'Agente di sicurezza privato per tutta la durata del viaggio', price: 800, icon: '🛡' },
+  { id: 'catering', label: 'Michelin Dining', desc: 'Curated menu by private chefs, served with vintage pairing.', price: 350, icon: '🍾' },
+  { id: 'transfer', label: 'Limousine Vector', desc: 'Chauffeur-driven Mercedes-Maybach to your doorstep.', price: 180, icon: '🚗' },
+  { id: 'flowers', label: 'Floral Design', desc: 'Bespoke floral arrangements by artisan florists.', price: 220, icon: '🌸' },
+  { id: 'wifi', label: 'Starlink Elite', desc: 'Ultra-low latency global connectivity.', price: 0, icon: '📡' },
+  { id: 'concierge', label: 'On-Ground Butler', desc: 'Dedicated assistant for seamless ground operations.', price: 280, icon: '✦' },
 ]
 
 function BookingWizard() {
@@ -25,7 +30,6 @@ function BookingWizard() {
   const [notes, setNotes] = useState('')
   const [paying, setPaying] = useState(false)
 
-  // Flight info from URL params (from search page)
   const aircraft = params.get('aircraft') || 'Phenom 300E'
   const operator = params.get('operator') || 'VistaJet'
   const from = params.get('from') || 'Milano'
@@ -42,7 +46,6 @@ function BookingWizard() {
   const total = price + extrasTotal
   const deposit = Math.round(total * 0.30)
   const balance = total - deposit
-  const commission = Math.round(total * 0.12)
 
   const toggleExtra = (id: string) => {
     setSelectedExtras(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id])
@@ -67,271 +70,341 @@ function BookingWizard() {
     }
   }
 
-  return (
-    <>
-      <Navbar />
-      <div style={{ minHeight: '100vh', background: '#0A0C14', paddingTop: 100 }}>
+  const isFormValid = form.name && form.email && form.phone
 
-        {/* Progress bar */}
-        <div style={{ background: '#0F1220', borderBottom: '1px solid rgba(201,168,76,0.12)', padding: '24px 48px' }}>
-          <div style={{ maxWidth: 900, margin: '0 auto' }}>
-            <div style={{ display: 'flex', gap: 0, position: 'relative' }}>
-              {steps.map((s, i) => (
-                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative', cursor: i < step ? 'pointer' : 'default' }}
-                  onClick={() => i < step && setStep(i)}>
-                  {/* Connector line */}
-                  {i < steps.length - 1 && (
-                    <div style={{ position: 'absolute', top: 14, left: '50%', width: '100%', height: 1, background: i < step ? '#C9A84C' : 'rgba(201,168,76,0.15)', zIndex: 0 }} />
-                  )}
-                  {/* Circle */}
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${i <= step ? '#C9A84C' : 'rgba(201,168,76,0.2)'}`, background: i < step ? '#C9A84C' : i === step ? 'rgba(201,168,76,0.1)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: i < step ? '#0A0C14' : i === step ? '#C9A84C' : 'rgba(240,237,230,0.3)', zIndex: 1, position: 'relative', transition: 'all 0.3s', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 600 }}>
-                    {i < step ? '✓' : i + 1}
-                  </div>
-                  <span style={{ fontSize: 10, letterSpacing: 1, color: i <= step ? '#C9A84C' : 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap', display: 'none' }} className="desktop-only">{s}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-              Step {step + 1} di {steps.length} — <span style={{ color: '#C9A84C' }}>{steps[step]}</span>
-            </div>
+  return (
+    <div className="min-h-screen bg-darker pt-32 pb-20 px-6 bg-[radial-gradient(ellipse_at_top_left,rgba(201,168,76,0.03),transparent_50%)]">
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
+        
+        {/* Left: Main Interaction Hub */}
+        <div className="lg:col-span-8">
+          
+          {/* Futuristic Step Indicator */}
+          <div className="flex justify-between mb-24 relative px-4">
+             <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/5 -z-10" />
+             {steps.map((s, i) => (
+               <div key={s.id} className="flex flex-col items-center group relative">
+                 <motion.div 
+                    animate={{ scale: i === step ? 1.1 : 1 }}
+                    className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all duration-700 relative ${
+                      i < step ? 'bg-gold border-gold text-darker' : 
+                      i === step ? 'bg-white/5 border-gold text-gold shadow-[0_0_25px_rgba(201,168,76,0.2)]' : 
+                      'bg-darker border-white/5 text-white/10'
+                    }`}
+                 >
+                   {i < step ? <Check size={20} strokeWidth={3} /> : <s.icon size={20} strokeWidth={1.5} />}
+                   {i === step && <div className="absolute inset-0 rounded-full animate-ping bg-gold/10 -z-10" />}
+                 </motion.div>
+                 <div className="absolute -bottom-10 whitespace-nowrap text-center">
+                    <span className={`text-[8px] uppercase tracking-[0.4em] font-bold transition-colors ${
+                      i <= step ? 'text-gold' : 'text-white/10'
+                    }`}>
+                      {s.label}
+                    </span>
+                 </div>
+               </div>
+             ))}
           </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="glass-card p-12 lg:p-16 rounded-[3rem] relative overflow-hidden"
+            >
+              {/* Background Accent */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/5 blur-[80px] rounded-full pointer-events-none" />
+
+              {step === 0 && (
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="h-px w-8 bg-gold/50" />
+                       <span className="text-[9px] uppercase tracking-[0.5em] text-gold font-bold">Step 01</span>
+                    </div>
+                    <h2 className="text-4xl font-serif text-white tracking-tight italic">Mission Intelligence</h2>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
+                    <div className="space-y-10">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Selected Aircraft</span>
+                        <span className="text-2xl text-white font-serif">{aircraft}</span>
+                        <div className="flex items-center gap-3 text-[10px] text-gold uppercase tracking-widest font-bold">
+                           <Shield size={12} /> {category} · {operator}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Flight Date</span>
+                        <span className="text-2xl text-white font-serif">{new Date(date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-10">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Route Vector</span>
+                        <div className="flex items-center gap-4 text-2xl text-white font-serif uppercase tracking-tight">
+                           {from} <ArrowRight size={20} className="text-gold/50" /> {to}
+                        </div>
+                        <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold mt-1">ESTIMATED DURATION: {flightTime}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Configuration</span>
+                        <span className="text-2xl text-white font-serif">{pax} Elite Guests</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-12 border-t border-white/5 group">
+                    <label className="text-[9px] text-gold uppercase tracking-[0.4em] font-bold mb-6 block">Additional Mission Directives</label>
+                    <textarea 
+                      value={notes} 
+                      onChange={e => setNotes(e.target.value)}
+                      placeholder="Specify catering preferences, pets on board, or ground logistics..."
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 text-white text-sm outline-none focus:border-gold/30 transition-all duration-700 h-40 shadow-inner"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {step === 1 && (
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="h-px w-8 bg-gold/50" />
+                       <span className="text-[9px] uppercase tracking-[0.5em] text-gold font-bold">Step 02</span>
+                    </div>
+                    <h2 className="text-4xl font-serif text-white tracking-tight italic">Elite Customization</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                    {extras.map((e, idx) => (
+                      <motion.div 
+                        key={e.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        onClick={() => toggleExtra(e.id)}
+                        className={`p-10 rounded-[2rem] border transition-all duration-700 cursor-pointer group relative overflow-hidden ${
+                          selectedExtras.includes(e.id) ? 'bg-gold/5 border-gold/40 shadow-2xl' : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        {selectedExtras.includes(e.id) && (
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 blur-3xl rounded-full" />
+                        )}
+                        <div className="flex justify-between items-start mb-8">
+                          <span className="text-3xl grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-125">{e.icon}</span>
+                          <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+                            selectedExtras.includes(e.id) ? 'bg-gold border-gold text-darker' : 'border-white/10'
+                          }`}>
+                            {selectedExtras.includes(e.id) && <Check size={14} strokeWidth={4} />}
+                          </div>
+                        </div>
+                        <h4 className="text-lg font-serif text-white mb-2">{e.label}</h4>
+                        <p className="text-[11px] text-white/30 mb-6 h-10 leading-relaxed">{e.desc}</p>
+                        <div className="text-[10px] text-gold uppercase tracking-[0.3em] font-black">
+                          {e.price === 0 ? 'COMPLIMENTARY' : `+ ${formatCurrency(e.price)}`}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="h-px w-8 bg-gold/50" />
+                       <span className="text-[9px] uppercase tracking-[0.5em] text-gold font-bold">Step 03</span>
+                    </div>
+                    <h2 className="text-4xl font-serif text-white tracking-tight italic">Passenger Registry</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8">
+                    <div className="space-y-10">
+                      <div className="flex flex-col gap-4">
+                        <label className="text-[9px] text-gold uppercase tracking-[0.4em] font-bold">Legal Name *</label>
+                        <input 
+                          type="text" 
+                          value={form.name} 
+                          onChange={e => setForm({...form, name: e.target.value})}
+                          placeholder="Mario Rossi"
+                          className="bg-white/[0.03] border-b border-white/10 py-4 text-lg text-white focus:border-gold outline-none transition-colors" 
+                        />
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        <label className="text-[9px] text-gold uppercase tracking-[0.4em] font-bold">Encrypted Phone *</label>
+                        <input 
+                          type="tel" 
+                          value={form.phone} 
+                          onChange={e => setForm({...form, phone: e.target.value})}
+                          placeholder="+39 347 1234567"
+                          className="bg-white/[0.03] border-b border-white/10 py-4 text-lg text-white focus:border-gold outline-none transition-colors" 
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-10">
+                      <div className="flex flex-col gap-4">
+                        <label className="text-[9px] text-gold uppercase tracking-[0.4em] font-bold">Email Address *</label>
+                        <input 
+                          type="email" 
+                          value={form.email} 
+                          onChange={e => setForm({...form, email: e.target.value})}
+                          placeholder="mario.rossi@exclusive.com"
+                          className="bg-white/[0.03] border-b border-white/10 py-4 text-lg text-white focus:border-gold outline-none transition-colors" 
+                        />
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        <label className="text-[9px] text-gold uppercase tracking-[0.4em] font-bold">Organization (Optional)</label>
+                        <input 
+                          type="text" 
+                          value={form.company} 
+                          onChange={e => setForm({...form, company: e.target.value})}
+                          placeholder="Rossi Global Solutions"
+                          className="bg-white/[0.03] border-b border-white/10 py-4 text-lg text-white focus:border-gold outline-none transition-colors" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="h-px w-8 bg-gold/50" />
+                       <span className="text-[9px] uppercase tracking-[0.5em] text-gold font-bold">Final Step</span>
+                    </div>
+                    <h2 className="text-4xl font-serif text-white tracking-tight italic">Financial Authorization</h2>
+                  </div>
+
+                  <div className="space-y-8 pt-6">
+                    <div className="bg-white/[0.02] border border-white/5 p-12 rounded-[2rem] space-y-6 shadow-inner relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-2 h-full bg-gold/20" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-white/30 uppercase tracking-widest">Base Charter Logistics</span>
+                        <span className="text-xl text-white font-light">{formatCurrency(price)}</span>
+                      </div>
+                      {extrasTotal > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-white/30 uppercase tracking-widest">Elite Add-ons</span>
+                          <span className="text-xl text-white font-light">+ {formatCurrency(extrasTotal)}</span>
+                        </div>
+                      )}
+                      <div className="pt-6 border-t border-white/10 flex justify-between items-center">
+                        <span className="text-2xl text-white font-serif italic">Total Mission Value</span>
+                        <span className="text-4xl text-white font-light tracking-tighter">{formatCurrency(total)}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-gold/10 border border-gold/30 p-12 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-10 shadow-2xl relative">
+                      <div className="absolute top-0 right-10 w-20 h-20 bg-white/5 blur-3xl rounded-full" />
+                      <div>
+                        <div className="text-[9px] text-gold uppercase tracking-[0.5em] font-bold mb-3">Immediate Deposit Authorization (30%)</div>
+                        <div className="text-5xl text-gold font-light tracking-tighter">{formatCurrency(deposit)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[9px] text-white/30 uppercase tracking-[0.4em] mb-2 font-bold">Deferred Balance</div>
+                        <div className="text-2xl text-white/60 font-light tracking-tighter">{formatCurrency(balance)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-[10px] text-white/20 uppercase tracking-[0.3em] font-bold pt-8">
+                    <Shield size={18} className="text-gold/40" />
+                    <span>Encrypted Payment Processing · Powered by Stripe Elite</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Mission Navigation */}
+              <div className="mt-20 flex items-center justify-between gap-10">
+                <button 
+                  onClick={() => step > 0 && setStep(step - 1)}
+                  disabled={step === 0}
+                  className={`flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] font-black transition-all ${
+                    step === 0 ? 'opacity-0' : 'text-white/30 hover:text-white'
+                  }`}
+                >
+                  <ChevronLeft size={18} /> Mission Control
+                </button>
+                
+                {step < 3 ? (
+                  <button 
+                    onClick={() => setStep(step + 1)}
+                    disabled={step === 2 && !isFormValid}
+                    className="btn-gold-premium px-16 py-6 disabled:opacity-20 disabled:cursor-not-allowed group/btn"
+                  >
+                    NEXT PROTOCOL <ArrowRight size={16} className="ml-3 inline-block group-hover:translate-x-2 transition-transform" />
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handlePay}
+                    disabled={paying}
+                    className="btn-gold-premium px-20 py-7 text-xs shadow-[0_20px_50px_rgba(201,168,76,0.4)]"
+                  >
+                    {paying ? 'AUTHORIZING SESSION...' : `AUTHORIZE DEPOSIT ${formatCurrency(deposit)} ✦`}
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: '1fr 300px', gap: 32, alignItems: 'start' }}>
-
-          {/* Main content */}
-          <div>
-
-            {/* STEP 0 — Dettagli volo */}
-            {step === 0 && (
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>RIEPILOGO VOLO SELEZIONATO</div>
-
-                <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.2)', padding: 32, marginBottom: 32 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
-                    <div style={{ width: 52, height: 52, background: '#1A1A2E', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                      {operator.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 22, fontWeight: 500, marginBottom: 4 }}>{aircraft}</div>
-                      <div style={{ fontSize: 12, color: '#C9A84C', letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>{category.toUpperCase()} · {operator}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                    {[
-                      ['PARTENZA', from], ['ARRIVO', to],
-                      ['DATA', new Date(date).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })],
-                      ['PASSEGGERI', `${pax} persone`],
-                      ['DURATA', flightTime], ['PREZZO CHARTER', formatCurrency(price)],
-                    ].map(([l, v]) => (
-                      <div key={l}>
-                        <div style={{ fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 4 }}>{l}</div>
-                        <div style={{ fontSize: 15, color: l === 'PREZZO CHARTER' ? '#C9A84C' : '#F0EDE6' }}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: 32 }}>
-                  <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 10 }}>NOTE SPECIALI (facoltativo)</div>
-                  <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                    placeholder="Es. allergie alimentari, animali a bordo, orario preferito di imbarco..."
-                    style={{ width: '100%', minHeight: 100, background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#F0EDE6', padding: '14px 16px', fontSize: 14, fontFamily: 'Helvetica Neue, sans-serif', outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box' }} />
-                </div>
-              </div>
-            )}
-
-            {/* STEP 1 — Servizi aggiuntivi */}
-            {step === 1 && (
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>SERVIZI AGGIUNTIVI</div>
-                <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 32, lineHeight: 1.7 }}>
-                  Personalizza la sua esperienza a bordo. Tutti i servizi sono confermati dal concierge.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
-                  {extras.map(extra => {
-                    const active = selectedExtras.includes(extra.id)
-                    return (
-                      <div key={extra.id} onClick={() => toggleExtra(extra.id)}
-                        style={{ background: active ? '#141728' : '#0A0C14', padding: '20px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, borderLeft: active ? '3px solid #C9A84C' : '3px solid transparent', transition: 'all 0.2s' }}>
-                        <span style={{ fontSize: 22, flexShrink: 0 }}>{extra.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 16, fontWeight: 400, marginBottom: 4 }}>{extra.label}</div>
-                          <div style={{ fontSize: 13, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>{extra.desc}</div>
-                        </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: 16, color: extra.price === 0 ? '#4ade80' : '#C9A84C' }}>
-                            {extra.price === 0 ? 'Incluso' : `+${formatCurrency(extra.price)}`}
-                          </div>
-                          <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${active ? '#C9A84C' : 'rgba(201,168,76,0.3)'}`, background: active ? '#C9A84C' : 'transparent', marginLeft: 'auto', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#0A0C14', transition: 'all 0.2s' }}>
-                            {active && '✓'}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2 — Dati personali */}
-            {step === 2 && (
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>DATI PERSONALI</div>
-                <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 32, lineHeight: 1.7 }}>
-                  Necessari per la prenotazione e la documentazione di volo.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }}>
-                  {[
-                    { key: 'name', label: 'NOME COMPLETO', placeholder: 'Mario Rossi', required: true },
-                    { key: 'email', label: 'EMAIL', placeholder: 'mario@email.it', required: true },
-                    { key: 'phone', label: 'TELEFONO', placeholder: '+39 347 1234567', required: true },
-                    { key: 'company', label: 'AZIENDA (facoltativo)', placeholder: 'Rossi SpA' },
-                    { key: 'taxCode', label: 'P.IVA / CF (per fattura)', placeholder: 'IT12345678901', colSpan: 2 },
-                  ].map(({ key, label, placeholder, required, colSpan }) => (
-                    <div key={key} style={{ gridColumn: colSpan ? 'span 2' : 'span 1' }}>
-                      <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 10 }}>
-                        {label} {required && <span style={{ color: '#f87171' }}>*</span>}
-                      </div>
-                      <input className="luxury-input" placeholder={placeholder}
-                        value={form[key as keyof typeof form]}
-                        onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))} />
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: 32, padding: '16px 20px', background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.12)', fontSize: 13, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.7 }}>
-                  🔒 I suoi dati sono cifrati e non vengono condivisi con terze parti. Utilizziamo Stripe per i pagamenti — non conserviamo i dati della carta.
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3 — Riepilogo finale */}
-            {step === 3 && (
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 24 }}>RIEPILOGO FINALE</div>
-
-                <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', padding: 28, marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>VOLO</div>
-                  <div style={{ fontSize: 20, marginBottom: 4 }}>{aircraft}</div>
-                  <div style={{ fontSize: 14, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>{from} → {to} · {new Date(date).toLocaleDateString('it-IT')} · {pax} pax</div>
-                </div>
-
-                {selectedExtras.filter(id => id !== 'wifi').length > 0 && (
-                  <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', padding: 28, marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>SERVIZI AGGIUNTIVI</div>
-                    {extras.filter(e => selectedExtras.includes(e.id) && e.id !== 'wifi').map(e => (
-                      <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 14, fontFamily: 'Helvetica Neue, sans-serif', color: 'rgba(240,237,230,0.7)', borderBottom: '1px solid rgba(201,168,76,0.06)' }}>
-                        <span>{e.icon} {e.label}</span>
-                        <span style={{ color: '#C9A84C' }}>+{formatCurrency(e.price)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', padding: 28, marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>INTESTATARIO</div>
-                  <div style={{ fontSize: 15 }}>{form.name || '—'}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>{form.email} · {form.phone}</div>
-                </div>
-
-                <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.2)', padding: 28 }}>
-                  {[
-                    ['Charter', formatCurrency(price)],
-                    ...(extrasTotal > 0 ? [['Servizi aggiuntivi', `+${formatCurrency(extrasTotal)}`]] : []),
-                    ['Totale', formatCurrency(total)],
-                    ['Deposito ora (30%)', formatCurrency(deposit)],
-                    ['Saldo (entro 72h dal volo)', formatCurrency(balance)],
-                  ].map(([l, v], i) => (
-                    <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 4 ? '1px solid rgba(201,168,76,0.08)' : 'none', fontSize: i === 2 ? 18 : 14, fontFamily: 'Helvetica Neue, sans-serif', color: i === 2 ? '#F0EDE6' : i === 3 ? '#C9A84C' : 'rgba(240,237,230,0.65)', fontWeight: i === 2 ? 500 : 300 }}>
-                      <span>{l}</span><span>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Navigation buttons */}
-            <div style={{ display: 'flex', gap: 12, marginTop: 36 }}>
-              {step > 0 && (
-                <button onClick={() => setStep(s => s - 1)} className="btn-outline-gold" style={{ padding: '14px 28px' }}>
-                  ← INDIETRO
-                </button>
-              )}
-              {step < steps.length - 1 ? (
-                <button onClick={() => setStep(s => s + 1)} className="btn-gold"
-                  style={{ padding: '14px 36px', flex: 1, opacity: step === 2 && !form.name ? 0.5 : 1 }}
-                  disabled={step === 2 && !form.name}>
-                  CONTINUA →
-                </button>
-              ) : (
-                <button onClick={handlePay} disabled={paying} className="btn-gold"
-                  style={{ padding: '16px 40px', flex: 1, fontSize: 13, letterSpacing: 2, opacity: paying ? 0.6 : 1 }}>
-                  {paying ? 'REINDIRIZZAMENTO...' : `PAGA DEPOSITO ${formatCurrency(deposit)} →`}
-                </button>
-              )}
+        {/* Right: Mission Intelligence Sidebar */}
+        <div className="lg:col-span-4">
+          <div className="glass-card p-10 sticky top-32 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gold/5 blur-[80px] rounded-full group-hover:bg-gold/10 transition-all duration-1000" />
+            
+            <div className="flex items-center gap-3 mb-10">
+               <div className="h-px w-6 bg-gold/50" />
+               <span className="text-[9px] uppercase tracking-[0.5em] text-gold font-bold">Mission Summary</span>
             </div>
-
-            {step === 3 && (
-              <p style={{ fontSize: 12, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 16, textAlign: 'center', lineHeight: 1.7 }}>
-                Cliccando "Paga Deposito" accetti i Termini di Servizio.<br />
-                Pagamento sicuro via Stripe · PCI DSS Level 1
-              </p>
-            )}
-          </div>
-
-          {/* Sidebar summary */}
-          <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.15)', padding: 24, position: 'sticky', top: 90 }}>
-            <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>IL TUO VOLO</div>
-
-            <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 4 }}>{from}</div>
-            <div style={{ color: '#C9A84C', margin: '4px 0', fontSize: 14 }}>→</div>
-            <div style={{ fontSize: 18, fontWeight: 500, marginBottom: 16 }}>{to}</div>
-
-            <div style={{ borderTop: '1px solid rgba(201,168,76,0.1)', paddingTop: 16 }}>
-              {[
-                ['Jet', aircraft],
-                ['Data', new Date(date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })],
-                ['Pax', `${pax}`],
-              ].map(([l, v]) => (
-                <div key={l} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif' }}>
-                  <span style={{ color: 'rgba(240,237,230,0.35)' }}>{l}</span>
-                  <span style={{ color: 'rgba(240,237,230,0.75)' }}>{v}</span>
+            
+            <div className="space-y-10">
+              <div className="space-y-2">
+                <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Vector Path</span>
+                <div className="text-base text-white font-serif flex items-center gap-2 uppercase tracking-tighter">
+                   {from} <ArrowRight size={12} className="text-gold/30" /> {to}
                 </div>
-              ))}
-            </div>
-
-            <div style={{ borderTop: '1px solid rgba(201,168,76,0.1)', paddingTop: 16, marginTop: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif' }}>
-                <span style={{ color: 'rgba(240,237,230,0.35)' }}>Charter</span>
-                <span>{formatCurrency(price)}</span>
               </div>
-              {extrasTotal > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif' }}>
-                  <span style={{ color: 'rgba(240,237,230,0.35)' }}>Extra</span>
-                  <span>+{formatCurrency(extrasTotal)}</span>
+              <div className="space-y-2">
+                <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Assigned Aircraft</span>
+                <span className="text-base text-white font-serif block tracking-tighter">{aircraft}</span>
+              </div>
+              <div className="space-y-2">
+                <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Elite Manifest</span>
+                <span className="text-base text-white font-serif block tracking-tighter">{pax} Registered Guests</span>
+              </div>
+              
+              <div className="pt-10 border-t border-white/5 space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-bold">Active Deposit</span>
+                  <span className="text-2xl text-gold font-light tracking-tighter">{formatCurrency(deposit)}</span>
                 </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid rgba(201,168,76,0.1)', fontSize: 14 }}>
-                <span style={{ color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif' }}>Deposito</span>
-                <span style={{ color: '#C9A84C', fontWeight: 500 }}>{formatCurrency(deposit)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 18 }}>
-                <span style={{ color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 13 }}>Totale</span>
-                <span style={{ color: '#C9A84C' }}>{formatCurrency(total)}</span>
+                <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <p className="text-[10px] text-white/30 italic leading-relaxed">
+                    Balance of {formatCurrency(balance)} is scheduled for authorization 72 hours prior to mission start.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0A0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C9A84C', fontSize: 36 }}>✦</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-darker flex items-center justify-center text-gold text-4xl">✦</div>}>
       <BookingWizard />
     </Suspense>
   )

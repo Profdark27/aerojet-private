@@ -180,7 +180,7 @@ async function run() {
   })
 
   await test('CheckoutSchema: prezzo valido accettato', () => {
-    const r = CheckoutSchema.safeParse({ aircraft:{ model:'Test', price:9800, category:'Light', operator:'VistaJet', operatorLogo:'VJ' }, from:'Milano', to:'Londra' })
+    const r = CheckoutSchema.safeParse({ aircraft:{ model:'Test', price:9800, category:'Light', operator:'VistaJet', operatorLogo:'VJ' }, from:'Milano', to:'Londra', pax:2 })
     return r.success
   })
 
@@ -255,7 +255,7 @@ async function run() {
   const { readFileSync } = await import('fs')
   let waNumber = ''
   try {
-    const envContent = readFileSync('/home/claude/aerojet-private/.env.local', 'utf-8')
+    const envContent = readFileSync('./.env.local', 'utf-8')
     const match = envContent.match(/NEXT_PUBLIC_WHATSAPP_NUMBER="?([^"\n]+)"?/)
     waNumber = match?.[1]?.trim() || ''
   } catch { waNumber = '' }

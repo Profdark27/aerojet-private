@@ -1,499 +1,288 @@
-// TODO: [PERFORMANCE] File exceeds 300 lines. Consider refactoring/splitting for better maintainability.
 'use client'
 import { useState, useEffect } from 'react'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import OnboardingTour from '@/components/dashboard/OnboardingTour'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  LineChart, Line, XAxis, YAxis, Tooltip, 
+  ResponsiveContainer, CartesianGrid, AreaChart, Area 
+} from 'recharts'
+import { 
+  Users, TrendingUp, DollarSign, Send, 
+  Search, Filter, MoreHorizontal, MessageCircle, 
+  Zap, Crown, Calendar, MapPin, ArrowUpRight,
+  LayoutDashboard, Mail, Settings, Bell, Linkedin,
+  Shield, Activity, Globe
+} from 'lucide-react'
 import { buildWhatsAppUrl } from '@/lib/whatsapp'
 import { track } from '@/lib/tracking'
-
-const statusConfig: Record<string, { label: string; bg: string; color: string }> = {
-  NEW: { label: 'Nuova', bg: 'rgba(201,168,76,0.15)', color: '#C9A84C' },
-  CONTACTED: { label: 'Contattato', bg: 'rgba(34,197,94,0.12)', color: '#4ade80' },
-  QUOTING: { label: 'In quotazione', bg: 'rgba(168,85,247,0.15)', color: '#c084fc' },
-  QUOTED: { label: 'Preventivata', bg: 'rgba(59,130,246,0.15)', color: '#60a5fa' },
-  WON: { label: 'Vinta ✓', bg: 'rgba(34,197,94,0.15)', color: '#4ade80' },
-  LOST: { label: 'Persa', bg: 'rgba(239,68,68,0.1)', color: '#f87171' },
-  IN_PROGRESS: { label: 'In corso', bg: 'rgba(168,85,247,0.15)', color: '#c084fc' },
-  CONFIRMED: { label: 'Confermata', bg: 'rgba(34,197,94,0.15)', color: '#4ade80' },
-}
-
-interface Inquiry {
-  id: string
-  name: string
-  fromCity?: string
-  toCity?: string
-  flightDate?: string
-  budget?: string
-  pipelineStatus: string
-  leadTier: string
-  leadScore: number
-  budgetNumeric: number
-  urgency: boolean
-  urgencyFlag: boolean
-  sameDay: boolean
-  nextAction: string
-  marginEstimate: number
-  optimizedQuote: number
-  optimizedMargin: number
-  suggestedQuote: number
-  suggestedAction: string
-  revenuePotential: number
-  createdAt: string
-}
-
-interface InquiriesResponse {
-  inquiries: Inquiry[]
-  total: number
-  byTier: Record<string, number>
-  pipeline: { totalValue: number; totalMargin: number }
-}
-
-interface StatsResponse {
-  usesEstimates: boolean
-  kpis: {
-    revenueYTD: number
-    commissionYTD: number
-    bookingsTotal: number
-    avgDeal: number
-    conversionRate: number
-    activeClients: number
-    byTier: Record<string, number>
-    inquiriesTotal: number
-    inquiriesWon: number
-  }
-  dailyInquiries: Array<{ day: string; richieste: number; commissioni: number }>
-  leadFunnel: Array<{ status: string; count: number }>
-}
-
-function LeadBadges({ lead }: { lead: Inquiry }) {
-  const badges = []
-  if (lead.leadTier === 'VIP' || lead.leadScore >= 75)
-    badges.push({ label: '🔥 HOT', color: '#C9A84C', bg: 'rgba(201,168,76,0.12)' })
-  if (lead.marginEstimate >= 5000)
-    badges.push({ label: '💰 MARGINE ALTO', color: '#4ade80', bg: 'rgba(34,197,94,0.1)' })
-  if (lead.urgency || lead.sameDay)
-    badges.push({ label: '⚡ URGENTE', color: '#fb923c', bg: 'rgba(251,146,60,0.1)' })
-  if (lead.leadTier === 'HIGH' && badges.length === 0)
-    badges.push({ label: '💎 HIGH VALUE', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)' })
-  if (badges.length === 0) return null
-  return (
-    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-      {badges.map(b => (
-        <span key={b.label} style={{
-          fontSize: 9, padding: '2px 7px', letterSpacing: 0.5,
-          color: b.color, background: b.bg,
-          fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap',
-        }}>{b.label}</span>
-      ))}
-    </div>
-  )
-}
-
-function FunnelWidget() {
-  const [funnel, setFunnel] = useState<Record<string, number> | null>(null)
-  
-  useEffect(() => {
-    fetch('/api/track?limit=10000')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.counts) setFunnel(d.counts) })
-      .catch(() => null)
-  }, [])
-
-  if (!funnel || Object.keys(funnel).length === 0) return null
-
-  const steps = [
-    { id: 'inquiry_sent', label: 'Richieste Inviate' },
-    { id: 'quote_viewed', label: 'Preventivi Visti' },
-    { id: 'quote_payment_clicked', label: 'Click Conferma' },
-    { id: 'booking_success', label: 'Prenotazioni' },
-  ]
-
-  const max = Math.max(...steps.map(s => funnel[s.id] || 0), 1)
-
-  return (
-    <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '28px 24px' }}>
-      <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>LIVE FUNNEL</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {steps.map(s => {
-          const val = funnel[s.id] || 0
-          const pct = Math.round((val / max) * 100)
-          return (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 120, fontSize: 11, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif' }}>{s.label}</div>
-              <div style={{ flex: 1, height: 16, background: 'rgba(240,237,230,0.04)', position: 'relative' }}>
-                <div style={{ width: `${pct}%`, height: '100%', background: '#C9A84C', opacity: 0.8 }} />
-              </div>
-              <div style={{ width: 30, fontSize: 12, color: '#F0EDE6', textAlign: 'right', fontWeight: 500 }}>{val}</div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-function RecentEventsWidget() {
-  const [events, setEvents] = useState<any[]>([])
-
-  useEffect(() => {
-    fetch('/api/track?limit=10')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.events) setEvents(d.events) })
-      .catch(() => null)
-  }, [])
-
-  if (events.length === 0) return null
-
-  return (
-    <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '28px 24px' }}>
-      <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>ULTIMI EVENTI</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {events.slice(0, 5).map((e, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderBottom: '1px solid rgba(201,168,76,0.05)', paddingBottom: 12 }}>
-            <div style={{ fontSize: 10, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', width: 40, paddingTop: 2 }}>{new Date(e.ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 12, color: '#F0EDE6', marginBottom: 2 }}>{e.event}</div>
-              {e.metadata?.route && <div style={{ fontSize: 11, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>{e.metadata.route}</div>}
-              {e.metadata?.price && <div style={{ fontSize: 11, color: '#4ade80', fontFamily: 'Helvetica Neue, sans-serif' }}>€{e.metadata.price.toLocaleString('it-IT')}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-type FilterKey = 'all' | 'vip' | 'high_margin' | 'urgent'
-
-const NEXT_ACTION_CONFIG: Record<string, { label: string; color: string }> = {
-  CALL_NOW: { label: '📞 CHIAMA', color: '#f87171' },
-  WHATSAPP_NOW: { label: '💬 WA ORA', color: '#25D366' },
-  EMAIL_ONLY: { label: '✉ EMAIL', color: '#60a5fa' },
-  LOW_PRIORITY: { label: '○ BASSA', color: 'rgba(240,237,230,0.25)' },
-}
+import { formatCurrency } from '@/lib/utils'
+import SocialCenter from '@/components/dashboard/SocialCenter'
 
 export default function DashboardPage() {
-  const [activeChart, setActiveChart] = useState<'richieste' | 'commissioni'>('commissioni')
-  const [showTour, setShowTour] = useState(false)
-  const [inquiriesData, setInquiriesData] = useState<InquiriesResponse | null>(null)
-  const [stats, setStats] = useState<StatsResponse | null>(null)
-  const [loadingTable, setLoadingTable] = useState(true)
-  const [loadingStats, setLoadingStats] = useState(true)
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
+  const [inquiries, setInquiries] = useState<any[]>([])
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
-    const toured = localStorage.getItem('aerojet-toured')
-    if (!toured) setShowTour(true)
+    Promise.all([
+      fetch('/api/inquiries?limit=20&orderBy=score').then(r => r.json()),
+      fetch('/api/dashboard/stats?period=quarter').then(r => r.json())
+    ])
+    .then(([inq, st]) => {
+      setInquiries(inq.inquiries || [])
+      setStats(st)
+    })
+    .catch(console.error)
+    .finally(() => setLoading(false))
   }, [])
-
-  useEffect(() => {
-    // Table: CRUD endpoint
-    fetch('/api/inquiries?limit=20&orderBy=score')
-      .then(r => r.json())
-      .then(setInquiriesData)
-      .catch(console.error)
-      .finally(() => setLoadingTable(false))
-
-    // KPI + chart: aggregated endpoint
-    fetch('/api/dashboard/stats?period=quarter')
-      .then(r => r.json())
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setLoadingStats(false))
-  }, [])
-
-  const completeTour = () => {
-    localStorage.setItem('aerojet-toured', '1')
-    setShowTour(false)
-  }
-
-  const loading = loadingTable || loadingStats
-  const allInquiries = inquiriesData?.inquiries ?? []
-
-  const chartData = stats?.dailyInquiries ?? []
-
-  const inquiries = allInquiries.filter(i => {
-    if (activeFilter === 'vip') return i.leadTier === 'VIP'
-    if (activeFilter === 'high_margin') return i.optimizedMargin >= 5000 || i.marginEstimate >= 5000
-    if (activeFilter === 'urgent') return i.urgencyFlag || i.sameDay || i.urgency
-    return true
-  })
-
-  const byTier = stats?.kpis.byTier ?? {}
-  const total = stats?.kpis.inquiriesTotal ?? 0
-  const revenueYTD = stats?.kpis.revenueYTD ?? 0
-  const commissionYTD = stats?.kpis.commissionYTD ?? 0
 
   const kpis = [
-    {
-      label: 'Richieste totali',
-      value: String(total || '—'),
-      delta: byTier.VIP ? `${byTier.VIP} VIP` : '',
-      icon: '✉',
-      color: '#C9A84C',
-    },
-    {
-      label: 'Lead VIP + HIGH',
-      value: String((byTier.VIP || 0) + (byTier.HIGH || 0)),
-      delta: byTier.VIP ? `${byTier.VIP} VIP` : '—',
-      icon: '🔥',
-      color: '#C9A84C',
-    },
-    {
-      label: stats?.usesEstimates ? 'Margine pipeline est.' : 'Commissioni YTD',
-      value: commissionYTD > 0
-        ? `€${Math.round(commissionYTD).toLocaleString('it-IT')}`
-        : '€0',
-      delta: stats?.usesEstimates ? 'stima' : '',
-      icon: '€',
-      color: '#4ade80',
-    },
-    {
-      label: stats?.usesEstimates ? 'Valore pipeline est.' : 'Revenue YTD',
-      value: revenueYTD > 0
-        ? `€${Math.round(revenueYTD).toLocaleString('it-IT')}`
-        : '€0',
-      delta: stats?.usesEstimates ? 'stima' : '',
-      icon: '◆',
-      color: '#60a5fa',
-    },
+    { label: 'Revenue YTD', value: formatCurrency(stats?.kpis?.revenueYTD || 0), icon: DollarSign, color: 'text-emerald-400', glow: 'shadow-[0_0_20px_rgba(52,211,153,0.1)]' },
+    { label: 'Commissioni', value: formatCurrency(stats?.kpis?.commissionYTD || 0), icon: TrendingUp, color: 'text-gold', glow: 'shadow-[0_0_20px_rgba(201,168,76,0.1)]' },
+    { label: 'Lead Attivi', value: stats?.kpis?.inquiriesTotal || 0, icon: Users, color: 'text-neon-blue', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.1)]' },
+    { label: 'Conversion', value: `${stats?.kpis?.conversionRate || 0}%`, icon: Zap, color: 'text-neon-purple', glow: 'shadow-[0_0_20px_rgba(139,92,246,0.1)]' },
   ]
 
   return (
-    <div style={{ padding: '40px 48px', minHeight: '100vh' }}>
-      {showTour && <OnboardingTour onComplete={completeTour} />}
+    <div className="min-h-screen bg-darker flex text-white/90 selection:bg-gold/30">
+      
+      {/* 1. Futuristic Sidebar */}
+      <aside className="w-20 lg:w-72 border-r border-white/5 flex flex-col py-10 px-6 gap-16 sticky top-0 h-screen bg-black/20 backdrop-blur-3xl z-50">
+        <Link href="/" className="flex items-center gap-4 px-2 no-underline group">
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-gold/50 transition-all duration-500 shadow-2xl">
+            <Crown size={20} className="text-gold" />
+          </div>
+          <div className="flex flex-col hidden lg:block">
+            <span className="text-sm font-bold tracking-[0.4em] text-white">AEROJET</span>
+            <span className="text-[8px] tracking-[0.3em] text-gold uppercase font-bold">Command Center</span>
+          </div>
+        </Link>
 
-      {/* Header */}
-      <div style={{ marginBottom: 40 }}>
-        <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>
-          {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase()}
-        </div>
-        <h1 style={{ fontSize: 36, fontWeight: 300, letterSpacing: 1 }}>Dashboard Broker</h1>
-        <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 6 }}>
-          {inquiries.filter(i => i.pipelineStatus === 'NEW').length} nuove richieste in attesa
-          {inquiries.filter(i => i.urgency || i.sameDay).length > 0 &&
-            ` · ${inquiries.filter(i => i.urgency || i.sameDay).length} urgenti`}
-        </p>
-      </div>
-
-      {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)', marginBottom: 40 }}>
-        {kpis.map((kpi, i) => (
-          <div key={i} style={{ background: '#0A0C14', padding: '28px 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div style={{ fontSize: 22, color: kpi.color }}>{kpi.icon}</div>
-              {kpi.delta && (
-                <div style={{ fontSize: 11, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', background: 'rgba(201,168,76,0.1)', padding: '3px 8px' }}>
-                  {kpi.delta}
-                </div>
+        <nav className="flex-1 w-full space-y-2">
+          {[
+            { id: 'overview', icon: LayoutDashboard, label: 'Mission Overview' },
+            { id: 'requests', icon: Activity, label: 'Active Pipeline' },
+            { id: 'social', icon: Linkedin, label: 'Marketing Hub' },
+            { id: 'calendar', icon: Calendar, label: 'Flight Ops' },
+            { id: 'clients', icon: Globe, label: 'Global Clients' },
+            { id: 'settings', icon: Settings, label: 'Configuratore' },
+          ].map((item) => (
+            <button 
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-500 group relative ${
+                activeTab === item.id 
+                  ? 'bg-white/5 text-white border border-white/10' 
+                  : 'text-white/20 hover:text-white/40 hover:bg-white/[0.02]'
+              }`}
+            >
+              {activeTab === item.id && (
+                <motion.div layoutId="navGlow" className="absolute left-0 w-1 h-6 bg-gold rounded-full shadow-[0_0_15px_#C9A84C]" />
               )}
-            </div>
-            <div style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 300, color: kpi.color, marginBottom: 8 }}>
-              {loadingStats ? '—' : kpi.value}
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>{kpi.label}</div>
-          </div>
-        ))}
-      </div>
+              <item.icon size={20} className={activeTab === item.id ? 'text-gold' : ''} />
+              <span className="text-[11px] uppercase tracking-widest font-bold hidden lg:block">{item.label}</span>
+            </button>
+          ))}
+        </nav>
 
-      {/* Chart */}
-      <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)', padding: '32px', marginBottom: 40 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>ANDAMENTO · ULTIMI 30 GIORNI</div>
-            <div style={{ fontSize: 20, fontWeight: 400 }}>Pipeline commerciale</div>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {[['commissioni', 'Commissioni'], ['richieste', 'Richieste']].map(([val, label]) => (
-              <button key={val} onClick={() => setActiveChart(val as typeof activeChart)}
-                style={{ padding: '8px 16px', fontSize: 11, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', cursor: 'pointer', background: activeChart === val ? '#C9A84C' : 'transparent', color: activeChart === val ? '#0A0C14' : 'rgba(240,237,230,0.4)', border: '1px solid rgba(201,168,76,0.3)', transition: 'all 0.2s' }}>
-                {label}
-              </button>
-            ))}
+        {/* Security Badge */}
+        <div className="hidden lg:flex flex-col gap-4 p-6 rounded-3xl bg-white/[0.02] border border-white/5">
+          <Shield size={24} className="text-emerald-500/50" />
+          <div className="space-y-1">
+            <div className="text-[9px] uppercase tracking-widest font-bold text-white/40">Secure Session</div>
+            <div className="text-[10px] text-emerald-500 font-bold tracking-tighter">AES-256 ENCRYPTED</div>
           </div>
         </div>
+      </aside>
 
-        {loadingStats ? (
-          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 13 }}>
-            Caricamento dati...
-          </div>
-        ) : chartData.length === 0 ? (
-          <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,237,230,0.2)', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 13 }}>
-            Nessuna richiesta negli ultimi 30 giorni
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(201,168,76,0.07)" />
-              <XAxis dataKey="day" stroke="rgba(240,237,230,0.2)" tick={{ fontSize: 11, fill: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }} interval={4} />
-              <YAxis stroke="rgba(240,237,230,0.2)" tick={{ fontSize: 11, fill: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }} />
-              <Tooltip contentStyle={{ background: '#0A0C14', border: '1px solid rgba(201,168,76,0.3)', color: '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 13 }} />
-              <Line type="monotone" dataKey={activeChart} stroke="#C9A84C" strokeWidth={2} dot={false} activeDot={{ r: 5, fill: '#E8C97A' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-
-      {/* Funnel & Recents Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 40 }}>
-        <FunnelWidget />
-        <RecentEventsWidget />
-      </div>
-
-      {/* Lead pipeline */}
-      <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.12)' }}>
-        <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(201,168,76,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif' }}>PIPELINE LEAD</div>
-            <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 3 }}>
-              {inquiries.length} lead · ordinati per score
+      {/* 2. Main Content Space */}
+      <main className="flex-1 p-8 lg:p-16 overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,rgba(201,168,76,0.05),transparent_50%)]">
+        
+        {/* Cinematic Header */}
+        <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16 relative">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <div className="h-px w-8 bg-gold/50" />
+               <span className="text-[8px] uppercase tracking-[0.5em] text-gold font-bold">Terminal 01</span>
             </div>
+            <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight">
+              {activeTab === 'social' ? 'Social Elite' : 'Mission Command'}
+            </h1>
           </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-            {([
-              ['all', 'Tutti', allInquiries.length],
-              ['vip', '🔥 VIP', allInquiries.filter(i => i.leadTier === 'VIP').length],
-              ['urgent', '⚡ Urgenti', allInquiries.filter(i => i.urgencyFlag || i.sameDay).length],
-              ['high_margin', '💰 Alto margine', allInquiries.filter(i => (i.optimizedMargin || i.marginEstimate) >= 5000).length],
-            ] as [FilterKey, string, number][]).map(([key, label, count]) => (
-              <button key={key} onClick={() => setActiveFilter(key)}
-                style={{ padding: '6px 14px', fontSize: 11, letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif', cursor: 'pointer', background: activeFilter === key ? 'rgba(201,168,76,0.15)' : 'transparent', color: activeFilter === key ? '#C9A84C' : 'rgba(240,237,230,0.4)', border: activeFilter === key ? '1px solid rgba(201,168,76,0.4)' : '1px solid rgba(240,237,230,0.08)', transition: 'all 0.15s' }}>
-                {label} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
-              </button>
-            ))}
-            <a href="/dashboard/requests" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', textDecoration: 'none', marginLeft: 4 }}>TUTTI →</a>
-          </div>
-        </div>
-
-        {loadingTable ? (
-          <div style={{ padding: '48px 32px', textAlign: 'center', color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', fontSize: 14 }}>
-            Caricamento...
-          </div>
-        ) : inquiries.length === 0 ? (
-          <div style={{ padding: '64px 32px', textAlign: 'center' }}>
-            <div style={{ fontSize: 32, marginBottom: 16, opacity: 0.3 }}>✉</div>
-            <div style={{ fontSize: 14, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>
-              {activeFilter === 'all' ? 'Nessuna richiesta ancora.' : 'Nessun lead per questo filtro.'}
+          
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[8px] uppercase tracking-widest text-white/30">System Status</span>
+              <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping" />
+                ONLINE / OPERATIONAL
+              </span>
             </div>
-            {activeFilter !== 'all' && (
-              <button onClick={() => setActiveFilter('all')} style={{ marginTop: 8, fontSize: 11, color: '#C9A84C', background: 'transparent', border: '1px solid rgba(201,168,76,0.3)', padding: '6px 16px', cursor: 'pointer', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
-                MOSTRA TUTTI
-              </button>
-            )}
+            <div className="w-px h-10 bg-white/5" />
+            <button className="btn-gold-premium px-10 py-5 rounded-full shadow-2xl">
+              NUOVA MISSIONE ✦
+            </button>
           </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
-                  {['Cliente', 'Rotta', 'Budget / Quota ott.', 'Azione', 'Score', 'Margine', 'Status', 'Azioni'].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 400, whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {inquiries.map((lead) => {
-                  const s = statusConfig[lead.pipelineStatus] || statusConfig['NEW']
-                  const route = lead.fromCity && lead.toCity ? `${lead.fromCity} → ${lead.toCity}` : 'N/D'
-                  return (
-                    <tr key={lead.id}
-                      style={{ borderBottom: '1px solid rgba(201,168,76,0.04)', transition: 'background 0.15s' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,0.03)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+        </header>
 
-                      <td style={{ padding: '14px 16px', minWidth: 160 }}>
-                        <div style={{ fontSize: 14, marginBottom: 5 }}>{lead.name}</div>
-                        <LeadBadges lead={lead} />
-                      </td>
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div 
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-12"
+            >
+              {/* KPI Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {kpis.map((kpi, i) => (
+                  <motion.div 
+                    key={i}
+                    whileHover={{ y: -5 }}
+                    className={`glass-card p-10 rounded-[2.5rem] relative overflow-hidden group border border-white/5 ${kpi.glow}`}
+                  >
+                    <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-125 transition-all duration-700">
+                      <kpi.icon size={80} />
+                    </div>
+                    <span className="text-[9px] text-white/30 uppercase tracking-[0.4em] font-bold block mb-6">
+                      {kpi.label}
+                    </span>
+                    <div className={`text-4xl font-light tracking-tighter ${kpi.color}`}>
+                      {kpi.value}
+                    </div>
+                    <div className="mt-6 flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-400/5 py-2 px-4 rounded-full w-fit">
+                      <ArrowUpRight size={12} /> +12.4%
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
 
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap' }}>
-                        {route}
-                        {lead.flightDate && <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.3)', marginTop: 3 }}>{lead.flightDate}</div>}
-                      </td>
+              {/* Data Intelligence Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 glass-card p-12 rounded-[2.5rem] border border-white/5">
+                  <div className="flex items-center justify-between mb-12">
+                    <h3 className="text-[10px] text-gold uppercase tracking-[0.5em] font-bold">Revenue Intelligence</h3>
+                    <div className="flex gap-4">
+                      {['7D', '30D', '90D'].map(p => (
+                        <button key={p} className="text-[9px] text-white/20 hover:text-white font-bold px-3 py-1 rounded-full border border-white/5">{p}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats?.dailyInquiries || []}>
+                        <defs>
+                          <linearGradient id="colorGold" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#C9A84C" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                        <XAxis dataKey="day" stroke="rgba(255,255,255,0.2)" axisLine={false} tick={{fontSize: 9, fontWeight: 'bold'}} tickLine={false} />
+                        <YAxis stroke="rgba(255,255,255,0.2)" axisLine={false} tick={{fontSize: 9, fontWeight: 'bold'}} tickLine={false} />
+                        <Tooltip 
+                          contentStyle={{ background: 'rgba(2,4,8,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '1rem' }}
+                          itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold' }}
+                        />
+                        <Area type="monotone" dataKey="commissioni" stroke="#C9A84C" fillOpacity={1} fill="url(#colorGold)" strokeWidth={3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
 
-                      <td style={{ padding: '14px 16px', minWidth: 140 }}>
-                        <div style={{ fontSize: 13, color: '#C9A84C' }}>{lead.budget || '—'}</div>
-                        {(lead.optimizedQuote > 0 || lead.suggestedQuote > 0) && (
-                          <div style={{ fontSize: 11, color: '#4ade80', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 3 }}>
-                            quota ott. €{(lead.optimizedQuote || lead.suggestedQuote).toLocaleString('it-IT')}
-                          </div>
-                        )}
-                      </td>
-
-                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                        {(() => {
-                          const cfg = NEXT_ACTION_CONFIG[lead.nextAction]
-                          if (!cfg) return <span style={{ fontSize: 11, color: 'rgba(240,237,230,0.2)', fontFamily: 'Helvetica Neue, sans-serif' }}>—</span>
-                          return (
-                            <span style={{ fontSize: 10, padding: '3px 8px', letterSpacing: 0.5, color: cfg.color, background: `${cfg.color}18`, fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap' }}>
-                              {cfg.label}
-                            </span>
-                          )
-                        })()}
-                      </td>
-
-                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2px solid ${lead.leadScore >= 70 ? '#C9A84C' : lead.leadScore >= 40 ? '#60a5fa' : 'rgba(240,237,230,0.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: lead.leadScore >= 70 ? '#C9A84C' : '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif', flexShrink: 0 }}>
-                            {lead.leadScore}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }}>{lead.leadTier}</div>
-                            {lead.urgencyFlag && <div style={{ fontSize: 10, color: '#fb923c', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 2 }}>⚡ urgente</div>}
-                          </div>
+                <div className="glass-card p-12 rounded-[2.5rem] border border-white/5">
+                  <h3 className="text-[10px] text-gold uppercase tracking-[0.5em] font-bold mb-12">Lead Optimization</h3>
+                  <div className="space-y-10">
+                    {stats?.leadFunnel?.map((item: any, i: number) => (
+                      <div key={i} className="space-y-3">
+                        <div className="flex justify-between items-end">
+                          <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{item.status}</span>
+                          <span className="text-xl font-light text-white">{item.count}</span>
                         </div>
-                      </td>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(item.count / (stats?.kpis?.inquiriesTotal || 1)) * 100}%` }}
+                            transition={{ duration: 1, delay: i * 0.1 }}
+                            className="h-full bg-gradient-to-r from-gold/40 to-gold"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: lead.marginEstimate > 0 ? '#4ade80' : 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap' }}>
-                        {lead.marginEstimate > 0 ? `€${lead.marginEstimate.toLocaleString('it-IT')}` : '—'}
-                      </td>
-
-                      <td style={{ padding: '14px 16px' }}>
-                        <span style={{ background: s.bg, color: s.color, fontSize: 10, padding: '4px 10px', letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif', whiteSpace: 'nowrap' }}>
-                          {s.label}
-                        </span>
-                      </td>
-
-                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <a
-                            href={buildWhatsAppUrl('volo', { from: lead.fromCity, to: lead.toCity, budget: lead.budget || '', priority: lead.leadTier })}
-                            target="_blank" rel="noopener noreferrer"
-                            onClick={() => track('click_whatsapp', { source: 'dashboard', leadId: lead.id })}
-                            title="Contatta via WhatsApp"
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, background: 'rgba(37,211,102,0.15)', color: '#25D366', textDecoration: 'none', fontSize: 14, flexShrink: 0 }}>
-                            💬
-                          </a>
-                          {lead.suggestedAction && (
-                            <div
-                              title={lead.suggestedAction}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, background: 'rgba(201,168,76,0.1)', color: '#C9A84C', fontSize: 12, cursor: 'help', flexShrink: 0 }}>
-                              ℹ
+              {/* Mission Table */}
+              <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/5">
+                <div className="p-10 border-b border-white/5 flex items-center justify-between">
+                  <h3 className="text-[10px] text-gold uppercase tracking-[0.5em] font-bold">Active Missions Pipeline</h3>
+                  <button className="text-white/20 hover:text-white transition-colors"><MoreHorizontal size={20} /></button>
+                </div>
+                <div className="overflow-x-auto px-6 pb-6">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[9px] uppercase tracking-[0.4em] text-white/20 border-b border-white/5">
+                        <th className="px-8 py-8 font-bold">Mission Priority / ID</th>
+                        <th className="px-8 py-8 font-bold">Route Vector</th>
+                        <th className="px-8 py-8 font-bold">System Status</th>
+                        <th className="px-8 py-8 font-bold text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.03]">
+                      {inquiries.map((lead, idx) => (
+                        <tr key={lead.id} className="hover:bg-white/[0.01] transition-all group">
+                          <td className="px-8 py-8">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-2 h-2 rounded-full ${idx % 3 === 0 ? 'bg-gold animate-pulse' : 'bg-white/10'}`} />
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[13px] text-white font-bold tracking-tight">{lead.name}</span>
+                                <span className="text-[10px] text-white/20 font-mono">AJ-X{lead.id.slice(-4).toUpperCase()}</span>
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          </td>
+                          <td className="px-8 py-8 text-sm">
+                            <div className="flex items-center gap-3">
+                              <span className="text-white font-medium">{lead.fromCity}</span>
+                              <ArrowUpRight size={12} className="text-gold opacity-30" />
+                              <span className="text-white font-medium">{lead.toCity}</span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-8">
+                            <span className="text-[8px] uppercase tracking-[0.3em] font-black px-4 py-1.5 bg-gold/5 border border-gold/20 rounded-full text-gold">
+                              {lead.pipelineStatus}
+                            </span>
+                          </td>
+                          <td className="px-8 py-8 text-right">
+                             <div className="flex items-center justify-end gap-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                               <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/60"><MessageCircle size={16} /></button>
+                               <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/60"><ArrowUpRight size={16} /></button>
+                             </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-        {!loading && revenueYTD > 0 && (
-          <div style={{ padding: '16px 32px', borderTop: '1px solid rgba(201,168,76,0.06)', display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-            <div style={{ fontSize: 12, fontFamily: 'Helvetica Neue, sans-serif', color: 'rgba(240,237,230,0.35)' }}>
-              {stats?.usesEstimates ? 'Pipeline stimato' : 'Revenue confermata'}:{' '}
-              <span style={{ color: '#60a5fa' }}>€{revenueYTD.toLocaleString('it-IT')}</span>
-            </div>
-            <div style={{ fontSize: 12, fontFamily: 'Helvetica Neue, sans-serif', color: 'rgba(240,237,230,0.35)' }}>
-              {stats?.usesEstimates ? 'Margine stimato' : 'Commissioni'}:{' '}
-              <span style={{ color: '#4ade80' }}>€{commissionYTD.toLocaleString('it-IT')}</span>
-            </div>
-          </div>
-        )}
-      </div>
+          {activeTab === 'social' && (
+            <motion.div 
+              key="social"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+            >
+              <SocialCenter />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   )
 }
+
+import Link from 'next/link'

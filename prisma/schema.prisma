@@ -274,3 +274,11 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([userId])
 }
+
+model SocialConfig {
+  id          String   @id @default(cuid())
+  platform    String   @unique
+  accessToken String
+  expiresAt   DateTime?
+  updatedAt   DateTime @updatedAt
+}

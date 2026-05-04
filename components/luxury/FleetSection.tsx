@@ -1,97 +1,144 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { FLEET_CATEGORIES } from '@/lib/utils'
 import ImageWithFallback from '@/components/ImageWithFallback'
-import { FLEET_IMAGES, FLEET_ALT } from '@/lib/imageAssets'
+import { FLEET_IMAGES, FLEET_ALT, BG_SUNSET_CLOUDS } from '@/lib/imageAssets'
 
 export default function FleetSection() {
   const [selected, setSelected] = useState<number | null>(null)
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
 
   return (
-    <section id="fleet" style={{ padding: '100px 0', background: '#0A0C14' }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(32px)', transition: 'all 0.9s ease' }}>
+    <section id="fleet" className="section-padding bg-darker relative overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <ImageWithFallback
+          src={BG_SUNSET_CLOUDS}
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-darker via-transparent to-darker" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>LA FLOTTA</span>
-          <h2 style={{ fontSize: 'clamp(36px,5vw,58px)', fontWeight: 300, lineHeight: 1.1, margin: '0 0 20px', letterSpacing: 1 }}>
-            Scegli il Tuo<br /><span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Velivolo</span>
-          </h2>
-          <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.55)', maxWidth: 560, margin: '0 auto', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 1.8 }}>
-            Dalla tratta regionale al volo intercontinentale non-stop, ogni categoria è pensata per un&apos;esperienza diversa.
-          </p>
+        <div className="text-center mb-20">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+          >
+            LA FLOTTA
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white mb-6"
+          >
+            Scegli il Tuo <span className="text-gold italic">Velivolo</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="text-white/70 max-w-xl mx-auto text-lg font-light leading-relaxed tracking-wide"
+          >
+            Dalla tratta regionale al volo intercontinentale non-stop, <br className="hidden md:block" />
+            ogni categoria è pensata per un'esperienza d'eccellenza.
+          </motion.p>
         </div>
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {FLEET_CATEGORIES.map((cat, i) => (
-            <div key={i}
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              layout
               onClick={() => setSelected(selected === i ? null : i)}
-              style={{ background: selected === i ? '#0F1220' : '#0A0C14', padding: 32, cursor: 'pointer', borderLeft: selected === i ? '3px solid #C9A84C' : '3px solid transparent', transition: 'all 0.3s' }}
-              onMouseEnter={e => { if (selected !== i) (e.currentTarget as HTMLElement).style.background = '#0D0F1A' }}
-              onMouseLeave={e => { if (selected !== i) (e.currentTarget as HTMLElement).style.background = '#0A0C14' }}>
-              <div style={{ fontSize: 24, color: '#C9A84C', marginBottom: 16 }}>{cat.icon}</div>
-              <div style={{ fontSize: 22, fontWeight: 500, marginBottom: 8 }}>{cat.label}</div>
-              <div style={{ fontSize: 13, color: '#C9A84C', marginBottom: 12, fontFamily: 'Helvetica Neue, sans-serif' }}>{cat.priceHint}</div>
-              <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', display: 'flex', gap: 8 }}>
+              className={`glass-card p-8 cursor-pointer relative group ${
+                selected === i ? 'ring-1 ring-gold/40 bg-white/[0.03]' : ''
+              }`}
+            >
+              <div className="flex justify-between items-start mb-8">
+                <div className="text-4xl filter drop-shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-transform duration-500 group-hover:scale-110">
+                  {cat.icon}
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-gold tracking-widest uppercase mb-1 opacity-70">A partire da</div>
+                  <div className="text-lg font-medium text-white">{cat.priceHint}</div>
+                </div>
+              </div>
+
+              <h3 className="luxury-heading text-3xl text-white mb-2 group-hover:text-gold transition-colors">
+                {cat.label}
+              </h3>
+              
+              <div className="flex gap-4 text-[10px] tracking-[0.2em] text-white/60 uppercase font-bold mb-8">
                 <span>{cat.range}</span>
-                <span style={{ color: '#C9A84C' }}>·</span>
+                <span className="text-gold/40">•</span>
                 <span>{cat.pax}</span>
               </div>
 
-              {selected === i && (
-                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+              <AnimatePresence mode="wait">
+                {selected === i && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-6 border-t border-white/10 space-y-6">
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-white/5">
+                        <ImageWithFallback
+                          src={FLEET_IMAGES[cat.value]}
+                          alt={FLEET_ALT[cat.value] ?? `${cat.label} in volo`}
+                          fill
+                          sizes="400px"
+                          className="object-cover transition-transform duration-1000 hover:scale-110"
+                          fallback={
+                            <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                              <span className="text-white/10 text-6xl">{cat.icon}</span>
+                            </div>
+                          }
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      </div>
 
-                  {/* Jet image — 180px panel, falls back to icon + gradient */}
-                  <div style={{ position: 'relative', height: 180, overflow: 'hidden', marginBottom: 16 }}>
-                    <ImageWithFallback
-                      src={FLEET_IMAGES[cat.value]}
-                      alt={FLEET_ALT[cat.value] ?? `${cat.label} in volo`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 400px"
-                      objectFit="cover"
-                      fallback={
-                        <div style={{
-                          width: '100%', height: '100%',
-                          background: 'linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.03) 100%)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexDirection: 'column', gap: 8,
-                        }}>
-                          <span style={{ fontSize: 48, color: 'rgba(201,168,76,0.35)' }}>{cat.icon}</span>
-                          <span style={{ fontSize: 10, letterSpacing: 3, color: 'rgba(201,168,76,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                            {cat.label.toUpperCase()}
-                          </span>
-                        </div>
-                      }
-                    />
-                    {/* Gradient overlay to blend into card background */}
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: 'linear-gradient(to bottom, transparent, #0F1220)', pointerEvents: 'none' }} />
-                  </div>
+                      <p className="text-sm text-cream/60 leading-relaxed font-light">
+                        {cat.value === 'turboprop' && 'Ideale per tratte brevi, isole e aeroporti minori. Eccellente comfort per trasferimenti regionali.'}
+                        {cat.value === 'light' && 'La scelta perfetta per viaggi business in Europa. Cabina moderna, velocità e puntualità.'}
+                        {cat.value === 'midsize' && 'Cabina stand-up, ideale per 7-9 passeggeri. Copre la maggior parte delle rotte europee senza scalo.'}
+                        {cat.value === 'supermid' && 'Non-stop Europa–East Coast USA. Cabina premium con letto flat-bed su richiesta.'}
+                        {cat.value === 'heavy' && 'Intercontinentale con comfort massimo. Camera da letto, bagno completo, cucina di bordo.'}
+                        {cat.value === 'ultralong' && 'Qualsiasi coppia di città sul pianeta senza scalo. L\'esperienza più esclusiva del trasporto privato.'}
+                      </p>
 
-                  <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.65)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.7, marginBottom: 16 }}>
-                    {cat.value === 'turboprop' && 'Ideale per tratte brevi, isole e aeroporti minori. Eccellente comfort per trasferimenti regionali.'}
-                    {cat.value === 'light' && 'La scelta perfetta per viaggi business in Europa. Cabina moderna, velocità e puntualità.'}
-                    {cat.value === 'midsize' && 'Cabina stand-up, ideale per 7-9 passeggeri. Copre la maggior parte delle rotte europee senza scalo.'}
-                    {cat.value === 'supermid' && 'Non-stop Europa–East Coast USA. Cabina premium con letto flat-bed su richiesta.'}
-                    {cat.value === 'heavy' && 'Intercontinentale con comfort massimo. Camera da letto, bagno completo, cucina di bordo.'}
-                    {cat.value === 'ultralong' && 'Qualsiasi coppia di città sul pianeta senza scalo. L&apos;esperienza più esclusiva del trasporto privato.'}
-                  </p>
-                  <Link href={`/search?category=${cat.value}`}
-                    style={{ display: 'block', background: '#C9A84C', color: '#0A0C14', textDecoration: 'none', textAlign: 'center', padding: '12px', fontSize: 11, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500 }}>
-                    RICHIEDI PREVENTIVO
-                  </Link>
-                </div>
-              )}
-            </div>
+                      <Link 
+                        href={`/search?category=${cat.value}`}
+                        className="btn-gold-premium w-full py-4 rounded-sm text-[10px] tracking-[0.3em]"
+                      >
+                        RICHIEDI PREVENTIVO ✦
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Decorative corner accent */}
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            </motion.div>
           ))}
         </div>
       </div>

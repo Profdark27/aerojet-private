@@ -86,6 +86,9 @@ export const OPERATOR_IMAGES: Record<string, string> = {
 export const HERO_BG         = '/images/hero-premium-bg.png'
 export const HERO_JET_3D     = '/images/3d-jet-element.png'
 export const HERO_INTERIOR   = '/images/hero-interior.jpg'
+export const BG_SUNSET_CLOUDS = '/images/bg-sunset-clouds.png'
+export const BG_ENGINE_GOLD   = '/images/bg-engine-gold.png'
+export const BG_TERMINAL_NIGHT = '/images/bg-terminal-night.png'
 
 export const JET_IMAGES: Record<string, string> = {
   'phenom 300': '/images/jet-phenom-300.webp',

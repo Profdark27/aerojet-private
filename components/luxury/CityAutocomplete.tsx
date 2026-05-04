@@ -1,5 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Plane, ArrowRight } from 'lucide-react'
 
 // Top 40 European + international airports for private aviation
 const AIRPORTS = [
@@ -55,10 +57,10 @@ interface Props {
   value: string
   onChange: (city: string, icao: string) => void
   placeholder?: string
-  style?: React.CSSProperties
+  className?: string
 }
 
-export default function CityAutocomplete({ label, value, onChange, placeholder = 'Città o aeroporto', style }: Props) {
+export default function CityAutocomplete({ label, value, onChange, placeholder = 'City or ICAO', className }: Props) {
   const [query, setQuery] = useState(value)
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
@@ -70,7 +72,7 @@ export default function CityAutocomplete({ label, value, onChange, placeholder =
         a.city.toLowerCase().includes(query.toLowerCase()) ||
         a.label.toLowerCase().includes(query.toLowerCase()) ||
         a.code.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 6)
+      ).slice(0, 8)
     : []
 
   useEffect(() => { setQuery(value) }, [value])
@@ -91,40 +93,82 @@ export default function CityAutocomplete({ label, value, onChange, placeholder =
   }
 
   return (
-    <div style={{ position: 'relative', ...style }}>
-      <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>{label}</div>
-      <input
-        ref={inputRef}
-        className="luxury-input"
-        placeholder={placeholder}
-        value={query}
-        onChange={e => { 
-          const val = e.target.value; 
-          setQuery(val); 
-          setOpen(true); 
-          setHighlighted(0);
-          onChange(val, ''); // Pass raw value immediately to sync parent state
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        onKeyDown={handleKey}
-        autoComplete="off"
-      />
-      {open && filtered.length > 0 && (
-        <div ref={listRef} style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#0F1220', border: '1px solid rgba(201,168,76,0.25)', zIndex: 200, boxShadow: '0 16px 40px rgba(0,0,0,0.5)', maxHeight: 260, overflowY: 'auto' }}>
-          {filtered.map((airport, i) => (
-            <div key={airport.code}
-              onMouseDown={() => select(airport)}
-              style={{ padding: '12px 16px', cursor: 'pointer', background: i === highlighted ? 'rgba(201,168,76,0.08)' : 'transparent', borderLeft: i === highlighted ? '2px solid #C9A84C' : '2px solid transparent', transition: 'all 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontSize: 14, color: '#F0EDE6', fontWeight: i === highlighted ? 500 : 400 }}>{airport.city}</div>
-                <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }}>{airport.label}</div>
+    <div className={`relative ${className}`}>
+      <div className="flex items-center gap-2 mb-3 ml-1">
+         <div className="w-1 h-1 bg-gold rounded-full" />
+         <div className="text-[9px] tracking-[0.4em] text-gold uppercase font-bold opacity-60">
+           {label}
+         </div>
+      </div>
+      <div className="relative group">
+        <MapPin className={`absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 transition-all duration-500 ${open ? 'text-gold scale-110' : 'text-white/10 group-hover:text-gold/30'}`} />
+        <input
+          ref={inputRef}
+          className="bg-transparent border-b border-white/10 w-full py-4 pl-8 text-white font-serif text-lg outline-none focus:border-gold transition-all duration-700 placeholder:text-white/10"
+          placeholder={placeholder}
+          value={query}
+          onChange={e => { 
+            const val = e.target.value; 
+            setQuery(val); 
+            setOpen(true); 
+            setHighlighted(0);
+            onChange(val, ''); 
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          onKeyDown={handleKey}
+          autoComplete="off"
+        />
+      </div>
+
+      <AnimatePresence>
+        {open && filtered.length > 0 && (
+          <motion.div 
+            ref={listRef}
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute top-full left-0 right-0 mt-4 glass-card bg-black/80 backdrop-blur-3xl border border-white/10 z-[200] shadow-[0_30px_60px_rgba(0,0,0,0.9)] rounded-[2rem] overflow-hidden"
+          >
+            {filtered.map((airport, i) => (
+              <div 
+                key={airport.code}
+                onMouseDown={() => select(airport)}
+                onMouseEnter={() => setHighlighted(i)}
+                className={`px-8 py-5 cursor-pointer transition-all duration-500 flex items-center justify-between group/item ${
+                  i === highlighted ? 'bg-white/5' : 'hover:bg-white/[0.02]'
+                }`}
+              >
+                <div className="flex items-center gap-5">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 ${
+                    i === highlighted ? 'bg-gold text-darker shadow-[0_0_15px_rgba(201,168,76,0.5)]' : 'bg-white/5 text-gold/30'
+                  }`}>
+                    <Plane size={16} />
+                  </div>
+                  <div>
+                    <div className="text-sm text-white font-medium group-hover/item:text-gold transition-colors">{airport.city}</div>
+                    <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold mt-1">{airport.label}</div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`text-[10px] font-bold tracking-[0.2em] transition-colors ${i === highlighted ? 'text-gold' : 'text-white/20'}`}>
+                    {airport.code}
+                  </span>
+                  {i === highlighted && (
+                    <motion.div 
+                      layoutId="arrow"
+                      className="text-[7px] text-gold/40 mt-1 flex items-center gap-1 font-black"
+                    >
+                      SELECT <ArrowRight size={8} />
+                    </motion.div>
+                  )}
+                </div>
               </div>
-              <span style={{ fontSize: 11, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1, flexShrink: 0 }}>{airport.code}</span>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

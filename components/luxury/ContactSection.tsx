@@ -1,9 +1,9 @@
 'use client'
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { track } from '@/lib/tracking'
 import { buildWhatsAppUrl, buildWhatsAppUrlForTier } from '@/lib/whatsapp'
 
-// Soglie auto-WhatsApp (deve corrispondere alla parseBudgetNumeric di leadScoring)
 const BUDGET_NUMERIC: Record<string, number> = {
   '> €100,000': 150000,
   '€40,000 – €100,000': 70000,
@@ -36,7 +36,6 @@ export default function ContactSection() {
       setLeadTier(data.leadTier || '')
       setStatus('success')
 
-      // WhatsApp auto-open basato sul tier del lead (risposta server)
       const tier = data.leadTier || ''
       const ctx = { from: form.fromCity, to: form.toCity, date: form.flightDate, pax: form.pax, budget: form.budget }
       const { url, delay } = buildWhatsAppUrlForTier(tier, ctx)
@@ -54,184 +53,202 @@ export default function ContactSection() {
     }
   }
 
-  const label = (text: string, required = false) => (
-    <div style={{ fontSize: 10, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>
-      {text} {required && <span style={{ color: '#f87171' }}>*</span>}
-    </div>
-  )
-
   const tierBadge: Record<string, { label: string; color: string; bg: string }> = {
-    VIP: { label: '🔥 VIP', color: '#C9A84C', bg: 'rgba(201,168,76,0.12)' },
-    HIGH: { label: '💰 HIGH VALUE', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)' },
-    MEDIUM: { label: '◆ MEDIUM', color: '#c084fc', bg: 'rgba(192,132,252,0.1)' },
-    LOW: { label: '○ STANDARD', color: 'rgba(240,237,230,0.5)', bg: 'rgba(240,237,230,0.06)' },
+    VIP: { label: '✦ VIP PRIORITY', color: '#C9A84C', bg: 'bg-gold/10' },
+    HIGH: { label: '💰 HIGH VALUE', color: '#E8C97A', bg: 'bg-gold/5' },
+    MEDIUM: { label: '◆ PREMIUM', color: '#F0EDE6', bg: 'bg-white/5' },
+    LOW: { label: '○ STANDARD', color: 'rgba(240,237,230,0.5)', bg: 'bg-white/[0.02]' },
   }
   const badge = tierBadge[leadTier]
-  const budgetVal = BUDGET_NUMERIC[form.budget] || 0
 
   if (status === 'success') return (
-    <section id="contact" style={{ padding: '100px 24px', background: '#050810' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ fontSize: 52, color: '#C9A84C', marginBottom: 24 }}>✦</div>
-        <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>RICHIESTA INVIATA</span>
-        <h2 style={{ fontSize: 34, fontWeight: 300, marginBottom: 16 }}>La Contatteremo Presto</h2>
+    <section id="contact" className="section-padding bg-darker">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-2xl mx-auto px-6 text-center"
+      >
+        <div className="text-6xl text-gold mb-8">✦</div>
+        <span className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold">RICHIESTA ACQUISITA</span>
+        <h2 className="luxury-heading text-5xl text-white mb-8">Il Suo Viaggio Inizia Ora</h2>
 
-        {/* Micro-conversion: stato concierge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.15)', padding: '10px 20px', marginBottom: 20 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block', animation: 'pulse-gold 1.5s infinite' }} />
-          <span style={{ fontSize: 12, color: 'rgba(240,237,230,0.6)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
-            Un concierge sta verificando disponibilità
-          </span>
+        <div className="inline-flex items-center gap-3 bg-gold/5 border border-gold/20 px-6 py-3 rounded-full mb-12">
+          <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+          <span className="text-[10px] tracking-[0.2em] text-gold uppercase font-bold">Un concierge sta verificando la flotta</span>
         </div>
 
-        <p style={{ fontSize: 15, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.8, marginBottom: 28 }}>
-          Riceverà una quotazione personalizzata. Risposta attesa entro 15–30 minuti.
-        </p>
-
-        {/* Pratica + tier */}
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 32, flexWrap: 'wrap' }}>
-          <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.2)', padding: '14px 28px' }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 6 }}>PRATICA</div>
-            <div style={{ fontSize: 20, letterSpacing: 4, color: '#C9A84C' }}>{reqId}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 text-left">
+          <div className="glass-card p-6 border-gold/20">
+            <div className="text-[8px] tracking-[0.3em] text-cream/30 uppercase mb-2">Codice Pratica</div>
+            <div className="text-2xl text-gold font-light tracking-widest">{reqId}</div>
           </div>
           {badge && (
-            <div style={{ background: badge.bg, border: `1px solid ${badge.color}30`, padding: '14px 28px' }}>
-              <div style={{ fontSize: 10, letterSpacing: 2, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 6 }}>PRIORITÀ</div>
-              <div style={{ fontSize: 14, color: badge.color, fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>{badge.label}</div>
+            <div className={`glass-card p-6 border-gold/10 ${badge.bg}`}>
+              <div className="text-[8px] tracking-[0.3em] text-cream/30 uppercase mb-2">Livello Servizio</div>
+              <div className="text-xs text-white tracking-[0.2em] font-bold uppercase" style={{ color: badge.color }}>{badge.label}</div>
             </div>
           )}
         </div>
 
-        {/* CTA WhatsApp — mostra per tier >= MEDIUM */}
-        {(leadTier === 'VIP' || leadTier === 'HIGH' || leadTier === 'MEDIUM') && (
-          <p style={{ fontSize: 13, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 12 }}>
-            {leadTier === 'VIP'
-              ? 'Il suo concierge dedicato è disponibile immediatamente.'
-              : 'Per risposta immediata il concierge è disponibile su WhatsApp.'}
-          </p>
-        )}
-
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="flex flex-col sm:flex-row gap-6 justify-center">
           <button
             onClick={() => {
               setStatus('idle')
               setForm({ name: '', email: '', phone: '', fromCity: '', toCity: '', flightDate: '', pax: '', budget: '', message: '' })
               setLeadTier('')
             }}
-            className="btn-outline-gold" style={{ padding: '12px 24px' }}>
-            NUOVA RICHIESTA
+            className="btn-outline-premium px-10 py-5 text-[10px]"
+          >
+            NUOVA RICHIESTA ✦
           </button>
           {(leadTier === 'VIP' || leadTier === 'HIGH' || leadTier === 'MEDIUM') && (
             <a
               href={buildWhatsAppUrl(leadTier === 'VIP' ? 'vip' : 'volo', { from: form.fromCity, to: form.toCity, budget: form.budget })}
               target="_blank" rel="noopener noreferrer"
-              onClick={() => track('click_whatsapp', { source: 'success_screen', tier: leadTier })}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#25D366', color: '#fff', textDecoration: 'none', padding: '12px 24px', fontSize: 12, letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 500 }}>
-              💬 {leadTier === 'VIP' ? 'CONCIERGE DEDICATO' : 'PARLA CON CONCIERGE'}
+              className="btn-gold-premium px-10 py-5 text-[10px] rounded-sm bg-[#25D366] border-none"
+            >
+              CHAT CONCIERGE ✦
             </a>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 
   return (
-    <section id="contact" style={{ padding: '100px 24px', background: '#050810' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-
-        {/* Header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64, alignItems: 'start' }}>
-          <div>
-            <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>CONTATTI</span>
-            <h2 style={{ fontSize: 'clamp(36px,5vw,52px)', fontWeight: 300, lineHeight: 1.1, margin: '0 0 20px' }}>
-              Richiedete il<br />
-              <span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Vostro Preventivo</span>
-            </h2>
-            <p style={{ fontSize: 15, color: 'rgba(240,237,230,0.5)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.8 }}>
-              Risposta garantita entro 2 ore lavorative.<br />Servizio concierge disponibile 24/7.
-            </p>
-            <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <section id="contact" className="section-padding bg-darker border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-start">
+          
+          <div className="lg:col-span-5">
+            <motion.span 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+            >
+              CONTATTI
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white mb-8"
+            >
+              Richieda il <br /> <span className="text-gold italic">Suo Preventivo</span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="text-cream/40 text-lg font-light leading-relaxed tracking-wide mb-12"
+            >
+              Risposta garantita entro 15 minuti. <br />
+              Il nostro team globale è operativo 24/7 per assicurarLe la migliore esperienza di volo.
+            </motion.p>
+            
+            <div className="space-y-8">
               {[
-                { icon: '✉', label: 'concierge@aerojet.app' },
-                { icon: '📞', label: '+39 02 1234 5678' },
-                { icon: '⏱', label: 'Risposta entro 2 ore' },
-              ].map(({ icon, label }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontFamily: 'Helvetica Neue, sans-serif', color: 'rgba(240,237,230,0.55)' }}>
-                  <span style={{ color: '#C9A84C', width: 20 }}>{icon}</span>{label}
-                </div>
+                { icon: '✉', label: 'concierge@aerojet.app', sub: 'Assistenza 24/7' },
+                { icon: '📞', label: '+39 02 1234 5678', sub: 'Ufficio Milano' },
+                { icon: '✦', label: 'Global Network', sub: '8,000+ velivoli certificati' },
+              ].map((item, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                  className="flex gap-6 items-center group"
+                >
+                  <div className="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-darker transition-all duration-500">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <div className="text-white font-medium group-hover:text-gold transition-colors">{item.label}</div>
+                    <div className="text-[10px] text-cream/30 uppercase tracking-[0.2em]">{item.sub}</div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
 
-          {/* Form */}
-          <div style={{ background: '#0A0C14', border: '1px solid rgba(201,168,76,0.15)', padding: 36 }}>
-            {status === 'error' && (
-              <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', padding: '12px 16px', marginBottom: 24, fontSize: 13, color: '#fca5a5', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                Errore nell&apos;invio. Riprova o contattaci direttamente.
-              </div>
-            )}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="lg:col-span-7"
+          >
+            <div className="glass-panel p-8 md:p-12 relative overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] pointer-events-none" />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-              <div>
-                {label('NOME', true)}
-                <input className="luxury-input" placeholder="Mario Rossi" value={form.name} onChange={e => set('name', e.target.value)} />
+              {status === 'error' && (
+                <div className="bg-red-500/10 border border-red-500/20 p-4 mb-8 text-xs text-red-400 tracking-widest text-center uppercase">
+                  Si è verificato un errore. Per favore, ci contatti telefonicamente.
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10 mb-12">
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Nome Completo *</label>
+                  <input className="luxury-input w-full" placeholder="es. Mario Rossi" value={form.name} onChange={e => set('name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Email *</label>
+                  <input className="luxury-input w-full" type="email" placeholder="mario@email.it" value={form.email} onChange={e => set('email', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Telefono</label>
+                  <input className="luxury-input w-full" placeholder="+39 347..." value={form.phone} onChange={e => set('phone', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Passeggeri</label>
+                  <select className="luxury-input w-full" value={form.pax} onChange={e => set('pax', e.target.value)}>
+                    <option value="" className="bg-darker">Seleziona</option>
+                    {[1,2,4,8,12,16].map(n => <option key={n} value={n} className="bg-darker">{n} pax</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Partenza</label>
+                  <input className="luxury-input w-full" placeholder="es. Milano" value={form.fromCity} onChange={e => set('fromCity', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Destinazione</label>
+                  <input className="luxury-input w-full" placeholder="es. Londra" value={form.toCity} onChange={e => set('toCity', e.target.value)} />
+                </div>
               </div>
-              <div>
-                {label('EMAIL', true)}
-                <input className="luxury-input" type="email" placeholder="mario@email.it" value={form.email} onChange={e => set('email', e.target.value)} />
+
+              <div className="space-y-4 mb-12">
+                <label className="text-[9px] text-gold tracking-[0.3em] uppercase font-bold opacity-60">Messaggio / Note Particolari *</label>
+                <textarea 
+                  value={form.message} 
+                  onChange={e => set('message', e.target.value)}
+                  placeholder="Descriva le Sue esigenze (catering, transfer, orari)..."
+                  className="w-full bg-transparent border-b border-white/10 text-white p-2 min-h-[100px] outline-none focus:border-gold transition-colors font-light text-sm"
+                />
               </div>
-              <div>
-                {label('TELEFONO')}
-                <input className="luxury-input" placeholder="+39 347..." value={form.phone} onChange={e => set('phone', e.target.value)} />
-              </div>
-              <div>
-                {label('PASSEGGERI')}
-                <select className="luxury-input" value={form.pax} onChange={e => set('pax', e.target.value)}>
-                  <option value="">Seleziona</option>
-                  {[1,2,3,4,5,6,7,8,10,12,14,16,18].map(n => <option key={n} value={n}>{n} pax</option>)}
-                </select>
-              </div>
-              <div>
-                {label('PARTENZA')}
-                <input className="luxury-input" placeholder="es. Milano" value={form.fromCity} onChange={e => set('fromCity', e.target.value)} />
-              </div>
-              <div>
-                {label('DESTINAZIONE')}
-                <input className="luxury-input" placeholder="es. Londra" value={form.toCity} onChange={e => set('toCity', e.target.value)} />
-              </div>
-              <div>
-                {label('DATA VOLO')}
-                <input className="luxury-input" type="date" value={form.flightDate} onChange={e => set('flightDate', e.target.value)} />
-              </div>
-              <div>
-                {label('BUDGET INDICATIVO')}
-                <select className="luxury-input" value={form.budget} onChange={e => set('budget', e.target.value)}>
-                  <option value="">Seleziona</option>
-                  {['< €5,000', '€5,000 – €15,000', '€15,000 – €40,000', '€40,000 – €100,000', '> €100,000'].map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
+
+              <button 
+                onClick={handleSubmit}
+                disabled={status === 'loading' || !form.name || !form.email || !form.message}
+                className="btn-gold-premium w-full py-6 text-[11px] tracking-[0.4em] relative group overflow-hidden disabled:opacity-50"
+              >
+                <span className="relative z-10">
+                  {status === 'loading' ? 'INVIANDO RICHIESTA...' : 'RICHIEDI QUOTAZIONE ✦'}
+                </span>
+                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
+              </button>
+
+              <div className="mt-8 flex items-center justify-center gap-6 opacity-30">
+                <span className="text-[8px] tracking-[0.3em] uppercase font-bold">Privacy Garantita</span>
+                <span className="text-gold">✦</span>
+                <span className="text-[8px] tracking-[0.3em] uppercase font-bold">Zero Impegno</span>
               </div>
             </div>
-
-            <div style={{ marginBottom: 24 }}>
-              {label('MESSAGGIO', true)}
-              <textarea value={form.message} onChange={e => set('message', e.target.value)}
-                placeholder="Descriva il suo viaggio ideale, esigenze particolari, catering richiesto..."
-                style={{ width: '100%', minHeight: 80, background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#F0EDE6', padding: '12px 14px', fontSize: 14, fontFamily: 'Helvetica Neue, sans-serif', outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box' }} />
-            </div>
-
-            <button onClick={handleSubmit}
-              disabled={status === 'loading' || !form.name || !form.email || !form.message}
-              className="btn-gold"
-              style={{ width: '100%', padding: '15px', fontSize: 13, letterSpacing: 2, opacity: status === 'loading' || !form.name || !form.email || !form.message ? 0.6 : 1, cursor: status === 'loading' ? 'not-allowed' : 'pointer' }}>
-              {status === 'loading'
-                ? '◌  Un concierge sta verificando disponibilità...'
-                : 'RICHIEDI PREVENTIVO ✦'}
-            </button>
-
-            <p style={{ fontSize: 11, color: 'rgba(240,237,230,0.2)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center', marginTop: 16, lineHeight: 1.7 }}>
-              Nessun impegno · Risposta entro 15–30 min · Concierge dedicato
-            </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

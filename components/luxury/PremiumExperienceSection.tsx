@@ -1,5 +1,5 @@
 'use client'
-
+import { motion } from 'framer-motion'
 import ImageWithFallback from '@/components/ImageWithFallback'
 
 export default function PremiumExperienceSection() {
@@ -22,49 +22,80 @@ export default function PremiumExperienceSection() {
   ]
 
   return (
-    <section style={{ background: '#0A0C14', padding: '120px 24px', borderTop: '1px solid rgba(201,168,76,0.1)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 80 }}>
-          <div style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>
+    <section className="section-padding bg-darker border-t border-white/5 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
+        
+        <div className="text-center mb-24">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+          >
             ESCLUSIVITÀ AEROJET
-          </div>
-          <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 300, color: '#F0EDE6', margin: '0 0 24px', letterSpacing: 1 }}>
-            Tutto il comfort di un jet privato
-          </h2>
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white"
+          >
+            L'Arte del Viaggio <span className="text-gold italic">Privato</span>
+          </motion.h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 32 }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-20">
           {experiences.map((exp, i) => (
-            <div key={i} className="group">
-              <div 
-                style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', marginBottom: 24, borderRadius: 2 }}
-                onMouseEnter={e => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) img.style.transform = 'scale(1.04)';
-                }}
-                onMouseLeave={e => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) img.style.transform = 'scale(1)';
-                }}
-              >
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.2, duration: 0.8 }}
+              className="group"
+            >
+              <div className="relative aspect-[4/5] overflow-hidden rounded-sm mb-8 border border-white/5">
                 <ImageWithFallback
                   src={exp.img}
                   alt={exp.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  objectFit="cover"
-                  fallback={<div style={{ width: '100%', height: '100%', background: 'rgba(201,168,76,0.05)' }} />}
+                  className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                  fallback={<div className="w-full h-full bg-white/[0.03] flex items-center justify-center text-gold/20 italic">AeroJet Experience</div>}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-darker/60 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-700" />
+                
+                {/* Subtle light sweep on hover */}
+                <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1.2s] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               </div>
-              <h3 style={{ fontSize: 14, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 12 }}>
+              
+              <h3 className="text-xs tracking-[0.3em] text-gold font-bold mb-4">
                 {exp.title}
               </h3>
-              <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.6)', lineHeight: 1.6, fontFamily: 'Helvetica Neue, sans-serif', margin: 0 }}>
+              
+              <p className="text-cream/50 text-sm leading-relaxed font-light tracking-wide group-hover:text-cream/70 transition-colors duration-500">
                 {exp.desc}
               </p>
-            </div>
+
+              <div className="mt-6 w-8 h-[1px] bg-gold/30 group-hover:w-16 transition-all duration-500" />
+            </motion.div>
           ))}
         </div>
+
+        {/* Decorative quote or motto at bottom */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8 }}
+          className="mt-32 text-center"
+        >
+          <div className="inline-block px-10 py-1 border-x border-gold/20">
+            <span className="text-[10px] tracking-[0.6em] text-cream/20 uppercase font-light italic">Non è solo un volo. È AeroJet.</span>
+          </div>
+        </motion.div>
+
       </div>
     </section>
   )

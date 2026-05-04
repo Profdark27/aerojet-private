@@ -1,83 +1,90 @@
 'use client'
-import { useRef, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { POPULAR_ROUTES } from '@/lib/utils'
 import ImageWithFallback from '@/components/ImageWithFallback'
 import { ROUTE_IMAGES } from '@/lib/imageAssets'
 
 export default function RoutesSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
-
   return (
-    <section style={{ padding: '100px 0', background: '#0A0C14' }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(32px)', transition: 'all 0.9s ease' }}>
+    <section className="section-padding bg-darker overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
 
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>ROTTE POPOLARI</span>
-          <h2 style={{ fontSize: 'clamp(36px,5vw,58px)', fontWeight: 300, lineHeight: 1.1 }}>
-            Destinazioni<br /><span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Più Richieste</span>
-          </h2>
+        <div className="text-center mb-20">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+          >
+            ROTTE POPOLARI
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white mb-6"
+          >
+            Destinazioni <span className="text-gold italic">Più Richieste</span>
+          </motion.h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {POPULAR_ROUTES.map((route, i) => (
-            <div key={i} style={{ background: '#0A0C14', transition: 'background 0.2s', cursor: 'pointer', overflow: 'hidden' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#0F1220')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#0A0C14')}>
-
-              {/* Destination image strip — 96px, falls back to gradient label */}
-              <div style={{ position: 'relative', height: 96, overflow: 'hidden' }}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="glass-card group overflow-hidden"
+            >
+              <div className="relative h-40 overflow-hidden">
                 <ImageWithFallback
                   src={ROUTE_IMAGES[route.from] ?? ROUTE_IMAGES[route.to]}
-                  alt={`Vista aerea di ${route.from}`}
+                  alt={`Vista di ${route.from}`}
                   fill
-                  sizes="(max-width: 640px) 100vw, 400px"
-                  objectFit="cover"
+                  sizes="400px"
+                  className="object-cover transition-transform duration-[2s] group-hover:scale-110"
                   fallback={
-                    <div style={{
-                      width: '100%', height: '100%',
-                      background: 'linear-gradient(160deg, rgba(201,168,76,0.07) 0%, rgba(5,8,16,0.95) 100%)',
-                      display: 'flex', alignItems: 'flex-end', padding: '10px 16px',
-                    }}>
-                      <span style={{ fontSize: 10, letterSpacing: 4, color: 'rgba(201,168,76,0.35)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                        {route.from.toUpperCase()}
-                      </span>
+                    <div className="w-full h-full bg-gradient-to-br from-gold/10 to-darker flex items-center justify-center">
+                      <span className="text-[10px] tracking-[0.5em] text-gold/30 uppercase">{route.from}</span>
                     </div>
                   }
                 />
-                {/* Gradient blend into card */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, transparent, #0A0C14)', pointerEvents: 'none' }} />
-              </div>
-
-              <div style={{ padding: '20px 32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 500, marginBottom: 4 }}>{route.from}</div>
-                  <div style={{ fontSize: 12, color: '#C9A84C', letterSpacing: 2, margin: '4px 0' }}>————✦————</div>
-                  <div style={{ fontSize: 22, fontWeight: 500 }}>{route.to}</div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-6">
+                  <div className="text-[10px] text-gold tracking-widest uppercase font-bold">Standard rate</div>
+                  <div className="text-2xl text-white font-light">{route.price}</div>
                 </div>
-                <div style={{ fontSize: 26, color: '#C9A84C', fontWeight: 300 }}>{route.price}</div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 12, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }}>⏱ {route.time}</span>
-                <span style={{ fontSize: 11, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', flex: 1 }}>{route.category}</span>
-                <Link href={`/search?from=${route.from}&to=${route.to}&fromICAO=${route.fromICAO}&toICAO=${route.toICAO}`}
-                  style={{ background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: 'rgba(240,237,230,0.6)', padding: '7px 16px', fontSize: 11, letterSpacing: 1, textDecoration: 'none', fontFamily: 'Helvetica Neue, sans-serif', transition: 'all 0.2s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#C9A84C'; e.currentTarget.style.color = '#C9A84C' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)'; e.currentTarget.style.color = 'rgba(240,237,230,0.6)' }}>
-                  Prenota
-                </Link>
+              <div className="p-8">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex-1">
+                    <div className="text-xl font-light text-white group-hover:text-gold transition-colors">{route.from}</div>
+                    <div className="w-8 h-[1px] bg-gold/30 my-2" />
+                    <div className="text-xl font-light text-white group-hover:text-gold transition-colors">{route.to}</div>
+                  </div>
+                  <div className="text-gold opacity-20 text-4xl font-serif">✦</div>
+                </div>
+
+                <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-4 text-[10px] text-white/60 tracking-widest uppercase font-medium">
+                    <span>⏱ {route.time}</span>
+                    <span className="text-gold/40">•</span>
+                    <span>{route.category}</span>
+                  </div>
+                  <Link 
+                    href={`/search?from=${route.from}&to=${route.to}&fromICAO=${route.fromICAO}&toICAO=${route.toICAO}`}
+                    className="text-[9px] tracking-[0.2em] text-gold hover:text-white transition-colors font-bold no-underline"
+                  >
+                    PRENOTA ORA →
+                  </Link>
+                </div>
               </div>
-              </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

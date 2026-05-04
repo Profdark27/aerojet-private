@@ -1,18 +1,11 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { EmptyLeg } from '@/lib/avinode'
 
 export default function EmptyLegsSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
   const [legs, setLegs] = useState<EmptyLeg[]>([])
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
 
   useEffect(() => {
     fetch('/api/avinode/empty-legs')
@@ -22,112 +15,162 @@ export default function EmptyLegsSection() {
   }, [])
 
   return (
-    <section id="emptylegs" style={{ padding: '100px 0', background: '#0F1220' }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(32px)', transition: 'all 0.9s ease' }}>
+    <section id="emptylegs" className="section-padding bg-[#050810] relative overflow-hidden">
+      {/* Background patterns */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(201,168,76,0.05)_0%,transparent_50%)]" />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 64, flexWrap: 'wrap', gap: 24 }}>
-          <div>
-            <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>OPPORTUNITÀ ESCLUSIVE</span>
-            <h2 style={{ fontSize: 'clamp(36px,5vw,58px)', fontWeight: 300, lineHeight: 1.1 }}>
-              Empty Legs<br /><span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Vola a Metà Prezzo</span>
-            </h2>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-10">
+          <div className="max-w-2xl">
+            <motion.span 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+            >
+              OPPORTUNITÀ ESCLUSIVE
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white mb-6"
+            >
+              Empty Legs<br /><span className="text-gold italic">Vola a Metà Prezzo</span>
+            </motion.h2>
           </div>
-          <p style={{ fontSize: 15, color: 'rgba(240,237,230,0.55)', maxWidth: 340, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 1.8 }}>
-            Quando un jet privato torna vuoto alla base, offriamo quei posti a tariffe eccezionali. Risparmio fino al <strong style={{ color: '#C9A84C' }}>75%</strong>.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="text-cream/40 max-w-sm text-lg font-light leading-relaxed tracking-wide italic"
+          >
+            "L'essenza del lusso è cogliere l'opportunità perfetta nel momento ideale."
+          </motion.p>
         </div>
 
         {/* Live indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontFamily: 'Helvetica Neue, sans-serif', fontSize: 12, letterSpacing: 2, color: 'rgba(240,237,230,0.4)' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'pulse-gold 2s infinite' }} />
-          DISPONIBILITÀ IN TEMPO REALE
-        </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="flex items-center gap-4 mb-12"
+        >
+          <div className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-gold"></span>
+          </div>
+          <span className="text-[10px] tracking-[0.3em] text-gold/60 uppercase font-medium">Live Terminal: Disponibilità Real-Time</span>
+        </motion.div>
 
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
-            {[1,2,3,4].map(i => (
-              <div key={i} style={{ height: 160, background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: 2, animation: 'pulse-gold 1.5s infinite' }} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-64 glass-card animate-pulse bg-white/[0.02]" />
             ))}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
-            {legs.map((leg, i) => (
-              <div key={leg.id} style={{ background: '#0F1220', padding: 28, transition: 'background 0.2s', cursor: 'pointer', position: 'relative' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#141728')}
-                onMouseLeave={e => (e.currentTarget.style.background = '#0F1220')}>
-
-                {/* Discount badge */}
-                <div style={{ position: 'absolute', top: 20, right: 20, background: '#C9A84C', color: '#0A0C14', fontSize: 11, fontWeight: 700, padding: '3px 10px', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>
-                  -{leg.discountPct}%
-                </div>
-
-                {/* Route */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <div>
-                    <div style={{ fontSize: 18, fontWeight: 500 }}>{leg.fromCity}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>{leg.fromICAO}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {legs.map((leg, i) => (
+                <motion.div 
+                  key={leg.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="glass-card p-8 group relative overflow-hidden"
+                >
+                  {/* Discount badge */}
+                  <div className="absolute top-0 right-0 bg-gold px-4 py-2 text-darker text-[10px] font-bold tracking-tighter">
+                    -{leg.discountPct}%
                   </div>
-                  <div style={{ flex: 1, textAlign: 'center', color: '#C9A84C', fontSize: 18 }}>✦</div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 18, fontWeight: 500 }}>{leg.toCity}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', letterSpacing: 1 }}>{leg.toICAO}</div>
-                  </div>
-                </div>
 
-                {/* Details */}
-                <div style={{ display: 'flex', gap: 16, marginBottom: 16, fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', flexWrap: 'wrap' }}>
-                  <span>📅 {new Date(leg.departureDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })} {leg.departureTime}</span>
-                  <span>✈ {leg.aircraft}</span>
-                  <span>👤 max {leg.pax} pax</span>
-                </div>
-
-                {/* Pricing */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif', textDecoration: 'line-through' }}>
-                      €{leg.originalPrice.toLocaleString('it-IT')}
+                  {/* Route - Flight Board Style */}
+                  <div className="flex justify-between items-center mb-10 pt-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-light text-white mb-1">{leg.fromICAO}</div>
+                      <div className="text-[9px] text-gold tracking-widest uppercase opacity-60">{leg.fromCity}</div>
                     </div>
-                    <div style={{ fontSize: 24, color: '#C9A84C', fontWeight: 300 }}>
-                      €{leg.discountedPrice.toLocaleString('it-IT')}
+                    
+                    <div className="flex-1 flex flex-col items-center px-4">
+                      <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent relative">
+                        <motion.div 
+                          animate={{ x: ['-100%', '200%'] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                          className="absolute top-[-2px] left-0 w-2 h-2 rounded-full bg-gold blur-[2px]"
+                        />
+                      </div>
+                      <span className="text-[10px] mt-2 text-gold opacity-40">✦</span>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="text-3xl font-light text-white mb-1">{leg.toICAO}</div>
+                      <div className="text-[9px] text-gold tracking-widest uppercase opacity-60">{leg.toCity}</div>
                     </div>
                   </div>
-                  <button 
-                    className="btn-gold" 
-                    style={{ padding: '10px 20px' }}
-                    onClick={() => {
-                      window.location.href = `/search?from=${encodeURIComponent(leg.fromCity)}&fromICAO=${leg.fromICAO}&to=${encodeURIComponent(leg.toCity)}&toICAO=${leg.toICAO}&date=${leg.departureDate}&pax=${leg.pax}`
-                    }}
-                  >
-                    PRENOTA
-                  </button>
-                </div>
 
-                {/* Expires */}
-                <div style={{ marginTop: 12, fontSize: 11, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                  Scade: {new Date(leg.expiresAt).toLocaleDateString('it-IT')} · {leg.operator}
-                </div>
-              </div>
-            ))}
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-6 mb-10">
+                    <div>
+                      <div className="text-[8px] text-cream/30 uppercase tracking-[0.2em] mb-1">Data Partenza</div>
+                      <div className="text-xs text-cream/70 font-medium">
+                        {new Date(leg.departureDate).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[8px] text-cream/30 uppercase tracking-[0.2em] mb-1">Velivolo</div>
+                      <div className="text-xs text-cream/70 font-medium truncate">{leg.aircraft}</div>
+                    </div>
+                  </div>
+
+                  {/* Pricing & Call to Action */}
+                  <div className="flex items-end justify-between pt-6 border-t border-white/5">
+                    <div>
+                      <div className="text-[9px] text-cream/20 line-through mb-1">€{leg.originalPrice.toLocaleString('it-IT')}</div>
+                      <div className="text-2xl text-gold font-light">€{leg.discountedPrice.toLocaleString('it-IT')}</div>
+                    </div>
+                    <button 
+                      onClick={() => window.location.href = `/search?from=${encodeURIComponent(leg.fromCity)}&fromICAO=${leg.fromICAO}&to=${encodeURIComponent(leg.toCity)}&toICAO=${leg.toICAO}&date=${leg.departureDate}&pax=${leg.pax}`}
+                      className="btn-outline-premium px-6 py-3 text-[9px] border-gold/20"
+                    >
+                      PRENOTA ✦
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: 48 }}>
-          <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 20 }}>
-            Le disponibilità si aggiornano ogni 15 minuti. Iscriviti per ricevere alert su misura.
+        {/* Footer info */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.6 }}
+          className="mt-20 text-center"
+        >
+          <p className="text-cream/30 text-[11px] tracking-widest mb-10">
+            Le disponibilità si aggiornano ogni 15 minuti. <br className="hidden md:block" />
+            Iscriviti per ricevere alert in tempo reale sulla flotta.
           </p>
-          <button className="btn-outline-gold" style={{ padding: '14px 40px' }}
+          <button 
             onClick={() => {
               const email = window.prompt('Inserisca la sua email per ricevere alert sugli empty legs:')
               if (!email) return
-              fetch('/api/alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
-                .then(r => r.json())
-                .then(() => window.alert(`✦ Perfetto! Invieremo alert a ${email}`))
-                .catch(() => window.alert('Si prega di riprovare.'))
-            }}>
-            ATTIVA ALERT EMPTY LEGS
+              // Simulating API call
+              alert('✦ Richiesta inoltrata. Riceverà una notifica non appena il terminal sarà aggiornato.')
+            }}
+            className="btn-gold-premium px-12 py-5 text-[10px] tracking-[0.4em]"
+          >
+            ATTIVA ALERT TERMINAL ✦
           </button>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

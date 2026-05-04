@@ -1,7 +1,7 @@
 'use client'
-import { useRef, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import ImageWithFallback from '@/components/ImageWithFallback'
-import { OPERATOR_IMAGES } from '@/lib/imageAssets'
+import { OPERATOR_IMAGES, BG_TERMINAL_NIGHT } from '@/lib/imageAssets'
 
 const operators = [
   { name: 'VistaJet', logo: 'VJ', website: 'https://www.vistajet.com', fleet: '120+ aircraft', routes: 'Global', rating: 4.9, color: '#C41E3A', specialty: 'Ultra-long range & heavy jets', cert: 'EASA / FAA / CAAC' },
@@ -14,93 +14,141 @@ const operators = [
 
 function Stars({ rating }: { rating: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+    <div className="flex items-center gap-1">
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ fontSize: 12, color: i <= Math.floor(rating) ? '#C9A84C' : 'rgba(201,168,76,0.25)' }}>★</span>
+        <span key={i} className={`text-[10px] ${i <= Math.floor(rating) ? 'text-gold' : 'text-gold/20'}`}>★</span>
       ))}
-      <span style={{ fontSize: 13, color: '#C9A84C', marginLeft: 4 }}>{rating.toFixed(1)}</span>
+      <span className="text-[11px] text-gold/80 ml-1 font-medium">{rating.toFixed(1)}</span>
     </div>
   )
 }
 
 export default function OperatorsSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
-
   return (
-    <section id="operators" style={{ padding: '100px 0', background: '#050810' }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(32px)', transition: 'all 0.9s ease' }}>
+    <section id="operators" className="section-padding bg-darker relative overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
+        <ImageWithFallback
+          src={BG_TERMINAL_NIGHT}
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-darker via-transparent to-darker" />
+      </div>
 
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>PARTNER CERTIFICATI</span>
-          <h2 style={{ fontSize: 'clamp(36px,5vw,58px)', fontWeight: 300, lineHeight: 1.1, margin: '0 0 20px' }}>
-            Operatori di<br /><span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Eccellenza</span>
-          </h2>
-          <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.55)', maxWidth: 560, margin: '0 auto', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 1.8 }}>
-            Accesso diretto ai leader mondiali del charter privato. Ogni operatore è verificato EASA/FAA e certificato AOC.
-          </p>
+      <div className="max-w-5xl mx-auto px-6 relative z-10">
+
+        <div className="text-center mb-20">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+          >
+            PARTNER CERTIFICATI
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white"
+          >
+            Operatori di <span className="text-gold italic">Eccellenza</span>
+          </motion.h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
+        <div className="space-y-4">
           {operators.map((op, i) => (
-            <a key={i} href={op.website} target="_blank" rel="noopener noreferrer"
-              style={{ background: '#050810', padding: '24px 32px', display: 'flex', alignItems: 'center', gap: 24, textDecoration: 'none', color: 'inherit', transition: 'background 0.2s', flexWrap: 'wrap' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#0A0C14')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#050810')}>
+            <motion.a 
+              key={i} 
+              href={op.website} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="group block glass-card p-6 md:p-8 hover:bg-white/[0.03] no-underline"
+            >
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+                <div className="relative w-16 h-16 rounded-sm overflow-hidden flex-shrink-0 border border-white/5 shadow-2xl">
+                  <ImageWithFallback
+                    src={OPERATOR_IMAGES[op.name]}
+                    alt={`${op.name} logo`}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-2"
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white tracking-widest" style={{ background: op.color }}>
+                        {op.logo}
+                      </div>
+                    }
+                  />
+                </div>
 
-              <div style={{ position: 'relative', width: 56, height: 56, borderRadius: 4, flexShrink: 0, overflow: 'hidden' }}>
-                <ImageWithFallback
-                  src={OPERATOR_IMAGES[op.name]}
-                  alt={`${op.name} logo`}
-                  fill
-                  sizes="56px"
-                  objectFit="contain"
-                  fallback={
-                    <div style={{ width: '100%', height: '100%', background: op.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: 1, fontFamily: 'Helvetica Neue, sans-serif' }}>
-                      {op.logo}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-4 mb-2">
+                    <h3 className="text-2xl font-light text-white group-hover:text-gold transition-colors">{op.name}</h3>
+                    <div className="px-3 py-1 bg-gold/10 rounded-full border border-gold/20">
+                      <span className="text-[8px] text-gold tracking-widest uppercase font-bold">Verified AOC</span>
                     </div>
-                  }
-                />
-              </div>
+                  </div>
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    <div className="flex items-center gap-2 text-[10px] text-cream/40 uppercase tracking-widest">
+                      <span className="text-gold/40">FLOTTA</span> {op.fleet}
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-cream/40 uppercase tracking-widest">
+                      <span className="text-gold/40">ROTTE</span> {op.routes}
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-cream/40 uppercase tracking-widest">
+                      <span className="text-gold/40">SAFETY</span> {op.cert}
+                    </div>
+                  </div>
+                </div>
 
-              <div style={{ flex: 1, minWidth: 180 }}>
-                <div style={{ fontSize: 20, fontWeight: 500, marginBottom: 4 }}>{op.name}</div>
-                <div style={{ fontSize: 10, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>OPERATORE CERTIFICATO</div>
-                <div style={{ display: 'flex', gap: 20, fontSize: 12, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', flexWrap: 'wrap' }}>
-                  <span>✈ {op.fleet}</span>
-                  <span>🌐 {op.routes}</span>
-                  <span>🛡 {op.cert}</span>
+                <div className="hidden lg:block w-48 text-right">
+                  <div className="text-[9px] text-cream/20 uppercase tracking-[0.2em] mb-2 font-medium">Specializzazione</div>
+                  <div className="text-xs text-cream/50 font-light leading-relaxed truncate">{op.specialty}</div>
+                </div>
+
+                <div className="flex flex-row md:flex-col items-center md:items-end gap-4 ml-auto">
+                  <Stars rating={op.rating} />
+                  <div className="text-gold opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 text-xl">
+                    →
+                  </div>
                 </div>
               </div>
-
-              <div style={{ fontSize: 13, color: 'rgba(240,237,230,0.55)', fontFamily: 'Helvetica Neue, sans-serif', maxWidth: 220 }}>
-                {op.specialty}
-              </div>
-
-              <div style={{ flexShrink: 0 }}>
-                <Stars rating={op.rating} />
-              </div>
-
-              <div style={{ color: 'rgba(201,168,76,0.4)', fontSize: 18, flexShrink: 0, transition: 'all 0.2s' }}>→</div>
-            </a>
+            </motion.a>
           ))}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 48, padding: 32, border: '1px solid rgba(201,168,76,0.1)', background: 'rgba(201,168,76,0.03)' }}>
-          <p style={{ fontSize: 14, color: 'rgba(240,237,230,0.45)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 16 }}>
-            Accesso alla rete Avinode — oltre 4,500 operatori in 85 paesi
-          </p>
-          <a href="https://www.avinode.com/become-a-member" target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 11, letterSpacing: 2, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', textDecoration: 'none' }}>
-            ESPLORA TUTTA LA RETE AVINODE →
-          </a>
-        </div>
+        {/* Global Network Link */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.6 }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-block p-1 bg-gradient-to-r from-transparent via-gold/10 to-transparent">
+            <div className="bg-darker px-10 py-6 border border-white/5 glass-panel">
+              <p className="text-cream/30 text-[11px] tracking-widest mb-4">
+                Accesso alla rete Avinode — oltre 4,500 operatori in 85 paesi
+              </p>
+              <a 
+                href="https://www.avinode.com/become-a-member" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[10px] tracking-[0.3em] text-gold uppercase font-bold hover:text-white transition-colors no-underline"
+              >
+                ESPLORA TUTTA LA RETE AVINODE ✦
+              </a>
+            </div>
+          </div>
+        </motion.div>
+
       </div>
     </section>
   )

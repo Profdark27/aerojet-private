@@ -38,6 +38,21 @@ export async function POST(req: Request) {
       data: lead as any,
     });
 
+    // Lead Nurturing: Immediate Welcome Email
+    try {
+      const { sendRequestReceived } = await import('@/lib/email');
+      await sendRequestReceived({
+        to: lead.email,
+        name: lead.name,
+        from: "LinkedIn",
+        dest: "Destinazione desiderata",
+        date: "Flessibile",
+        requestId: inquiry.id.slice(-6).toUpperCase()
+      });
+    } catch (e) {
+      console.error("[LinkedIn Webhook] Email failed:", e);
+    }
+
     console.log(`[LinkedIn Webhook] Created new inquiry: ${inquiry.id}`);
 
     return NextResponse.json({ success: true, id: inquiry.id });

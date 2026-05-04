@@ -10,16 +10,17 @@
   --gold-dark: #A68636;
   --gold-glow: rgba(201, 168, 76, 0.4);
   --dark: #0A0C14;
-  --darker: #050810;
-  --dark-glass: rgba(15, 18, 32, 0.75);
+  --darker: #020408;
+  --dark-glass: rgba(5, 8, 16, 0.85);
   --dark-card: #0F1220;
-  --dark-border: rgba(201, 168, 76, 0.12);
-  --cream: #F0EDE6;
-  --cream-dim: rgba(240, 237, 230, 0.6);
-  --cream-faint: rgba(240, 237, 230, 0.2);
+  --dark-border: rgba(201, 168, 76, 0.15);
+  --cream: #FFFFFF;
+  --cream-dim: rgba(255, 255, 255, 0.9);
+  --cream-faint: rgba(255, 255, 255, 0.15);
   
   --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --luxury-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,11 +43,26 @@ h1, h2, h3, .luxury-text {
 
 /* Premium Utility Classes */
 .glass-panel {
-  background: rgba(10, 12, 20, 0.4);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  background: rgba(10, 12, 20, 0.75);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+  border-color: rgba(201, 168, 76, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(201, 168, 76, 0.1);
 }
 
 .gold-glow-border {
@@ -55,8 +71,8 @@ h1, h2, h3, .luxury-text {
 }
 .gold-glow-border:hover {
   border-color: var(--gold);
-  box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
-  background: rgba(201, 168, 76, 0.02);
+  box-shadow: 0 0 40px rgba(201, 168, 76, 0.2);
+  background: rgba(201, 168, 76, 0.03);
 }
 
 .text-gold-gradient {
@@ -75,7 +91,7 @@ h1, h2, h3, .luxury-text {
   position: fixed;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
-  opacity: 0.04;
+  opacity: 0.008;
   pointer-events: none;
   z-index: 9999;
 }
@@ -108,7 +124,7 @@ h1, h2, h3, .luxury-text {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  font-size: 10px;
+  font-size: 11px;
   padding: 18px 36px;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -141,7 +157,7 @@ h1, h2, h3, .luxury-text {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  font-size: 10px;
+  font-size: 11px;
   padding: 18px 36px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -160,6 +176,47 @@ h1, h2, h3, .luxury-text {
 
 .mask-fade-bottom {
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+.gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(201, 168, 76, 0.2) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: shimmer-gold 6s infinite;
+}
+
+@keyframes shimmer-gold {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  20%, 100% { transform: translateX(100%) rotate(25deg); }
+}
+
+.luxury-heading {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  font-weight: 400;
+  color: #FFFFFF;
+}
+
+.section-padding {
+  padding: clamp(80px, 12vw, 160px) 0;
 }
 
 .nav-item-active { 

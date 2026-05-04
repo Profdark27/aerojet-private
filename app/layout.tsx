@@ -44,6 +44,12 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.ico' },
 }
 
+import SmoothScroll from '@/components/luxury/SmoothScroll'
+import CustomCursor from '@/components/luxury/CustomCursor'
+import PageTransition from '@/components/luxury/PageTransition'
+import ScrollProgress from '@/components/luxury/ScrollProgress'
+import Preloader from '@/components/luxury/Preloader'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it">
@@ -56,9 +62,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd />
       </head>
       <body>
+        <Preloader />
+        <div className="bg-noise" />
+        <ScrollProgress />
+        <CustomCursor />
         <AuthProvider>
           <ToastProvider>
-            {children}
+            <SmoothScroll>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </SmoothScroll>
             <LinkedInInsight />
           </ToastProvider>
         </AuthProvider>

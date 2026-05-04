@@ -1,52 +1,42 @@
 'use client'
 
-/**
- * WhatsApp Concierge Button — Aerojet Private
- * Floating button + panel con messaggi precompilati per tipo di richiesta.
- * Solo visible se NEXT_PUBLIC_WHATSAPP_NUMBER è configurato.
- */
-
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MessageSquare, Plane, Globe, Shield, Zap, X, ChevronRight } from 'lucide-react'
 import { buildWhatsAppUrl, isWhatsAppConfigured, type WhatsAppTemplate } from '@/lib/whatsapp'
 import { track } from '@/lib/tracking'
 
 interface WhatsAppOption {
-  id: WhatsAppTemplate
+  id: WhatsAppTemplate | 'marco'
   label: string
   description: string
-  icon: string
+  icon: any
 }
 
-const OPTIONS: (WhatsAppOption | { id: 'marco', label: string, description: string, icon: string })[] = [
+const OPTIONS: WhatsAppOption[] = [
   {
     id: 'marco',
     label: 'Marco (AI Advisor)',
     description: 'Assistente AI per quotazioni rapide',
-    icon: '✦',
+    icon: Zap,
   },
   {
     id: 'volo',
-    label: 'Richiedi preventivo volo',
-    description: 'Quotazione personalizzata per la tua tratta',
-    icon: '✈',
+    label: 'Preventivo Volo',
+    description: 'Quotazione personalizzata immediata',
+    icon: Plane,
   },
   {
     id: 'empty_leg',
-    label: 'Verifica empty leg',
+    label: 'Empty Legs',
     description: 'Disponibilità tratte last-minute',
-    icon: '◈',
+    icon: Globe,
   },
   {
     id: 'membership',
-    label: 'Accesso membership',
+    label: 'Membership',
     description: 'Programmi accesso riservato',
-    icon: '◆',
-  },
-  {
-    id: 'urgenza',
-    label: 'Richiesta urgente',
-    description: 'Decollo entro 24h, contatto immediato',
-    icon: '⚡',
+    icon: Shield,
   },
 ]
 
@@ -72,139 +62,85 @@ export default function WhatsAppButton() {
     setOpen(false)
   }
 
-  const toggleOpen = () => {
-    if (!open) track('click_whatsapp', { action: 'open_panel' })
-    setOpen(v => !v)
-  }
-
   return (
     <>
-      {/* Panel opzioni */}
-      {open && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 104,
-            right: 28,
-            zIndex: 198,
-            width: 300,
-            maxWidth: 'calc(100vw - 40px)',
-            background: '#0A0C14',
-            border: '1px solid rgba(37,211,102,0.25)',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-            animation: 'slideUp 0.25s ease',
-          }}
-        >
-          {/* Header */}
-          <div style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid rgba(37,211,102,0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: '#25D366',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, flexShrink: 0,
-            }}>
-              💬
-            </div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>Parla con il Concierge</div>
-              <div style={{
-                fontSize: 11, color: 'rgba(240,237,230,0.4)',
-                fontFamily: 'Helvetica Neue, sans-serif',
-                display: 'flex', alignItems: 'center', gap: 5,
-              }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#25D366', display: 'inline-block' }} />
-                Risposta rapida via WhatsApp
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed z-[209] w-80 glass-panel overflow-hidden shadow-2xl shadow-black/60 rounded-xl"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 160px)', right: '20px' }}
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-white/5 bg-emerald-500/5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                <MessageSquare size={20} />
+              </div>
+              <div>
+                <div className="text-sm text-white font-medium">Concierge WhatsApp</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] text-emerald-400/60 uppercase tracking-widest font-bold">Online Ora</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Options */}
-          <div style={{ padding: '8px 0' }}>
-            {OPTIONS.map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => handleClick(opt.id)}
-                style={{
-                  width: '100%',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.04)',
-                  padding: '12px 20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  textAlign: 'left',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(37,211,102,0.05)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              >
-                <span style={{ fontSize: 18, color: '#25D366', width: 24, textAlign: 'center', flexShrink: 0 }}>
-                  {opt.icon}
-                </span>
-                <div>
-                  <div style={{ fontSize: 13, color: '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 2 }}>
-                    {opt.label}
+            {/* Options */}
+            <div className="p-2 space-y-1">
+              {OPTIONS.map((opt, i) => (
+                <motion.button
+                  key={opt.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => handleClick(opt.id)}
+                  className="w-full p-4 flex items-center gap-4 group hover:bg-white/5 transition-all duration-300 rounded-lg text-left"
+                >
+                  <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-darker transition-all duration-500">
+                    <opt.icon size={14} />
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-                    {opt.description}
+                  <div className="flex-1">
+                    <div className="text-xs text-white font-medium group-hover:text-emerald-400 transition-colors">{opt.label}</div>
+                    <div className="text-[9px] text-cream/30 uppercase tracking-wider mt-0.5">{opt.description}</div>
                   </div>
-                </div>
-                <span style={{ marginLeft: 'auto', color: 'rgba(240,237,230,0.2)', fontSize: 12 }}>→</span>
-              </button>
-            ))}
-          </div>
+                  <ChevronRight size={12} className="text-white/10 group-hover:text-emerald-500 transition-colors" />
+                </motion.button>
+              ))}
+            </div>
 
-          {/* Footer legale */}
-          <div style={{
-            padding: '10px 20px',
-            borderTop: '1px solid rgba(37,211,102,0.08)',
-          }}>
-            <p style={{
-              fontSize: 10, color: 'rgba(240,237,230,0.25)',
-              fontFamily: 'Helvetica Neue, sans-serif',
-              lineHeight: 1.5, margin: 0,
-            }}>
-              Aerojet Private opera come broker indipendente. Quotazioni soggette a verifica operatore.
-            </p>
-          </div>
-        </div>
-      )}
+            {/* Footer */}
+            <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+              <p className="text-[9px] text-cream/20 leading-relaxed uppercase tracking-widest text-center">
+                Aerojet Private · Servizio 24/7
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Floating Button */}
-      <button
-        onClick={toggleOpen}
-        aria-label="Contatta concierge via WhatsApp"
-        style={{
-          position: 'fixed',
-          bottom: 100,
-          right: 28,
-          zIndex: 199,
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          background: open ? '#1da851' : '#25D366',
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 22,
-          boxShadow: '0 6px 24px rgba(37,211,102,0.35)',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setOpen(!open)}
+        className={`fixed z-[210] w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 ${
+          open ? 'bg-white text-darker' : 'bg-[#25D366] text-white shadow-[#25D366]/20'
+        }`}
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 90px)', right: '20px' }}
       >
-        {open ? '✕' : '💬'}
-      </button>
+        <AnimatePresence mode="wait">
+          {open ? (
+            <motion.div key="close" initial={{ opacity: 0, rotate: -90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 90 }}>
+              <X size={20} strokeWidth={3} />
+            </motion.div>
+          ) : (
+            <motion.div key="ws" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+              <MessageSquare size={22} fill="currentColor" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
     </>
   )
 }

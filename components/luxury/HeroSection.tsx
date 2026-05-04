@@ -5,7 +5,7 @@ import { loadSplineScene } from '@/lib/spline'
 import { motion, AnimatePresence } from 'framer-motion'
 import CityAutocomplete from './CityAutocomplete'
 import ImageWithFallback from '@/components/ImageWithFallback'
-import { HERO_BG, HERO_JET_3D } from '@/lib/imageAssets'
+import { HERO_BG } from '@/lib/imageAssets'
 import { trackEvent } from '@/lib/tracking'
 
 export default function HeroSection() {
@@ -26,18 +26,17 @@ export default function HeroSection() {
       setMousePos({ x: (e.clientX / window.innerWidth - 0.5) * 20, y: (e.clientY / window.innerHeight - 0.5) * 20 });
     };
     window.addEventListener('mousemove', handleMouseMove);
-    // Load the Spline scene when component mounts
-    loadSplineScene('#spline-jet', '/splines/jet-scene.json');
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    
+    // Lazy load Spline
+    const timer = setTimeout(() => {
+      loadSplineScene('#spline-jet', '/splines/jet-scene.json');
+    }, 1000);
 
-  const stars = useMemo(() => Array.from({ length: 40 }, () => ({
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    size: Math.random() * 1.5 + 0.5,
-    delay: Math.random() * 5,
-    duration: Math.random() * 4 + 3,
-  })), [])
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(timer);
+    }
+  }, []);
 
   const handleSearch = () => {
     trackEvent('hero_search_click', { from, to, pax, date })
@@ -46,227 +45,200 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 pt-32 pb-20 bg-[#020408]">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 pt-32 pb-20 bg-darker">
       
-      {/* Cinematic Background Layer */}
-      <motion.div 
-        animate={{ scale: 1.05 + Math.abs(mousePos.x / 1000) }}
-        transition={{ type: 'spring', stiffness: 20, damping: 30 }}
-        className="absolute inset-0 z-0"
-      >
-        <ImageWithFallback
-          src={HERO_BG}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-          style={{ filter: 'brightness(0.5) contrast(1.1)' }}
-          fallback={<div className="absolute inset-0 bg-[#050810]" />}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-darker via-transparent to-[#020408] opacity-90" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#020408_80%)] opacity-60" />
-      </motion.div>
+      {/* 1. Futuristic Grid Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-darker via-transparent to-darker opacity-100" />
+      </div>
 
-      {/* 3D Floating Jet Element */}
+      {/* 2. Neon Orbs (Background) */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px] pointer-events-none z-0 animate-pulse" />
+      <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-neon-purple/5 rounded-full blur-[120px] pointer-events-none z-0" />
+
+      {/* 3. 3D Spline Jet */}
       <AnimatePresence>
         {mounted && (
           <motion.div
-            initial={{ opacity: 0, x: 200, y: 100, rotate: -5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 
               opacity: 1, 
-              x: mousePos.x * 2, 
-              y: mousePos.y * 2 + Math.sin(Date.now() / 1000) * 10,
-              rotate: mousePos.x / 10 
+              scale: 1,
+              x: mousePos.x * 1.5, 
+              y: mousePos.y * 1.5 + Math.sin(Date.now() / 2000) * 15,
             }}
-            transition={{ type: 'spring', stiffness: 15, damping: 25 }}
-            className="absolute top-1/4 right-[10%] w-[40vw] max-w-[600px] pointer-events-none z-10 select-none hidden lg:block"
+            transition={{ type: 'spring', stiffness: 20, damping: 35 }}
+            className="absolute top-1/4 right-[5%] w-[45vw] aspect-square pointer-events-none z-10 hidden lg:block"
           >
-            {/* Spline 3D Jet Container */}
-            <div id="spline-jet" className="w-full h-full pointer-events-none" />
-            {/* Engine Glow Effect */}
-            <div className="absolute top-[45%] right-[20%] w-20 h-20 bg-gold/20 rounded-full blur-[40px] animate-pulse" />
+            <div id="spline-jet" className="w-full h-full opacity-60 mix-blend-screen" />
+            <div className="absolute inset-0 bg-gradient-to-r from-darker via-transparent to-transparent z-20" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Star Field Overlay */}
-      {mounted && stars.map((s, i) => (
-        <motion.div 
-          key={i} 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0.1, 0.5, 0.1] }}
-          transition={{ duration: s.duration, repeat: Infinity, delay: s.delay }}
-          className="absolute rounded-full bg-gold/40 pointer-events-none z-[1]"
-          style={{ left: `${s.left}%`, top: `${s.top}%`, width: s.size, height: s.size }}
-        />
-      ))}
-
-      {/* Content Container */}
+      {/* 4. Content Area */}
       <div className="relative z-20 text-center max-w-7xl w-full">
         
+        {/* Floating Batch */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-xl px-6 py-2 rounded-full mb-8 border border-white/10"
+          className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-2xl px-6 py-2 rounded-full mb-10 border border-white/10 neon-glow-gold"
         >
-          <span className="w-2 h-2 rounded-full bg-gold animate-pulse shadow-[0_0_10px_#C5A572]" />
-          <span className="text-[10px] uppercase tracking-[0.4em] text-cream/80 font-medium">L'Eccellenza nel Volo Privato</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
+          <span className="text-[9px] uppercase tracking-[0.5em] text-white/80 font-bold">The Gold Standard of Aviation</span>
         </motion.div>
 
+        {/* Hero Heading */}
         <motion.h1 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="text-[clamp(44px,8vw,110px)] leading-[0.9] font-light mb-10 tracking-tighter"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="luxury-heading text-[clamp(40px,8vw,110px)] mb-8"
         >
-          <span className="block text-white mb-2">Eleviamo il Suo</span>
-          <span className="text-gold-gradient italic font-serif">Viaggio.</span>
+          <span className="block text-white">Domina il Cielo.</span>
+          <span className="bg-gradient-to-r from-gold via-white to-gold bg-clip-text text-transparent italic font-light tracking-tighter">
+            Senza Compromessi.
+          </span>
         </motion.h1>
 
+        {/* Hero Subtitle */}
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="text-lg md:text-xl text-cream/60 font-light max-w-2xl mx-auto mb-16 leading-relaxed tracking-wide"
+          transition={{ duration: 1.5, delay: 0.6 }}
+          className="text-lg md:text-xl text-white/50 font-light max-w-3xl mx-auto mb-16 leading-relaxed tracking-widest"
         >
-          Acceda alla flotta più esclusiva al mondo. <br className="hidden md:block" />
-          Voli privati on-demand, ridefiniti con intelligenza artificiale e discrezione assoluta.
+          Benvenuti nell'era dell'aviazione privata intelligente. <br/>
+          Pianifica, prenota e decolla in meno di 2 ore verso qualsiasi destinazione globale.
         </motion.p>
 
-        {/* Floating Search Widget */}
+        {/* Futuristic Search Widget */}
         <motion.div 
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="relative max-w-5xl mx-auto"
+          transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative max-w-5xl mx-auto w-full group"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 via-transparent to-gold/20 rounded-2xl blur-2xl opacity-20" />
+          {/* External Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-gold/20 via-white/5 to-gold/20 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           
-          <div className="relative glass-panel bg-black/40 backdrop-blur-[40px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]">
-            {/* Tabs */}
-            <div className="flex bg-white/5 border-b border-white/5">
+          <div className="relative glass-card bg-black/40 backdrop-blur-[80px] rounded-3xl overflow-hidden shadow-2xl">
+            {/* Tab Navigation */}
+            <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar">
               {[
-                { id: 'oneway', label: 'Sola Andata' },
-                { id: 'roundtrip', label: 'Ritorno' },
+                { id: 'oneway', label: 'Solo Andata' },
+                { id: 'roundtrip', label: 'Andata e Ritorno' },
                 { id: 'multistop', label: 'Multi-Leg' }
               ].map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id as any)}
-                  className={`flex-1 py-5 text-[10px] uppercase tracking-[0.3em] font-medium transition-all duration-300 relative ${
-                    tab === t.id ? 'text-gold' : 'text-cream/30 hover:text-cream/50'
+                  className={`flex-1 min-w-[140px] py-6 text-[10px] uppercase tracking-[0.4em] font-bold transition-all duration-500 relative ${
+                    tab === t.id ? 'text-white' : 'text-white/20 hover:text-white/40'
                   }`}
                 >
                   {t.label}
                   {tab === t.id && (
                     <motion.div 
-                      layoutId="activeTabUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold shadow-[0_0_15px_#C5A572]"
+                      layoutId="tabUnderline"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold"
                     />
                   )}
                 </button>
               ))}
             </div>
 
-            {/* Main Form */}
+            {/* Form Fields */}
             <div className="p-8 md:p-12">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
-                <div className="md:col-span-4">
+                <div className="md:col-span-4 group/field">
                   <CityAutocomplete 
                     label="Origine" 
                     value={from} 
                     onChange={(city, icao) => { setFrom(city); setFromICAO(icao) }} 
                   />
+                  <div className="h-[1px] w-0 group-hover/field:w-full bg-gold/50 transition-all duration-700" />
                 </div>
                 <div className="md:col-span-1 flex items-center justify-center pb-4">
                   <motion.div 
-                    whileHover={{ rotate: 180 }}
-                    className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center cursor-pointer hover:border-gold/30 transition-colors"
+                    whileHover={{ rotate: 180, scale: 1.1 }}
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer text-gold hover:border-gold transition-all"
                   >
-                    <span className="text-gold text-lg">⇄</span>
+                    ⇄
                   </motion.div>
                 </div>
-                <div className="md:col-span-4">
+                <div className="md:col-span-4 group/field">
                   <CityAutocomplete 
                     label="Destinazione" 
                     value={to} 
                     onChange={(city, icao) => { setTo(city); setToICAO(icao) }} 
                   />
+                  <div className="h-[1px] w-0 group-hover/field:w-full bg-gold/50 transition-all duration-700" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-[9px] uppercase tracking-[0.2em] text-gold mb-3 block opacity-70">Partenza</label>
+                  <label className="text-[9px] uppercase tracking-[0.3em] text-gold/60 mb-3 block">Partenza</label>
                   <input 
                     type="date" 
                     value={date} 
                     onChange={e => setDate(e.target.value)} 
-                    className="luxury-input w-full bg-white/5 border-white/10 rounded-lg py-3 px-4 text-cream"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white text-sm outline-none focus:border-gold/50 transition-colors"
                   />
                 </div>
                 <div className="md:col-span-1">
-                  <label className="text-[9px] uppercase tracking-[0.2em] text-gold mb-3 block opacity-70">Pax</label>
+                  <label className="text-[9px] uppercase tracking-[0.3em] text-gold/60 mb-3 block">Pax</label>
                   <select 
                     value={pax} 
                     onChange={e => setPax(e.target.value)}
-                    className="luxury-input w-full bg-white/5 border-white/10 rounded-lg py-3 px-4 text-cream"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white text-sm outline-none focus:border-gold/50 transition-colors appearance-none"
                   >
-                    {[1,2,4,6,8,12,16].map(n => (
-                      <option key={n} value={n} className="bg-darker">{n}</option>
-                    ))}
+                    {[1,2,4,8,12,16].map(n => <option key={n} value={n} className="bg-darker">{n}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" className="accent-gold w-4 h-4 rounded border-white/10 bg-white/5" />
-                    <span className="text-[10px] text-cream/40 group-hover:text-cream/60 transition-colors uppercase tracking-widest">Opzioni Pet-Friendly</span>
+              {/* Action Area */}
+              <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-white/5">
+                <div className="flex gap-8">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="w-4 h-4 rounded border border-white/20 flex items-center justify-center group-hover:border-gold transition-colors">
+                      <div className="w-2 h-2 bg-gold scale-0 group-hover:scale-100 transition-transform" />
+                    </div>
+                    <span className="text-[10px] text-white/30 group-hover:text-white/60 transition-colors uppercase tracking-[0.2em]">Catering VIP</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" className="accent-gold w-4 h-4 rounded border-white/10 bg-white/5" />
-                    <span className="text-[10px] text-cream/40 group-hover:text-cream/60 transition-colors uppercase tracking-widest">Fumatori Ammessi</span>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="w-4 h-4 rounded border border-white/20 flex items-center justify-center group-hover:border-gold transition-colors">
+                      <div className="w-2 h-2 bg-gold scale-0 group-hover:scale-100 transition-transform" />
+                    </div>
+                    <span className="text-[10px] text-white/30 group-hover:text-white/60 transition-colors uppercase tracking-[0.2em]">Concierge Limousine</span>
                   </label>
                 </div>
+
                 <button 
                   onClick={handleSearch}
-                  className="btn-gold-premium px-12 py-5 text-xs tracking-[0.3em] font-bold min-w-[240px] relative overflow-hidden group"
+                  className="btn-gold-premium w-full md:w-auto px-16 py-6 text-xs"
                 >
-                  <span className="relative z-10">RICHIEDI QUOTAZIONE ✦</span>
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                  RICHIEDI QUOTAZIONE SMART ✦
                 </button>
               </div>
             </div>
           </div>
         </motion.div>
-
-        {/* Certifications */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="mt-20 flex flex-wrap justify-center gap-12 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700"
-        >
-          {['ARGUS PLATINUM', 'WYVERN REGISTERED', 'EASA CERTIFIED', 'AOC LICENSED'].map((text) => (
-            <span key={text} className="text-[9px] tracking-[0.4em] font-light text-cream/80">{text}</span>
-          ))}
-        </motion.div>
       </div>
 
-      {/* Decorative Bottom Vignette */}
-      <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-[#020408] to-transparent pointer-events-none z-[5]" />
-
-      {/* Scroll Hint */}
+      {/* Decorative Bottom Glow */}
+      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-darker to-transparent z-20 pointer-events-none" />
+      
+      {/* Scroll Indicator */}
       <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.4, y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity, delay: 2 }}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-3"
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30"
       >
-        <span className="text-[8px] tracking-[0.5em] uppercase text-cream/50">Scopri AeroJet</span>
-        <div className="w-[1px] h-10 bg-gradient-to-b from-gold/50 to-transparent" />
+        <div className="w-[1px] h-12 bg-gradient-to-b from-gold/50 to-transparent" />
       </motion.div>
     </section>
   )
 }
+

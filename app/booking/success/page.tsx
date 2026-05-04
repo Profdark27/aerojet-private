@@ -2,8 +2,11 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Check, Sparkles, Plane, ShieldCheck, Mail, ArrowRight, ExternalLink } from 'lucide-react'
 import { trackEvent } from '@/lib/tracking'
 import { trackMarketingEvent, EVENTS } from '@/lib/analytics'
+import { formatCurrency } from '@/lib/utils'
 
 interface BookingDetails {
   id: string
@@ -31,20 +34,16 @@ function SuccessContent() {
     trackEvent('booking_success', { sessionId, from: fromParam, to: toParam })
     trackMarketingEvent(EVENTS.BOOKING_SUCCESS, { from: fromParam, to: toParam })
     
-    // Fetch booking details by stripeSessionId to get the persistent confirmationCode
     fetch(`/api/booking/by-session?sessionId=${encodeURIComponent(sessionId)}`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setDetails(data) })
       .catch(() => null)
       .finally(() => setLoading(false))
-  }, [sessionId])
+  }, [sessionId, fromParam, toParam])
 
-  const confirmationCode: string | null = details?.confirmationCode ?? (
-    isMock
-      ? `AJ-MOCK-${(fromParam + toParam + depositParam).length % 1000}`
-      : sessionId
-        ? `AJ-${sessionId.slice(-6).toUpperCase()}`
-        : null // no session_id = show syncing state, never fake AJ-XXXXXX
+  const confirmationCode = details?.confirmationCode ?? (
+    isMock ? `AJ-MOCK-${(fromParam + toParam + (depositParam||'')).length % 1000}` : 
+    sessionId ? `AJ-${sessionId.slice(-6).toUpperCase()}` : null
   )
 
   const fromCity = details?.fromCity || fromParam || ''
@@ -52,100 +51,112 @@ function SuccessContent() {
   const depositAmount = details?.depositAmount ?? (depositParam ? parseInt(depositParam) : 0)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, position: 'relative', overflow: 'hidden' }}>
+    <div className="min-h-screen bg-darker flex flex-col items-center justify-center px-6 py-20 relative overflow-hidden">
+      
+      {/* Background Decor */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gold/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[100px]" />
+      </div>
 
-      <div style={{ position: 'fixed', inset: 0, backgroundImage: 'linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px)', backgroundSize: '64px 64px', pointerEvents: 'none' }} />
-      <div style={{ position: 'fixed', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 50% 30%, rgba(201,168,76,0.07) 0%, transparent 60%)', pointerEvents: 'none' }} />
-
-      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 560 }}>
-
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', justifyContent: 'center', marginBottom: 56 }}>
-          <span style={{ color: '#C9A84C', fontSize: 20 }}>✦</span>
-          <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: 6, color: '#F0EDE6', fontFamily: 'Cormorant Garamond, serif' }}>AEROJET</span>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', alignSelf: 'flex-end' }}>PRIVATE</span>
-        </Link>
-
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', fontSize: 36 }}>
-          ✦
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-2xl text-center"
+      >
+        <div className="flex flex-col items-center mb-12">
+          <div className="w-24 h-24 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold mb-8 shadow-[0_0_40px_rgba(201,168,76,0.2)]">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', damping: 12, delay: 0.5 }}
+            >
+              <Check size={40} strokeWidth={3} />
+            </motion.div>
+          </div>
+          <h1 className="luxury-heading text-[clamp(40px,6vw,64px)] text-white font-light mb-4">
+            Missione <span className="text-gold italic">Confermata</span>
+          </h1>
+          <p className="text-white/60 text-lg font-light tracking-wide max-w-md mx-auto">
+            Il suo volo {fromCity && toCity ? `${fromCity} → ${toCity}` : 'è stato prenotato'} è ora in fase operativa.
+          </p>
         </div>
 
-        <h1 style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 300, marginBottom: 16, letterSpacing: 1 }}>
-          Prenotazione Confermata
-        </h1>
-
-        <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.55)', fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.8, marginBottom: 40 }}>
-          Il suo volo privato {fromCity && toCity
-            ? <><strong style={{ color: '#F0EDE6' }}>{fromCity} → {toCity}</strong></>
-            : 'è stato prenotato con successo.'
-          }
-        </p>
-
-        <div style={{ background: '#0F1220', border: '1px solid rgba(201,168,76,0.2)', padding: '36px', marginBottom: 40, textAlign: 'left' }}>
-
-          {/* Confirmation code */}
-          <div style={{ textAlign: 'center', marginBottom: 32, paddingBottom: 32, borderBottom: '1px solid rgba(201,168,76,0.1)' }}>
-            <div style={{ fontSize: 11, letterSpacing: 3, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 8 }}>CODICE PRENOTAZIONE</div>
-            {loading ? (
-              <div style={{ height: 40, background: 'rgba(201,168,76,0.06)', margin: '0 auto', width: 180 }} />
-            ) : (
-              <div style={{ fontSize: 32, letterSpacing: 6, color: '#C9A84C', fontWeight: 300 }}>
-                {confirmationCode ?? (
-                  <span style={{ fontSize: 14, letterSpacing: 2, color: 'rgba(201,168,76,0.5)' }}>
-                    Prenotazione in sincronizzazione...
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {[
-            ['Rotta', fromCity && toCity ? `${fromCity} → ${toCity}` : 'Confermata'],
-            ['Deposito pagato', depositAmount > 0 ? `€${depositAmount.toLocaleString('it-IT')}` : 'Confermato'],
-            ['Status', 'Operativo in corso'],
-            ['Prossimo step', 'Il concierge La contatterà entro 2 ore'],
-          ].map(([label, value]) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(201,168,76,0.06)' }}>
-              <span style={{ fontSize: 12, letterSpacing: 1, color: 'rgba(240,237,230,0.35)', fontFamily: 'Helvetica Neue, sans-serif' }}>{label}</span>
-              <span style={{ fontSize: 14, color: label === 'Status' ? '#4ade80' : '#F0EDE6', fontFamily: 'Helvetica Neue, sans-serif' }}>{value}</span>
+        <div className="glass-panel p-10 rounded-2xl mb-12 text-left space-y-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-3xl -z-10" />
+          
+          <div className="text-center pb-8 border-b border-white/5">
+            <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-bold block mb-4">Codice di Conferma</span>
+            <div className="text-3xl md:text-4xl text-white font-light tracking-[0.2em]">
+              {loading ? <span className="opacity-20 animate-pulse">AJ-XXXXXX</span> : confirmationCode}
             </div>
-          ))}
-
-          <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(201,168,76,0.1)' }}>
-            <p style={{ color: 'rgba(240,237,230,0.5)', fontSize: 13, fontFamily: 'Helvetica Neue, sans-serif', lineHeight: 1.6, margin: 0 }}>
-              Il team Aerojet sta finalizzando i dettagli operativi con l'operatore, FBO e servizi a bordo. Riceverà un aggiornamento completo e il contratto finale non appena la verifica sarà conclusa.
-            </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-6">
+              {[
+                { label: 'Tratta', value: `${fromCity} → ${toCity}`, icon: Plane },
+                { label: 'Deposito', value: formatCurrency(depositAmount), icon: ShieldCheck },
+              ].map(item => (
+                <div key={item.label} className="flex gap-4">
+                  <item.icon size={18} className="text-gold/40 flex-shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-white/30 uppercase tracking-widest block mb-1 font-bold">{item.label}</span>
+                    <span className="text-sm text-white font-medium">{item.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-6">
+              {[
+                { label: 'Status', value: 'Operativo in corso', icon: Sparkles, active: true },
+                { label: 'Assistenza', value: 'Concierge dedicato 24/7', icon: Mail },
+              ].map(item => (
+                <div key={item.label} className="flex gap-4">
+                  <item.icon size={18} className={`flex-shrink-0 ${item.active ? 'text-emerald-400' : 'text-gold/40'}`} />
+                  <div>
+                    <span className="text-[10px] text-white/30 uppercase tracking-widest block mb-1 font-bold">{item.label}</span>
+                    <span className={`text-sm font-medium ${item.active ? 'text-emerald-400' : 'text-white'}`}>{item.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[11px] text-white/30 italic leading-relaxed pt-8 border-t border-white/5">
+            Riceverà a breve un'email dettagliata con le informazioni sul FBO, i contatti dell'equipaggio e il contratto finale. Il nostro concierge La contatterà entro 60 minuti per finalizzare i dettagli a bordo.
+          </p>
         </div>
 
         {isMock && (
-          <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)', padding: '12px 20px', marginBottom: 32, fontSize: 12, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', textAlign: 'center' }}>
-            Modalità development — nessun pagamento reale effettuato
+          <div className="bg-gold/10 border border-gold/20 p-3 mb-10 rounded text-[10px] text-gold uppercase tracking-[0.2em] font-bold">
+            Development Mode — Simulazione di transazione
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="flex flex-col md:flex-row gap-6 justify-center">
           {details?.id && (
-            <Link href={`/trip/${details.id}`} style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', background: '#C9A84C', color: '#0A0C14', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 600 }}>
-              APRI TRIP PORTAL
+            <Link href={`/trip/${details.id}`} className="btn-gold-premium px-12 py-5 text-[10px]">
+              APRI TRIP PORTAL <ExternalLink size={14} className="ml-2" />
             </Link>
           )}
-          <Link href="/profile" style={{ padding: '14px 32px', textDecoration: 'none', display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#C9A84C', fontSize: 12, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif' }}>
-            AREA PERSONALE
+          <Link href="/" className="btn-outline-premium px-12 py-5 text-[10px]">
+            TORNA ALLA HOME <ArrowRight size={14} className="ml-2" />
           </Link>
         </div>
 
-        <p style={{ fontSize: 13, color: 'rgba(240,237,230,0.25)', fontFamily: 'Helvetica Neue, sans-serif', marginTop: 40 }}>
-          Una conferma è stata inviata alla sua email.<br />
-          Per assistenza: <span style={{ color: '#C9A84C' }}>concierge@aerojet.app</span>
+        <p className="mt-16 text-[10px] text-white/20 tracking-[0.2em] uppercase font-bold">
+          AeroJet Private · L'eccellenza nel volo privato
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }
 
 export default function BookingSuccessPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-darker flex items-center justify-center text-gold text-4xl animate-pulse">✦</div>}>
       <SuccessContent />
     </Suspense>
   )

@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 
 const plans = [
   {
@@ -27,70 +27,114 @@ const plans = [
   },
 ]
 
+import { BG_ENGINE_GOLD } from '@/lib/imageAssets'
+import ImageWithFallback from '@/components/ImageWithFallback'
+
 export default function MembershipSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
-    if (ref.current) obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
-
   return (
-    <section id="membership" style={{ padding: '100px 0', background: '#050810' }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(32px)', transition: 'all 0.9s ease' }}>
+    <section id="membership" className="section-padding bg-[#050810] relative overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+        <ImageWithFallback
+          src={BG_ENGINE_GOLD}
+          alt=""
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050810] via-transparent to-[#050810]" />
+      </div>
 
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <span style={{ fontSize: 11, letterSpacing: 4, color: '#C9A84C', fontFamily: 'Helvetica Neue, sans-serif', display: 'block', marginBottom: 16 }}>MEMBERSHIP</span>
-          <h2 style={{ fontSize: 'clamp(36px,5vw,58px)', fontWeight: 300, lineHeight: 1.1, margin: '0 0 20px' }}>
-            Accesso<br /><span style={{ color: '#C9A84C', fontStyle: 'italic' }}>Privilegiato</span>
-          </h2>
-          <p style={{ fontSize: 16, color: 'rgba(240,237,230,0.55)', maxWidth: 520, margin: '0 auto', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 300, lineHeight: 1.8 }}>
-            Un piano su misura per chi vola con regolarità. Più voli, più risparmi, più servizi.
-          </p>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+
+        <div className="text-center mb-24">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-[10px] tracking-[0.5em] text-gold uppercase mb-4 block font-semibold"
+          >
+            MEMBERSHIP
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="luxury-heading text-[clamp(40px,6vw,72px)] font-light text-white mb-6"
+          >
+            Accesso <span className="text-gold italic">Privilegiato</span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="text-white/70 max-w-lg mx-auto text-lg font-light leading-relaxed tracking-wide"
+          >
+            Un piano su misura per chi vola con regolarità. <br className="hidden md:block" />
+            Più voli, più risparmi, più eccellenza.
+          </motion.p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 1, background: 'rgba(201,168,76,0.1)' }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch h-full">
           {plans.map((plan, i) => (
-            <div key={i} style={{ background: plan.featured ? '#0F1220' : '#050810', padding: '48px 36px', position: 'relative', border: plan.featured ? `2px solid ${plan.color}` : '2px solid transparent', transition: 'all 0.3s' }}
-              onMouseEnter={e => !plan.featured && ((e.currentTarget as HTMLElement).style.background = '#0A0C14')}
-              onMouseLeave={e => !plan.featured && ((e.currentTarget as HTMLElement).style.background = '#050810')}>
-
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className={`glass-card p-10 relative flex flex-col ${
+                plan.featured ? 'border-gold/40 bg-white/[0.04] md:scale-105 z-10' : ''
+              }`}
+            >
               {plan.featured && (
-                <div style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', background: '#C9A84C', color: '#0A0C14', fontSize: 10, letterSpacing: 3, padding: '5px 20px', fontFamily: 'Helvetica Neue, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  PIÙ SCELTO
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gold px-6 py-1.5 text-darker text-[9px] tracking-[0.4em] font-bold uppercase whitespace-nowrap shadow-[0_0_20px_rgba(201,168,76,0.4)]">
+                  Consigliato
                 </div>
               )}
 
-              <div style={{ fontSize: 'clamp(28px,3vw,36px)', fontWeight: 300, letterSpacing: 4, color: plan.color, marginBottom: 8, fontFamily: 'Cormorant Garamond, serif' }}>
-                {plan.name}
+              <div className="mb-12">
+                <h3 className="luxury-heading text-4xl mb-4" style={{ color: plan.color }}>
+                  {plan.name}
+                </h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl text-white font-light">{plan.price}</span>
+                  {plan.period && <span className="text-[10px] text-cream/30 uppercase tracking-widest">/ {plan.period}</span>}
+                </div>
               </div>
-              <div style={{ fontSize: 28, fontWeight: 300, marginBottom: 4 }}>{plan.price}</div>
-              {plan.period && <div style={{ fontSize: 12, color: 'rgba(240,237,230,0.4)', fontFamily: 'Helvetica Neue, sans-serif', marginBottom: 32 }}>per {plan.period}</div>}
-              {!plan.period && <div style={{ marginBottom: 32 }} />}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 40 }}>
+              <div className="flex-1 space-y-6 mb-12">
                 {plan.perks.map((perk, j) => (
-                  <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontFamily: 'Helvetica Neue, sans-serif', color: 'rgba(240,237,230,0.75)' }}>
-                    <span style={{ color: plan.color, flexShrink: 0 }}>✦</span>
-                    {perk}
+                  <div key={j} className="flex items-center gap-4 group/perk">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold/40 group-hover/perk:bg-gold transition-colors duration-500" />
+                    <span className="text-sm text-white/90 font-medium tracking-wide">{perk}</span>
                   </div>
                 ))}
               </div>
 
-              <button style={{ width: '100%', padding: 16, fontSize: 11, letterSpacing: 2, fontFamily: 'Helvetica Neue, sans-serif', cursor: 'pointer', background: plan.featured ? plan.color : 'transparent', color: plan.featured ? '#0A0C14' : plan.color, border: `1px solid ${plan.color}`, transition: 'all 0.3s' }}
-                onMouseEnter={e => { if (!plan.featured) { (e.currentTarget as HTMLElement).style.background = plan.color; (e.currentTarget as HTMLElement).style.color = '#0A0C14' } }}
-                onMouseLeave={e => { if (!plan.featured) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = plan.color } }}>
-                RICHIEDI ACCESSO
+              <button 
+                className={`w-full py-5 text-[10px] tracking-[0.3em] font-bold transition-all duration-500 border rounded-sm ${
+                  plan.featured 
+                    ? 'bg-gold text-darker border-gold hover:bg-gold-light' 
+                    : 'bg-transparent text-gold border-gold/20 hover:border-gold/60 hover:text-white'
+                }`}
+              >
+                RICHIEDI ACCESSO ✦
               </button>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 40, fontSize: 13, color: 'rgba(240,237,230,0.3)', fontFamily: 'Helvetica Neue, sans-serif' }}>
-          Tutti i piani includono IVA. Cancellazione entro 30 giorni senza penale.
-        </p>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.6 }}
+          className="text-center mt-16 text-white/40 text-[10px] tracking-[0.2em] uppercase font-bold"
+        >
+          Tutti i piani includono IVA. Assistenza legale e burocratica inclusa.
+        </motion.p>
       </div>
     </section>
   )
