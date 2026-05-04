@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const BASE = 'https://aerojet.app'
+const BASE = process.env.NEXT_PUBLIC_BASE_URL || 'https://aerojet-private.vercel.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = ['milano-londra', 'roma-dubai', 'milano-new-york']
