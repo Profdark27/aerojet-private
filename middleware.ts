@@ -1,15 +1,31 @@
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
-function getRequestOrigin(req: Request, fallbackUrl: URL) {
+const PRODUCTION_ORIGIN = "https://aerojet-private.vercel.app"
+
+function getSafeOrigin(req: Request, fallbackUrl: URL) {
   const forwardedHost = req.headers.get("x-forwarded-host")
   const host = forwardedHost || req.headers.get("host") || fallbackUrl.host
-  const forwardedProto = req.headers.get("x-forwarded-proto") || fallbackUrl.protocol.replace(":", "") || "https"
-  return `${forwardedProto}://${host}`
+  const forwardedProto = req.headers.get("x-forwarded-proto") || "https"
+
+  if (host === "aerojet-private.vercel.app") {
+    return `${forwardedProto}://${host}`
+  }
+
+  if (host.endsWith(".vercel.app") && !host.includes("aerojet.app")) {
+    return `${forwardedProto}://${host}`
+  }
+
+  return PRODUCTION_ORIGIN
+}
+
+function safeCallbackUrl(pathname: string, search: string) {
+  const callbackUrl = `${pathname}${search || ""}`
+  return callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/dashboard"
 }
 
 function redirectTo(req: Request, path: string, fallbackUrl: URL) {
-  return NextResponse.redirect(new URL(path, getRequestOrigin(req, fallbackUrl)))
+  return NextResponse.redirect(new URL(path, getSafeOrigin(req, fallbackUrl)))
 }
 
 export default auth((req) => {
@@ -30,19 +46,13 @@ export default auth((req) => {
   }
 
   if (!isLoggedIn && !isPublicRoute) {
-    let callbackUrl = nextUrl.pathname
-    if (nextUrl.search) {
-      callbackUrl += nextUrl.search
-    }
-
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl)
+    const encodedCallbackUrl = encodeURIComponent(safeCallbackUrl(nextUrl.pathname, nextUrl.search))
     return redirectTo(req, `/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
   }
 
   return NextResponse.next()
 })
 
-// Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 }
