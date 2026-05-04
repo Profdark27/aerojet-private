@@ -1,6 +1,17 @@
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
+function getRequestOrigin(req: Request, fallbackUrl: URL) {
+  const forwardedHost = req.headers.get("x-forwarded-host")
+  const host = forwardedHost || req.headers.get("host") || fallbackUrl.host
+  const forwardedProto = req.headers.get("x-forwarded-proto") || fallbackUrl.protocol.replace(":", "") || "https"
+  return `${forwardedProto}://${host}`
+}
+
+function redirectTo(req: Request, path: string, fallbackUrl: URL) {
+  return NextResponse.redirect(new URL(path, getRequestOrigin(req, fallbackUrl)))
+}
+
 export default auth((req) => {
   const isLoggedIn = !!req.auth
   const { nextUrl } = req
@@ -13,7 +24,7 @@ export default auth((req) => {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl))
+      return redirectTo(req, "/dashboard", nextUrl)
     }
     return NextResponse.next()
   }
@@ -25,9 +36,7 @@ export default auth((req) => {
     }
 
     const encodedCallbackUrl = encodeURIComponent(callbackUrl)
-    return NextResponse.redirect(
-      new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
-    )
+    return redirectTo(req, `/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
   }
 
   return NextResponse.next()
