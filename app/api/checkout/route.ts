@@ -2,6 +2,24 @@ import { stripe, calcDeposit, calcCommission } from '@/lib/stripe'
 import { NextRequest } from 'next/server'
 import { CheckoutSchema } from '@/lib/validation'
 
+const PRODUCTION_ORIGIN = 'https://aerojet-private.vercel.app'
+
+function getSafeOrigin(request: NextRequest) {
+  const requestOrigin = request.headers.get('origin')
+  const configuredOrigin = process.env.NEXT_PUBLIC_BASE_URL
+  const origin = requestOrigin || configuredOrigin || PRODUCTION_ORIGIN
+
+  try {
+    const url = new URL(origin)
+    if (url.host === 'aerojet-private.vercel.app') return url.origin
+    if (url.host.endsWith('.vercel.app') && !url.host.includes('aerojet.app')) return url.origin
+  } catch {
+    return PRODUCTION_ORIGIN
+  }
+
+  return PRODUCTION_ORIGIN
+}
+
 export async function POST(request: NextRequest) {
   try {
     let rawBody: unknown
@@ -18,7 +36,7 @@ export async function POST(request: NextRequest) {
     const deposit = calcDeposit(totalPrice)
     const commission = calcCommission(totalPrice)
 
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const origin = getSafeOrigin(request)
 
     // Check Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_placeholder') {
@@ -64,6 +82,7 @@ export async function POST(request: NextRequest) {
         pax: String(pax),
         total_price: String(totalPrice),
         deposit: String(deposit),
+        commission: String(commission),
       },
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/search`,
