@@ -14,6 +14,7 @@ model User {
   role          String        @default("CLIENT")
   phone         String?
   company       String?
+  password      String?
   createdAt     DateTime      @default(now())
   emailVerified DateTime?
   image         String?

@@ -77,6 +77,12 @@ export default function Navbar() {
                 <SearchIcon size={18} strokeWidth={1.5} />
               </button>
               <Link 
+                href="/login" 
+                className="text-[10px] uppercase tracking-[0.3em] text-white/40 hover:text-white transition-all font-bold"
+              >
+                ACCEDI
+              </Link>
+              <Link 
                 href="/search" 
                 className="bg-white text-darker px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all duration-500 neon-glow-gold"
               >
